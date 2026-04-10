@@ -1,7 +1,10 @@
 {
-  "fetched_at": null,
-  "source": "Harris County Clerk – cclerk.hctx.net",
-  "date_range": {"start": null, "end": null},
+  "fetched_at": "2026-04-10T22:56:04.987971",
+  "source": "Harris County Clerk \u2013 cclerk.hctx.net",
+  "date_range": {
+    "start": "2026-04-03",
+    "end": "2026-04-10"
+  },
   "total": 0,
   "with_address": 0,
   "records": []
