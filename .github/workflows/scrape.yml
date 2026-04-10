@@ -1,140 +1,57 @@
-# Harris County Motivated Seller Lead Scraper
+name: Scrape Harris County Leads
 
-Automated daily scraper for **Harris County, TX** public records — surfaces motivated seller
-leads (lis pendens, foreclosures, tax deeds, liens, judgments, probate, and more) with
-property + mailing address enrichment from HCAD parcel data.
+on:
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
 
----
+permissions:
+  contents: write
+  pages: write
+  id-token: write
 
-## Architecture
+jobs:
+  scrape:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-```
-.github/workflows/scrape.yml   ← GitHub Actions (daily 07:00 UTC + manual trigger)
-scraper/
-  fetch.py                     ← Main scraper (Playwright + requests/BS4 + HCAD)
-  requirements.txt
-dashboard/
-  index.html                   ← GitHub Pages dashboard
-  records.json                 ← Latest lead data (auto-updated)
-data/
-  records.json                 ← Mirror of dashboard/records.json
-  leads_ghl.csv                ← GHL-ready export (auto-generated)
-```
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
----
+      - name: Install dependencies
+        run: pip install -r scraper/requirements.txt
 
-## Lead Types
+      - name: Install Playwright
+        run: python -m playwright install --with-deps chromium
 
-| Code       | Description              |
-|------------|--------------------------|
-| LP         | Lis Pendens              |
-| NOFC       | Notice of Foreclosure    |
-| TAXDEED    | Tax Deed                 |
-| JUD / CCJ / DRJUD | Judgment types  |
-| LNCORPTX / LNIRS / LNFED | Tax liens |
-| LN / LNMECH / LNHOA | General liens |
-| MEDLN      | Medicaid Lien            |
-| PRO        | Probate                  |
-| NOC        | Notice of Commencement   |
-| RELLP      | Release Lis Pendens      |
+      - name: Run scraper
+        run: python scraper/fetch.py
 
----
+      - name: Commit results
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: "dashboard/records.json data/records.json"
+          message: "chore: update leads [skip ci]"
+          default_author: github_actions
 
-## Seller Score (0–100)
-
-| Criterion                  | Points |
-|----------------------------|--------|
-| Base                       | 30     |
-| Per flag                   | +10    |
-| LP + Foreclosure combo     | +20    |
-| Amount > $100k             | +15    |
-| Amount > $50k              | +10    |
-| New this week              | +5     |
-| Has property address       | +5     |
-
-**Flags:** Lis pendens · Pre-foreclosure · Judgment lien · Tax lien ·
-Mechanic lien · Probate / estate · LLC / corp owner · New this week
-
----
-
-## Setup
-
-### 1. Fork / clone this repo
-
-### 2. Enable GitHub Pages
-- Repo Settings → Pages → Source: **GitHub Actions**
-
-### 3. Enable Actions
-- Repo → Actions tab → Enable workflows
-
-The scraper will run automatically at 07:00 UTC every day.
-Trigger manually via **Actions → Scrape Harris County Leads → Run workflow**.
-
----
-
-## Local development
-
-```bash
-pip install -r scraper/requirements.txt
-python -m playwright install chromium
-python scraper/fetch.py
-```
-
-Output is written to `dashboard/records.json` and `data/`.
-
----
-
-## Output schema (`records.json`)
-
-```json
-{
-  "fetched_at": "2025-01-15T07:12:00",
-  "source": "Harris County Clerk – cclerk.hctx.net",
-  "date_range": { "start": "2025-01-08", "end": "2025-01-15" },
-  "total": 142,
-  "with_address": 89,
-  "records": [
-    {
-      "doc_num": "2025-001234",
-      "doc_type": "LP",
-      "filed": "2025-01-14",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "owner": "SMITH JOHN D",
-      "grantee": "CHASE BANK NA",
-      "amount": 245000.00,
-      "legal": "LOT 12 BLK 4 MEMORIAL PARK",
-      "prop_address": "1234 OAK ST",
-      "prop_city": "HOUSTON",
-      "prop_state": "TX",
-      "prop_zip": "77001",
-      "mail_address": "1234 OAK ST",
-      "mail_city": "HOUSTON",
-      "mail_state": "TX",
-      "mail_zip": "77001",
-      "clerk_url": "https://www.cclerk.hctx.net/...",
-      "flags": ["Lis pendens", "New this week"],
-      "score": 75
-    }
-  ]
-}
-```
-
----
-
-## GHL CSV columns
-
-`First Name · Last Name · Mailing Address · Mailing City · Mailing State · Mailing Zip ·
-Property Address · Property City · Property State · Property Zip · Lead Type ·
-Document Type · Date Filed · Document Number · Amount/Debt Owed · Seller Score ·
-Motivated Seller Flags · Source · Public Records URL`
-
----
-
-## Notes
-
-- The clerk portal uses ASP.NET `__doPostBack` — **Playwright** handles the JS rendering.  
-- HCAD parcel data is downloaded from `pdata.hcad.org` (DBF inside ZIP); the script tries
-  multiple year URLs automatically.  
-- All errors are caught per-record — one bad record never stops the run.  
-- Deduplication is by `doc_num`.
+  deploy-pages:
+    needs: scrape
+    runs-on: ubuntu-22.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboard/
+      - id: deployment
+        uses: actions/deploy-pages@v4
