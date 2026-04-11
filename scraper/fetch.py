@@ -1,22 +1,32 @@
 """
-Harris County Motivated Seller Lead Scraper v5
-Uses exact field names discovered from debug HTML analysis.
+Harris County Motivated Seller Lead Scraper v6
+Uses ASP.NET UpdatePanel AJAX POST with exact field names.
 
-Real Property (RP.aspx):
-  Date From: ctl00$ContentPlaceHolder1$txtFrom
-  Date To:   ctl00$ContentPlaceHolder1$txtTo
-  Instrument: ctl00$ContentPlaceHolder1$txtInstrument
-  Submit:    ctl00$ContentPlaceHolder1$btnSearch
+Key insight from debug analysis:
+- The page uses Sys.WebForms.PageRequestManager (UpdatePanel)
+- Regular POST returns blank form; must use UpdatePanel AJAX headers:
+    ScriptManager: ctl00$ScriptManager1|ctl00$ContentPlaceHolder1$btnSearch
+    __ASYNCPOST: true
+    X-MicrosoftAjax: Delta=true
+    X-Requested-With: XMLHttpRequest
+- Response is a Delta (partial page update), not full HTML
+- Results are in the Delta payload between |updatePanel| markers
 
-Foreclosures (FRCL_R.aspx):
-  Year:  ctl00$ContentPlaceHolder1$ddlYear
-  Month: ctl00$ContentPlaceHolder1$ddlMonth
-  Submit: ctl00$ContentPlaceHolder1$btnSearch
+Real Property field names (confirmed from debug HTML):
+  txtFrom      = Date From
+  txtTo        = Date To
+  txtInstrument = Instrument Type code
+  btnSearch    = submit
 
-Probate (CourtSearch.aspx?CaseType=Probate):
-  Date From: ctl00$ContentPlaceHolder1$txtFrom2
-  Date To:   ctl00$ContentPlaceHolder1$txtTo2
-  Submit:    ctl00$ContentPlaceHolder1$btnSearch
+Foreclosure field names:
+  ddlYear      = year dropdown
+  ddlMonth     = month dropdown
+  btnSearch    = submit
+
+Probate field names:
+  txtFrom2     = Date From (case filed date)
+  txtTo2       = Date To
+  btnSearch    = submit
 """
 import csv, io, json, logging, re, sys, time, zipfile
 from datetime import datetime, timedelta
@@ -67,7 +77,7 @@ SESSION.headers.update({
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                   "AppleWebKit/537.36 (KHTML, like Gecko) "
                   "Chrome/122.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept": "*/*",
     "Accept-Language": "en-US,en;q=0.9",
     "Accept-Encoding": "gzip, deflate, br",
     "Connection": "keep-alive",
@@ -76,9 +86,13 @@ SESSION.headers.update({
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
-def save_debug(name, html):
+def save_debug(name, content):
     DEBUG_DIR.mkdir(exist_ok=True)
-    (DEBUG_DIR / f"{name}.html").write_text(html[:200_000], encoding="utf-8")
+    p = DEBUG_DIR / f"{name}.txt"
+    if isinstance(content, bytes):
+        p.write_bytes(content[:300_000])
+    else:
+        p.write_text(str(content)[:300_000], encoding="utf-8")
 
 
 def parse_amount(text):
@@ -116,12 +130,12 @@ def compute_score(record, cutoff):
     amt   = record.get("amount")
     owner = (record.get("owner") or "").upper()
     filed = record.get("filed","")
-    if cat in ("LP","RELLP"):                         flags.append("Lis pendens")
-    if cat == "NOFC":                                 flags.append("Pre-foreclosure")
-    if cat in ("JUD","CCJ","DRJUD"):                  flags.append("Judgment lien")
-    if cat in ("LNCORPTX","LNIRS","LNFED","TAXDEED"): flags.append("Tax lien")
-    if cat == "LNMECH":                               flags.append("Mechanic lien")
-    if cat == "PRO":                                  flags.append("Probate / estate")
+    if cat in ("LP","RELLP"):                          flags.append("Lis pendens")
+    if cat == "NOFC":                                  flags.append("Pre-foreclosure")
+    if cat in ("JUD","CCJ","DRJUD"):                   flags.append("Judgment lien")
+    if cat in ("LNCORPTX","LNIRS","LNFED","TAXDEED"):  flags.append("Tax lien")
+    if cat == "LNMECH":                                flags.append("Mechanic lien")
+    if cat == "PRO":                                   flags.append("Probate / estate")
     if re.search(r"\b(LLC|CORP|INC|LTD|TRUST)\b", owner): flags.append("LLC / corp owner")
     try:
         if datetime.strptime(filed[:10], "%Y-%m-%d") >= cutoff:
@@ -136,51 +150,89 @@ def compute_score(record, cutoff):
     return min(s, 100), flags
 
 
-# ── ASP.NET POST helper ───────────────────────────────────────────────────────
+# ── ASP.NET UpdatePanel POST ──────────────────────────────────────────────────
 
-def aspnet_post(url, overrides, debug_name):
-    """GET → extract ViewState → POST with overrides → return HTML."""
+def get_viewstate(url: str) -> dict:
+    """Load page and collect hidden ASP.NET fields."""
     r = SESSION.get(url, timeout=30)
     r.raise_for_status()
     soup = BeautifulSoup(r.text, "lxml")
-
-    # Collect all hidden fields
     fields = {}
-    for inp in soup.find_all("input"):
+    for inp in soup.find_all("input", type="hidden"):
         n = inp.get("name","")
         if n: fields[n] = inp.get("value","")
+    return fields
 
-    # Apply our search values
-    fields.update(overrides)
 
-    log.info("  POST %s — instrument=%s from=%s to=%s",
-             url.split("/")[-1],
-             overrides.get("ctl00$ContentPlaceHolder1$txtInstrument","—"),
-             overrides.get("ctl00$ContentPlaceHolder1$txtFrom",
-             overrides.get("ctl00$ContentPlaceHolder1$txtFrom2","—")),
-             overrides.get("ctl00$ContentPlaceHolder1$txtTo",
-             overrides.get("ctl00$ContentPlaceHolder1$txtTo2","—")))
+def updatepanel_post(url: str, form_fields: dict, 
+                     script_manager_target: str, debug_name: str) -> str:
+    """
+    Submit an ASP.NET UpdatePanel search.
+    Returns extracted HTML from the Delta response.
+    """
+    # Step 1: get fresh ViewState
+    vs = get_viewstate(url)
 
-    r2 = SESSION.post(url, data=fields, timeout=45,
-                      headers={"Referer": url,
-                               "Content-Type": "application/x-www-form-urlencoded",
-                               "Origin": "https://www.cclerk.hctx.net"})
-    r2.raise_for_status()
-    save_debug(debug_name, r2.text)
-    return r2.text
+    # Step 2: merge base fields + our search fields
+    payload = {**vs, **form_fields}
+    payload["ctl00$ScriptManager1"] = (
+        f"ctl00$ScriptManager1|{script_manager_target}"
+    )
+    payload["__ASYNCPOST"]    = "true"
+    payload["__EVENTTARGET"]  = ""
+    payload["__EVENTARGUMENT"] = ""
+
+    headers = {
+        "Referer":            url,
+        "Content-Type":       "application/x-www-form-urlencoded; charset=UTF-8",
+        "X-MicrosoftAjax":   "Delta=true",
+        "X-Requested-With":  "XMLHttpRequest",
+        "Origin":             "https://www.cclerk.hctx.net",
+    }
+
+    log.info("  UpdatePanel POST → %s", url.split("/")[-1])
+    r = SESSION.post(url, data=payload, headers=headers, timeout=45)
+    r.raise_for_status()
+
+    raw = r.text
+    save_debug(debug_name, raw)
+    log.info("  Response: %d bytes", len(raw))
+
+    # Step 3: extract HTML from Delta response
+    # Delta format: length|type|id|content|
+    # We want updatePanel sections and scriptBlock sections
+    html_parts = []
+
+    # Pattern: digits|updatePanel|id|content|
+    for match in re.finditer(
+        r'\d+\|updatePanel\|[^|]+\|(.*?)(?=\d+\|(?:updatePanel|hiddenField|scriptBlock|pageTitle|asyncPostBackControlIDs|postBackControlIDs|updatePanelIDs|asyncPostBackTimeout|formAction|focus)|$)',
+        raw, re.DOTALL
+    ):
+        html_parts.append(match.group(1))
+
+    if html_parts:
+        combined = "\n".join(html_parts)
+        log.info("  Extracted %d HTML parts from Delta (%d chars)", 
+                 len(html_parts), len(combined))
+        return combined
+
+    # Fallback: if not Delta format (maybe full page), return as-is
+    log.info("  Not a Delta response — using full response")
+    return raw
 
 
 # ── results table parser ──────────────────────────────────────────────────────
 
-def parse_results(html, cat, cat_label, base_url):
+def parse_results(html: str, cat: str, cat_label: str, base_url: str) -> list:
     soup    = BeautifulSoup(html, "lxml")
     records = []
     tables  = soup.find_all("table")
-    log.info("  Tables in response: %d", len(tables))
+    log.info("  Tables found: %d", len(tables))
 
     page_text = soup.get_text(" ").lower()
-    if any(x in page_text for x in ["no records found","no results","0 records","no documents"]):
-        log.info("  Portal: no records found")
+    if any(x in page_text for x in ["no records found","no results","0 records",
+                                      "no documents found","nothing found"]):
+        log.info("  Portal: no records for this query")
         return []
 
     for table in tables:
@@ -189,10 +241,11 @@ def parse_results(html, cat, cat_label, base_url):
         headers = [td.get_text(" ", strip=True).lower()
                    for td in rows[0].find_all(["th","td"])]
         joined  = " ".join(headers)
-        if not any(k in joined for k in ["file","instrument","grantor","date","type",
-                                          "case","party","deed","lien","name","sale"]):
+        if not any(k in joined for k in ["file","instrument","grantor","date",
+                                          "type","case","party","deed","lien",
+                                          "name","sale","recorded"]):
             continue
-        log.info("  Parsing table headers: %s", headers[:8])
+        log.info("  Table headers: %s", headers[:8])
 
         for row in rows[1:]:
             cells = row.find_all("td")
@@ -217,10 +270,11 @@ def parse_results(html, cat, cat_label, base_url):
                                 if v: return v
                     return ""
 
-                doc_num  = f("file number","instrument number","case number","file no","number")
+                doc_num  = f("file number","instrument number","case number",
+                              "file no","number","doc no")
                 doc_type = f("instrument type","type","code","doc type")
-                filed    = f("date filed","filed date","recording date","file date",
-                             "date","recorded","sale date")
+                filed    = f("date filed","filed date","recording date",
+                              "file date","date","recorded","sale date")
                 grantor  = f("grantor","owner","debtor","party 1","applicant","name")
                 grantee  = f("grantee","lender","creditor","party 2","secured")
                 legal    = f("legal","description","subdivision","property desc")
@@ -228,11 +282,15 @@ def parse_results(html, cat, cat_label, base_url):
 
                 if not doc_num and not grantor: continue
                 records.append({
-                    "doc_num":  doc_num,  "doc_type": doc_type or cat_label,
-                    "cat": cat, "cat_label": cat_label,
-                    "filed":   norm_date(filed) if filed else "",
-                    "owner":   grantor,  "grantee": grantee,
-                    "amount":  parse_amount(amount), "legal": legal,
+                    "doc_num":  doc_num,
+                    "doc_type": doc_type or cat_label,
+                    "cat":      cat,
+                    "cat_label": cat_label,
+                    "filed":    norm_date(filed) if filed else "",
+                    "owner":    grantor,
+                    "grantee":  grantee,
+                    "amount":   parse_amount(amount),
+                    "legal":    legal,
                     "clerk_url": link or "",
                     "prop_address":"","prop_city":"","prop_state":"TX","prop_zip":"",
                     "mail_address":"","mail_city":"","mail_state":"TX","mail_zip":"",
@@ -240,76 +298,84 @@ def parse_results(html, cat, cat_label, base_url):
             except Exception as e:
                 log.debug("Row error: %s", e)
 
-    log.info("  Parsed %d records", len(records))
+    log.info("  → %d records parsed", len(records))
     return records
 
 
 # ── search functions ──────────────────────────────────────────────────────────
 
-def search_rp(start, end, code, cat, label):
-    """Real Property search — exact field names from debug analysis."""
-    log.info("RP search: %s (%s)", code, label)
+def search_rp(start: str, end: str, code: str, cat: str, label: str) -> list:
+    log.info("RP: %s (%s)", code, label)
     try:
-        html = aspnet_post(RP, {
-            "ctl00$ContentPlaceHolder1$txtFrom":       start,
-            "ctl00$ContentPlaceHolder1$txtTo":         end,
-            "ctl00$ContentPlaceHolder1$txtInstrument": code,
-            "ctl00$ContentPlaceHolder1$btnSearch":     "Search",
-        }, f"rp_{code.replace('/','_')}")
+        html = updatepanel_post(
+            url=RP,
+            form_fields={
+                "ctl00$ContentPlaceHolder1$txtFrom":       start,
+                "ctl00$ContentPlaceHolder1$txtTo":         end,
+                "ctl00$ContentPlaceHolder1$txtInstrument": code,
+                "ctl00$ContentPlaceHolder1$btnSearch":     "Search",
+            },
+            script_manager_target="ctl00$ContentPlaceHolder1$btnSearch",
+            debug_name=f"rp_{code.replace('/','_')}",
+        )
         return parse_results(html, cat, label, RP)
     except Exception as e:
-        log.warning("RP search failed [%s]: %s", code, e)
+        log.warning("RP failed [%s]: %s", code, e)
         return []
 
 
-def search_foreclosures(start, end):
-    """
-    Foreclosure search uses Year+Month dropdowns, not a date range text box.
-    We search each month in the lookback window.
-    """
-    log.info("Searching foreclosures (by month)...")
+def search_foreclosures(start: str, end: str) -> list:
+    log.info("Foreclosures (by month)...")
     all_recs = []
     now = datetime.now()
-    # Get distinct year/month combos in our lookback window
-    months_seen = set()
-    for delta in range(LOOKBACK_DAYS + 1):
-        d = now - timedelta(days=delta)
-        months_seen.add((str(d.year), str(d.month)))
+    months = set()
+    for d in range(LOOKBACK_DAYS + 1):
+        dt = now - timedelta(days=d)
+        months.add((str(dt.year), str(dt.month)))
 
-    for year, month in months_seen:
-        log.info("  Foreclosures %s/%s", month, year)
+    for year, month in sorted(months):
+        log.info("  FRCL %s/%s", month, year)
         try:
-            html = aspnet_post(FRCL, {
-                "ctl00$ContentPlaceHolder1$ddlYear":  year,
-                "ctl00$ContentPlaceHolder1$ddlMonth": month,
-                "ctl00$ContentPlaceHolder1$rbtlDate": "SaleDate",
-                "ctl00$ContentPlaceHolder1$btnSearch": "Search",
-            }, f"frcl_{year}_{month}")
+            html = updatepanel_post(
+                url=FRCL,
+                form_fields={
+                    "ctl00$ContentPlaceHolder1$ddlYear":   year,
+                    "ctl00$ContentPlaceHolder1$ddlMonth":  month,
+                    "ctl00$ContentPlaceHolder1$rbtlDate":  "SaleDate",
+                    "ctl00$ContentPlaceHolder1$btnSearch": "Search",
+                },
+                script_manager_target="ctl00$ContentPlaceHolder1$btnSearch",
+                debug_name=f"frcl_{year}_{month}",
+            )
             recs = parse_results(html, "NOFC", "Notice of Foreclosure", FRCL)
             all_recs.extend(recs)
         except Exception as e:
-            log.warning("Foreclosure search failed %s/%s: %s", month, year, e)
+            log.warning("FRCL failed %s/%s: %s", month, year, e)
 
     log.info("Foreclosures total: %d", len(all_recs))
     return all_recs
 
 
-def search_probate(start, end):
-    """Probate uses txtFrom2/txtTo2 for date range."""
-    log.info("Searching probate...")
+def search_probate(start: str, end: str) -> list:
+    log.info("Probate...")
     try:
-        html = aspnet_post(PROB, {
-            "ctl00$ContentPlaceHolder1$txtFrom2":       start,
-            "ctl00$ContentPlaceHolder1$txtTo2":         end,
-            "ctl00$ContentPlaceHolder1$ddlCourt":       "All",
-            "ctl00$ContentPlaceHolder1$DropDownListStatus": "-All",
-            "ctl00$ContentPlaceHolder1$btnSearch":      "Search",
-        }, "probate")
+        html = updatepanel_post(
+            url=PROB,
+            form_fields={
+                "ctl00$ContentPlaceHolder1$txtFrom2":              start,
+                "ctl00$ContentPlaceHolder1$txtTo2":                end,
+                "ctl00$ContentPlaceHolder1$ddlCourt":              "All",
+                "ctl00$ContentPlaceHolder1$DropDownListStatus":    "-All",
+                "ctl00$ContentPlaceHolder1$btnSearch":             "Search",
+            },
+            script_manager_target="ctl00$ContentPlaceHolder1$btnSearch",
+            debug_name="probate",
+        )
         recs = parse_results(html, "PRO", "Probate", PROB)
-        log.info("Probate: %d records", len(recs))
+        log.info("Probate: %d", len(recs))
         return recs
     except Exception as e:
-        log.warning("Probate search failed: %s", e)
+        log.warning("Probate failed: %s", e)
         return []
 
 
@@ -328,8 +394,7 @@ class ParcelLookup:
                 try:
                     r = session.get(url, timeout=120, stream=True)
                     if r.status_code == 200 and self._load_zip(r.content):
-                        log.info("Parcel lookup ready: %d entries", len(self._d))
-                        return
+                        log.info("Parcels: %d entries", len(self._d)); return
                 except Exception: pass
         log.warning("Parcel data unavailable")
 
@@ -341,10 +406,10 @@ class ParcelLookup:
     def _load_zip(self, content):
         try: zf = zipfile.ZipFile(io.BytesIO(content))
         except Exception: return False
-        for name in zf.namelist():
-            lo = name.lower()
-            if lo.endswith(".dbf") and HAS_DBF: return self._load_dbf(zf.read(name))
-            if lo.endswith(".csv"): return self._load_csv(zf.read(name).decode("utf-8","replace"))
+        for n in zf.namelist():
+            lo = n.lower()
+            if lo.endswith(".dbf") and HAS_DBF: return self._load_dbf(zf.read(n))
+            if lo.endswith(".csv"): return self._load_csv(zf.read(n).decode("utf-8","replace"))
         return False
 
     def _load_dbf(self, data):
@@ -353,8 +418,7 @@ class ParcelLookup:
             for row in DBF(str(p), encoding="latin-1", ignore_missing_memofile=True):
                 self._ingest(dict(row))
             return bool(self._d)
-        except Exception as e:
-            log.warning("DBF error: %s", e); return False
+        except Exception as e: log.warning("DBF: %s", e); return False
 
     def _load_csv(self, text):
         for row in csv.DictReader(io.StringIO(text)): self._ingest(row)
@@ -363,9 +427,9 @@ class ParcelLookup:
     def _ingest(self, row):
         def g(*ks):
             for k in ks:
-                for variant in (k, k.upper(), k.lower()):
-                    val = row.get(variant)
-                    if val and str(val).strip(): return str(val).strip()
+                for var in (k, k.upper(), k.lower()):
+                    v = row.get(var)
+                    if v and str(v).strip(): return str(v).strip()
             return ""
         owner = g("OWNER","OWN1","OWNER1","OWNERNAME")
         if not owner: return
@@ -382,7 +446,7 @@ class ParcelLookup:
         for v in name_variants(owner): self._d.setdefault(v, info)
 
 
-# ── GHL CSV export ────────────────────────────────────────────────────────────
+# ── GHL CSV ───────────────────────────────────────────────────────────────────
 
 def export_csv(records, path):
     cols = ["First Name","Last Name","Mailing Address","Mailing City","Mailing State",
@@ -397,7 +461,7 @@ def export_csv(records, path):
             amt = r.get("amount")
             w.writerow({
                 "First Name":  p[0].title() if p else "",
-                "Last Name":   " ".join(p[1:]).title() if len(p) > 1 else "",
+                "Last Name":   " ".join(p[1:]).title() if len(p)>1 else "",
                 "Mailing Address": r.get("mail_address",""),
                 "Mailing City":    r.get("mail_city",""),
                 "Mailing State":   r.get("mail_state","TX"),
@@ -427,7 +491,7 @@ def main():
     start  = cutoff.strftime("%m/%d/%Y")
     end    = now.strftime("%m/%d/%Y")
 
-    log.info("=== Harris County Lead Scraper v5 ===")
+    log.info("=== Harris County Lead Scraper v6 ===")
     log.info("Range: %s → %s", start, end)
 
     parcel = ParcelLookup()
@@ -437,7 +501,6 @@ def main():
     for code, cat, label in INSTRUMENT_TYPES:
         raw.extend(search_rp(start, end, code, cat, label))
         time.sleep(1.5)
-
     raw.extend(search_foreclosures(start, end))
     raw.extend(search_probate(start, end))
 
@@ -459,7 +522,7 @@ def main():
                 if r.get("prop_address"): with_addr += 1
             r["score"], r["flags"] = compute_score(r, cutoff)
         except Exception as e:
-            log.debug("Enrich error: %s", e)
+            log.debug("Enrich: %s", e)
             r.setdefault("score", 30); r.setdefault("flags", [])
 
     deduped.sort(key=lambda x: x.get("score",0), reverse=True)
@@ -475,7 +538,7 @@ def main():
 
     for d in OUTPUT_DIRS:
         d.mkdir(parents=True, exist_ok=True)
-        (d / "records.json").write_text(json.dumps(payload, indent=2, default=str))
+        (d/"records.json").write_text(json.dumps(payload, indent=2, default=str))
         log.info("Saved → %s/records.json", d)
 
     export_csv(deduped, Path("data/leads_ghl.csv"))
