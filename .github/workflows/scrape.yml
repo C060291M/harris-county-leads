@@ -31,12 +31,23 @@ jobs:
 
       - name: Run scraper
         run: python scraper/fetch.py
+       
+      - name: Upload debug HTML
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: debug-html
+          path: debug/
+          retention-days: 3
 
       - name: Commit results
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin main
+          git add -A
+          git stash || true
+          git pull --rebase origin main || true
+          git stash pop || true
           git add dashboard/records.json data/records.json data/leads_ghl.csv || true
           git diff --staged --quiet || git commit -m "chore: update leads [skip ci]"
           git push
