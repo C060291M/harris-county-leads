@@ -1,7 +1,22 @@
 """
-Harris County Motivated Seller Lead Scraper v4
-Uses direct HTTP POST (requests + BeautifulSoup) for ASP.NET WebForms.
-Saves debug HTML as artifacts for troubleshooting.
+Harris County Motivated Seller Lead Scraper v5
+Uses exact field names discovered from debug HTML analysis.
+
+Real Property (RP.aspx):
+  Date From: ctl00$ContentPlaceHolder1$txtFrom
+  Date To:   ctl00$ContentPlaceHolder1$txtTo
+  Instrument: ctl00$ContentPlaceHolder1$txtInstrument
+  Submit:    ctl00$ContentPlaceHolder1$btnSearch
+
+Foreclosures (FRCL_R.aspx):
+  Year:  ctl00$ContentPlaceHolder1$ddlYear
+  Month: ctl00$ContentPlaceHolder1$ddlMonth
+  Submit: ctl00$ContentPlaceHolder1$btnSearch
+
+Probate (CourtSearch.aspx?CaseType=Probate):
+  Date From: ctl00$ContentPlaceHolder1$txtFrom2
+  Date To:   ctl00$ContentPlaceHolder1$txtTo2
+  Submit:    ctl00$ContentPlaceHolder1$btnSearch
 """
 import csv, io, json, logging, re, sys, time, zipfile
 from datetime import datetime, timedelta
@@ -59,16 +74,14 @@ SESSION.headers.update({
 })
 
 
-# ── helpers ──────────────────────────────────────────────────────────────────
+# ── helpers ───────────────────────────────────────────────────────────────────
 
-def save_debug(name: str, html: str):
+def save_debug(name, html):
     DEBUG_DIR.mkdir(exist_ok=True)
-    path = DEBUG_DIR / f"{name}.html"
-    path.write_text(html[:200_000], encoding="utf-8")
-    log.info("  Debug saved → %s (%d bytes)", path, len(html))
+    (DEBUG_DIR / f"{name}.html").write_text(html[:200_000], encoding="utf-8")
 
 
-def parse_amount(text) -> Optional[float]:
+def parse_amount(text):
     if not text: return None
     c = re.sub(r"[^\d.]", "", str(text).replace(",", ""))
     try:
@@ -76,14 +89,14 @@ def parse_amount(text) -> Optional[float]:
     except ValueError: return None
 
 
-def norm_date(raw: str) -> str:
+def norm_date(raw):
     for fmt in ("%m/%d/%Y", "%Y-%m-%d", "%m-%d-%Y"):
         try: return datetime.strptime(raw.strip(), fmt).strftime("%Y-%m-%d")
         except ValueError: pass
     return raw.strip()
 
 
-def name_variants(name: str):
+def name_variants(name):
     name = name.strip().upper()
     v = {name}
     if "," in name:
@@ -97,18 +110,18 @@ def name_variants(name: str):
     return v
 
 
-def score(record: dict, cutoff: datetime):
+def compute_score(record, cutoff):
     flags, s = [], 30
     cat   = record.get("cat","")
     amt   = record.get("amount")
     owner = (record.get("owner") or "").upper()
     filed = record.get("filed","")
-    if cat in ("LP","RELLP"):                    flags.append("Lis pendens")
-    if cat == "NOFC":                            flags.append("Pre-foreclosure")
-    if cat in ("JUD","CCJ","DRJUD"):             flags.append("Judgment lien")
+    if cat in ("LP","RELLP"):                         flags.append("Lis pendens")
+    if cat == "NOFC":                                 flags.append("Pre-foreclosure")
+    if cat in ("JUD","CCJ","DRJUD"):                  flags.append("Judgment lien")
     if cat in ("LNCORPTX","LNIRS","LNFED","TAXDEED"): flags.append("Tax lien")
-    if cat == "LNMECH":                          flags.append("Mechanic lien")
-    if cat == "PRO":                             flags.append("Probate / estate")
+    if cat == "LNMECH":                               flags.append("Mechanic lien")
+    if cat == "PRO":                                  flags.append("Probate / estate")
     if re.search(r"\b(LLC|CORP|INC|LTD|TRUST)\b", owner): flags.append("LLC / corp owner")
     try:
         if datetime.strptime(filed[:10], "%Y-%m-%d") >= cutoff:
@@ -123,105 +136,64 @@ def score(record: dict, cutoff: datetime):
     return min(s, 100), flags
 
 
-# ── ASP.NET form helper ───────────────────────────────────────────────────────
+# ── ASP.NET POST helper ───────────────────────────────────────────────────────
 
-def get_aspnet_state(url: str) -> tuple[dict, str]:
-    """Load a page and extract all hidden ASP.NET fields + raw HTML."""
+def aspnet_post(url, overrides, debug_name):
+    """GET → extract ViewState → POST with overrides → return HTML."""
     r = SESSION.get(url, timeout=30)
     r.raise_for_status()
     soup = BeautifulSoup(r.text, "lxml")
+
+    # Collect all hidden fields
     fields = {}
     for inp in soup.find_all("input"):
         n = inp.get("name","")
         if n: fields[n] = inp.get("value","")
-    return fields, r.text
 
-
-def post_search(url: str, overrides: dict, debug_name: str) -> str:
-    """
-    1. GET page to collect ViewState / EventValidation.
-    2. POST with overrides (date range, instrument type, submit button).
-    3. Return response HTML.
-    """
-    fields, init_html = get_aspnet_state(url)
-    save_debug(f"{debug_name}_init", init_html)
-
-    # Find submit button
-    soup = BeautifulSoup(init_html, "lxml")
-    for btn in soup.find_all("input", type=lambda t: t and t.lower() in ("submit","button","image")):
-        bname = btn.get("name","")
-        bval  = btn.get("value","")
-        if "search" in (bname+bval).lower() or btn.get("id","").lower().find("search") >= 0:
-            fields[bname] = bval
-            log.info("  Found search button: name=%s value=%s", bname, bval)
-            break
-    else:
-        # fallback — add any button
-        for btn in soup.find_all(["input","button"]):
-            if btn.get("type","").lower() in ("submit","button"):
-                n = btn.get("name","")
-                if n: fields[n] = btn.get("value","")
-                break
-
-    # Apply caller overrides
+    # Apply our search values
     fields.update(overrides)
 
-    log.info("  POSTing to %s with %d fields", url, len(fields))
-    r = SESSION.post(url, data=fields, timeout=45,
-                     headers={"Referer": url,
+    log.info("  POST %s — instrument=%s from=%s to=%s",
+             url.split("/")[-1],
+             overrides.get("ctl00$ContentPlaceHolder1$txtInstrument","—"),
+             overrides.get("ctl00$ContentPlaceHolder1$txtFrom",
+             overrides.get("ctl00$ContentPlaceHolder1$txtFrom2","—")),
+             overrides.get("ctl00$ContentPlaceHolder1$txtTo",
+             overrides.get("ctl00$ContentPlaceHolder1$txtTo2","—")))
+
+    r2 = SESSION.post(url, data=fields, timeout=45,
+                      headers={"Referer": url,
                                "Content-Type": "application/x-www-form-urlencoded",
                                "Origin": "https://www.cclerk.hctx.net"})
-    r.raise_for_status()
-    save_debug(f"{debug_name}_results", r.text)
-    return r.text
+    r2.raise_for_status()
+    save_debug(debug_name, r2.text)
+    return r2.text
 
 
-# ── field name discovery ──────────────────────────────────────────────────────
+# ── results table parser ──────────────────────────────────────────────────────
 
-def discover_fields(html: str) -> dict:
-    """Return a map of semantic role → actual field name."""
-    soup  = BeautifulSoup(html, "lxml")
-    found = {}
-    for inp in soup.find_all(["input","select"]):
-        n = inp.get("name","")
-        i = inp.get("id","")
-        combined = (n + i).lower()
-        if not found.get("date_from") and any(x in combined for x in
-                ["datefrom","startdate","fromdate","begindate","datebegin"]):
-            found["date_from"] = n
-        if not found.get("date_to") and any(x in combined for x in
-                ["dateto","enddate","todate","dateend","thrudate","throughdate"]):
-            found["date_to"] = n
-        if not found.get("instrument") and any(x in combined for x in
-                ["instrumenttype","instrtype","instrument","doctype","doctypecode"]):
-            found["instrument"] = n
-    log.info("  Discovered fields: %s", found)
-    return found
-
-
-# ── HTML results parser ───────────────────────────────────────────────────────
-
-def parse_results(html: str, cat: str, cat_label: str, base_url: str) -> list:
+def parse_results(html, cat, cat_label, base_url):
     soup    = BeautifulSoup(html, "lxml")
     records = []
     tables  = soup.find_all("table")
-    log.info("  Response: %d tables found", len(tables))
+    log.info("  Tables in response: %d", len(tables))
 
-    text_lower = soup.get_text(" ").lower()
-    if any(x in text_lower for x in ["no records found","no results","0 records","no documents found"]):
-        log.info("  Portal says: no records")
+    page_text = soup.get_text(" ").lower()
+    if any(x in page_text for x in ["no records found","no results","0 records","no documents"]):
+        log.info("  Portal: no records found")
         return []
 
     for table in tables:
-        rows    = table.find_all("tr")
+        rows = table.find_all("tr")
         if len(rows) < 2: continue
         headers = [td.get_text(" ", strip=True).lower()
                    for td in rows[0].find_all(["th","td"])]
         joined  = " ".join(headers)
-        if not any(k in joined for k in
-                   ["file","instrument","grantor","date","type","case","party","deed","lien","name"]):
+        if not any(k in joined for k in ["file","instrument","grantor","date","type",
+                                          "case","party","deed","lien","name","sale"]):
             continue
-        log.info("  Parsing table — headers: %s", headers[:8])
+        log.info("  Parsing table headers: %s", headers[:8])
+
         for row in rows[1:]:
             cells = row.find_all("td")
             if not cells: continue
@@ -247,9 +219,10 @@ def parse_results(html: str, cat: str, cat_label: str, base_url: str) -> list:
 
                 doc_num  = f("file number","instrument number","case number","file no","number")
                 doc_type = f("instrument type","type","code","doc type")
-                filed    = f("date filed","filed date","recording date","file date","date","recorded")
+                filed    = f("date filed","filed date","recording date","file date",
+                             "date","recorded","sale date")
                 grantor  = f("grantor","owner","debtor","party 1","applicant","name")
-                grantee  = f("grantee","lender","creditor","party 2","secured party")
+                grantee  = f("grantee","lender","creditor","party 2","secured")
                 legal    = f("legal","description","subdivision","property desc")
                 amount   = f("amount","consideration","debt","balance","judgment")
 
@@ -266,89 +239,99 @@ def parse_results(html: str, cat: str, cat_label: str, base_url: str) -> list:
                 })
             except Exception as e:
                 log.debug("Row error: %s", e)
-    log.info("  → %d records parsed", len(records))
+
+    log.info("  Parsed %d records", len(records))
     return records
 
 
-# ── per-search functions ──────────────────────────────────────────────────────
+# ── search functions ──────────────────────────────────────────────────────────
 
-def search_rp(start: str, end: str, code: str, cat: str, label: str) -> list:
-    log.info("Searching RP: %s — %s", code, label)
+def search_rp(start, end, code, cat, label):
+    """Real Property search — exact field names from debug analysis."""
+    log.info("RP search: %s (%s)", code, label)
     try:
-        _, init_html = get_aspnet_state(RP)
-        flds = discover_fields(init_html)
-        overrides = {}
-        if flds.get("date_from"):  overrides[flds["date_from"]]  = start
-        if flds.get("date_to"):    overrides[flds["date_to"]]    = end
-        if flds.get("instrument"): overrides[flds["instrument"]] = code
-        # fallback field names if discovery missed them
-        if not flds.get("date_from"):
-            overrides.update({"ctl00$ContentPlaceHolder1$DateFrom": start,
-                               "DateFrom": start, "txtDateFrom": start})
-        if not flds.get("date_to"):
-            overrides.update({"ctl00$ContentPlaceHolder1$DateTo": end,
-                               "DateTo": end, "txtDateTo": end})
-        if not flds.get("instrument"):
-            overrides.update({"ctl00$ContentPlaceHolder1$InstrumentType": code,
-                               "InstrumentType": code})
-        html = post_search(RP, overrides, f"rp_{code.replace('/','_')}")
+        html = aspnet_post(RP, {
+            "ctl00$ContentPlaceHolder1$txtFrom":       start,
+            "ctl00$ContentPlaceHolder1$txtTo":         end,
+            "ctl00$ContentPlaceHolder1$txtInstrument": code,
+            "ctl00$ContentPlaceHolder1$btnSearch":     "Search",
+        }, f"rp_{code.replace('/','_')}")
         return parse_results(html, cat, label, RP)
     except Exception as e:
         log.warning("RP search failed [%s]: %s", code, e)
         return []
 
 
-def search_foreclosures(start: str, end: str) -> list:
-    log.info("Searching foreclosures...")
-    try:
-        _, init_html = get_aspnet_state(FRCL)
-        flds = discover_fields(init_html)
-        overrides = {}
-        if flds.get("date_from"): overrides[flds["date_from"]] = start
-        if flds.get("date_to"):   overrides[flds["date_to"]]   = end
-        if not flds.get("date_from"):
-            overrides.update({"ctl00$ContentPlaceHolder1$DateFrom": start, "DateFrom": start})
-        if not flds.get("date_to"):
-            overrides.update({"ctl00$ContentPlaceHolder1$DateTo": end, "DateTo": end})
-        html = post_search(FRCL, overrides, "foreclosures")
-        return parse_results(html, "NOFC", "Notice of Foreclosure", FRCL)
-    except Exception as e:
-        log.warning("Foreclosure search failed: %s", e); return []
+def search_foreclosures(start, end):
+    """
+    Foreclosure search uses Year+Month dropdowns, not a date range text box.
+    We search each month in the lookback window.
+    """
+    log.info("Searching foreclosures (by month)...")
+    all_recs = []
+    now = datetime.now()
+    # Get distinct year/month combos in our lookback window
+    months_seen = set()
+    for delta in range(LOOKBACK_DAYS + 1):
+        d = now - timedelta(days=delta)
+        months_seen.add((str(d.year), str(d.month)))
+
+    for year, month in months_seen:
+        log.info("  Foreclosures %s/%s", month, year)
+        try:
+            html = aspnet_post(FRCL, {
+                "ctl00$ContentPlaceHolder1$ddlYear":  year,
+                "ctl00$ContentPlaceHolder1$ddlMonth": month,
+                "ctl00$ContentPlaceHolder1$rbtlDate": "SaleDate",
+                "ctl00$ContentPlaceHolder1$btnSearch": "Search",
+            }, f"frcl_{year}_{month}")
+            recs = parse_results(html, "NOFC", "Notice of Foreclosure", FRCL)
+            all_recs.extend(recs)
+        except Exception as e:
+            log.warning("Foreclosure search failed %s/%s: %s", month, year, e)
+
+    log.info("Foreclosures total: %d", len(all_recs))
+    return all_recs
 
 
-def search_probate(start: str, end: str) -> list:
+def search_probate(start, end):
+    """Probate uses txtFrom2/txtTo2 for date range."""
     log.info("Searching probate...")
     try:
-        _, init_html = get_aspnet_state(PROB)
-        flds = discover_fields(init_html)
-        overrides = {}
-        if flds.get("date_from"): overrides[flds["date_from"]] = start
-        if flds.get("date_to"):   overrides[flds["date_to"]]   = end
-        if not flds.get("date_from"):
-            overrides.update({"ctl00$ContentPlaceHolder1$DateFrom": start, "DateFrom": start})
-        if not flds.get("date_to"):
-            overrides.update({"ctl00$ContentPlaceHolder1$DateTo": end, "DateTo": end})
-        html = post_search(PROB, overrides, "probate")
-        return parse_results(html, "PRO", "Probate", PROB)
+        html = aspnet_post(PROB, {
+            "ctl00$ContentPlaceHolder1$txtFrom2":       start,
+            "ctl00$ContentPlaceHolder1$txtTo2":         end,
+            "ctl00$ContentPlaceHolder1$ddlCourt":       "All",
+            "ctl00$ContentPlaceHolder1$DropDownListStatus": "-All",
+            "ctl00$ContentPlaceHolder1$btnSearch":      "Search",
+        }, "probate")
+        recs = parse_results(html, "PRO", "Probate", PROB)
+        log.info("Probate: %d records", len(recs))
+        return recs
     except Exception as e:
-        log.warning("Probate search failed: %s", e); return []
+        log.warning("Probate search failed: %s", e)
+        return []
 
 
 # ── parcel lookup ─────────────────────────────────────────────────────────────
 
 class ParcelLookup:
     def __init__(self): self._d = {}
+
     def build(self, session):
         log.info("Building HCAD parcel lookup...")
-        for year in [datetime.now().year, datetime.now().year-1]:
-            for url in [f"https://pdata.hcad.org/GIS/Parcels/Parcels_{year}.zip",
-                        f"https://pdata.hcad.org/data/{year}/parcels.zip"]:
+        for year in [datetime.now().year, datetime.now().year - 1]:
+            for url in [
+                f"https://pdata.hcad.org/GIS/Parcels/Parcels_{year}.zip",
+                f"https://pdata.hcad.org/data/{year}/parcels.zip",
+            ]:
                 try:
                     r = session.get(url, timeout=120, stream=True)
                     if r.status_code == 200 and self._load_zip(r.content):
-                        log.info("Parcel lookup: %d entries", len(self._d)); return
+                        log.info("Parcel lookup ready: %d entries", len(self._d))
+                        return
                 except Exception: pass
-        log.warning("Parcel data unavailable — no address enrichment")
+        log.warning("Parcel data unavailable")
 
     def lookup(self, owner):
         for v in name_variants(owner):
@@ -370,7 +353,8 @@ class ParcelLookup:
             for row in DBF(str(p), encoding="latin-1", ignore_missing_memofile=True):
                 self._ingest(dict(row))
             return bool(self._d)
-        except Exception as e: log.warning("DBF error: %s", e); return False
+        except Exception as e:
+            log.warning("DBF error: %s", e); return False
 
     def _load_csv(self, text):
         for row in csv.DictReader(io.StringIO(text)): self._ingest(row)
@@ -379,20 +363,22 @@ class ParcelLookup:
     def _ingest(self, row):
         def g(*ks):
             for k in ks:
-                for v in (k, k.upper(), k.lower()):
-                    val = row.get(v)
+                for variant in (k, k.upper(), k.lower()):
+                    val = row.get(variant)
                     if val and str(val).strip(): return str(val).strip()
             return ""
         owner = g("OWNER","OWN1","OWNER1","OWNERNAME")
         if not owner: return
-        info = {"prop_address": g("SITE_ADDR","SITEADDR"),
-                "prop_city":    g("SITE_CITY","SITECITY"),
-                "prop_state":   "TX",
-                "prop_zip":     g("SITE_ZIP","SITEZIP"),
-                "mail_address": g("ADDR_1","MAILADR1","MAIL_ADDR"),
-                "mail_city":    g("CITY","MAILCITY"),
-                "mail_state":   g("STATE","MAILSTATE") or "TX",
-                "mail_zip":     g("ZIP","MAILZIP")}
+        info = {
+            "prop_address": g("SITE_ADDR","SITEADDR"),
+            "prop_city":    g("SITE_CITY","SITECITY"),
+            "prop_state":   "TX",
+            "prop_zip":     g("SITE_ZIP","SITEZIP"),
+            "mail_address": g("ADDR_1","MAILADR1","MAIL_ADDR"),
+            "mail_city":    g("CITY","MAILCITY"),
+            "mail_state":   g("STATE","MAILSTATE") or "TX",
+            "mail_zip":     g("ZIP","MAILZIP"),
+        }
         for v in name_variants(owner): self._d.setdefault(v, info)
 
 
@@ -410,8 +396,8 @@ def export_csv(records, path):
             p = (r.get("owner") or "").strip().split()
             amt = r.get("amount")
             w.writerow({
-                "First Name": p[0].title() if p else "",
-                "Last Name":  " ".join(p[1:]).title() if len(p)>1 else "",
+                "First Name":  p[0].title() if p else "",
+                "Last Name":   " ".join(p[1:]).title() if len(p) > 1 else "",
                 "Mailing Address": r.get("mail_address",""),
                 "Mailing City":    r.get("mail_city",""),
                 "Mailing State":   r.get("mail_state","TX"),
@@ -420,12 +406,12 @@ def export_csv(records, path):
                 "Property City":    r.get("prop_city",""),
                 "Property State":   r.get("prop_state","TX"),
                 "Property Zip":     r.get("prop_zip",""),
-                "Lead Type":        r.get("cat_label",""),
-                "Document Type":    r.get("doc_type",""),
-                "Date Filed":       r.get("filed",""),
-                "Document Number":  r.get("doc_num",""),
+                "Lead Type":    r.get("cat_label",""),
+                "Document Type": r.get("doc_type",""),
+                "Date Filed":    r.get("filed",""),
+                "Document Number": r.get("doc_num",""),
                 "Amount/Debt Owed": f"${amt:,.2f}" if amt else "",
-                "Seller Score":     r.get("score",0),
+                "Seller Score": r.get("score",0),
                 "Motivated Seller Flags": "; ".join(r.get("flags",[])),
                 "Source": "Harris County Clerk",
                 "Public Records URL": r.get("clerk_url",""),
@@ -441,7 +427,7 @@ def main():
     start  = cutoff.strftime("%m/%d/%Y")
     end    = now.strftime("%m/%d/%Y")
 
-    log.info("=== Harris County Lead Scraper v4 ===")
+    log.info("=== Harris County Lead Scraper v5 ===")
     log.info("Range: %s → %s", start, end)
 
     parcel = ParcelLookup()
@@ -450,7 +436,8 @@ def main():
     raw = []
     for code, cat, label in INSTRUMENT_TYPES:
         raw.extend(search_rp(start, end, code, cat, label))
-        time.sleep(1)
+        time.sleep(1.5)
+
     raw.extend(search_foreclosures(start, end))
     raw.extend(search_probate(start, end))
 
@@ -470,7 +457,7 @@ def main():
             if addr:
                 r.update(addr)
                 if r.get("prop_address"): with_addr += 1
-            r["score"], r["flags"] = score(r, cutoff)
+            r["score"], r["flags"] = compute_score(r, cutoff)
         except Exception as e:
             log.debug("Enrich error: %s", e)
             r.setdefault("score", 30); r.setdefault("flags", [])
@@ -488,7 +475,7 @@ def main():
 
     for d in OUTPUT_DIRS:
         d.mkdir(parents=True, exist_ok=True)
-        (d/"records.json").write_text(json.dumps(payload, indent=2, default=str))
+        (d / "records.json").write_text(json.dumps(payload, indent=2, default=str))
         log.info("Saved → %s/records.json", d)
 
     export_csv(deduped, Path("data/leads_ghl.csv"))
