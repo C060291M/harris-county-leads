@@ -1,36 +1,21 @@
 """
-Harris County Motivated Seller Lead Scraper v6
-Uses ASP.NET UpdatePanel AJAX POST with exact field names.
+Harris County Motivated Seller Lead Scraper v7
+FINAL - Correctly handles ASP.NET UpdatePanel redirect pattern.
 
-Key insight from debug analysis:
-- The page uses Sys.WebForms.PageRequestManager (UpdatePanel)
-- Regular POST returns blank form; must use UpdatePanel AJAX headers:
-    ScriptManager: ctl00$ScriptManager1|ctl00$ContentPlaceHolder1$btnSearch
-    __ASYNCPOST: true
-    X-MicrosoftAjax: Delta=true
-    X-Requested-With: XMLHttpRequest
-- Response is a Delta (partial page update), not full HTML
-- Results are in the Delta payload between |updatePanel| markers
+Flow discovered from debug analysis:
+  1. GET RP.aspx → collect ViewState
+  2. POST with UpdatePanel AJAX headers + search fields
+  3. Delta response contains: pageRedirect||/RP_R.aspx?ID=<session_token>
+  4. GET RP_R.aspx?ID=<token> → parse results table
+  5. Paginate via Next button on results page
 
-Real Property field names (confirmed from debug HTML):
-  txtFrom      = Date From
-  txtTo        = Date To
-  txtInstrument = Instrument Type code
-  btnSearch    = submit
-
-Foreclosure field names:
-  ddlYear      = year dropdown
-  ddlMonth     = month dropdown
-  btnSearch    = submit
-
-Probate field names:
-  txtFrom2     = Date From (case filed date)
-  txtTo2       = Date To
-  btnSearch    = submit
+Same pattern for Probate (CourtSearch_R.aspx).
+Foreclosures use a different inline calendar approach.
 """
 import csv, io, json, logging, re, sys, time, zipfile
 from datetime import datetime, timedelta
 from pathlib import Path
+from urllib.parse import unquote
 from typing import Optional
 
 import requests
@@ -47,10 +32,12 @@ logging.basicConfig(level=logging.INFO,
     handlers=[logging.StreamHandler(sys.stdout)])
 log = logging.getLogger(__name__)
 
-BASE  = "https://www.cclerk.hctx.net/Applications/WebSearch"
-RP    = f"{BASE}/RP.aspx"
-FRCL  = f"{BASE}/FRCL_R.aspx"
-PROB  = f"{BASE}/CourtSearch.aspx?CaseType=Probate"
+BASE   = "https://www.cclerk.hctx.net/Applications/WebSearch"
+RP     = f"{BASE}/RP.aspx"
+FRCL   = f"{BASE}/FRCL_R.aspx"
+PROB   = f"{BASE}/CourtSearch.aspx?CaseType=Probate"
+RP_R   = f"{BASE}/RP_R.aspx"
+PROB_R = f"{BASE}/CourtSearch_R.aspx"
 
 OUTPUT_DIRS   = [Path("dashboard"), Path("data")]
 DEBUG_DIR     = Path("debug")
@@ -77,10 +64,9 @@ SESSION.headers.update({
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                   "AppleWebKit/537.36 (KHTML, like Gecko) "
                   "Chrome/122.0.0.0 Safari/537.36",
-    "Accept": "*/*",
     "Accept-Language": "en-US,en;q=0.9",
     "Accept-Encoding": "gzip, deflate, br",
-    "Connection": "keep-alive",
+    "Connection":      "keep-alive",
 })
 
 
@@ -89,15 +75,13 @@ SESSION.headers.update({
 def save_debug(name, content):
     DEBUG_DIR.mkdir(exist_ok=True)
     p = DEBUG_DIR / f"{name}.txt"
-    if isinstance(content, bytes):
-        p.write_bytes(content[:300_000])
-    else:
-        p.write_text(str(content)[:300_000], encoding="utf-8")
+    data = content if isinstance(content, str) else content.decode("utf-8","replace")
+    p.write_text(data[:300_000], encoding="utf-8")
 
 
 def parse_amount(text):
     if not text: return None
-    c = re.sub(r"[^\d.]", "", str(text).replace(",", ""))
+    c = re.sub(r"[^\d.]", "", str(text).replace(",",""))
     try:
         v = float(c); return v if v > 0 else None
     except ValueError: return None
@@ -150,10 +134,10 @@ def compute_score(record, cutoff):
     return min(s, 100), flags
 
 
-# ── ASP.NET UpdatePanel POST ──────────────────────────────────────────────────
+# ── core HTTP functions ───────────────────────────────────────────────────────
 
 def get_viewstate(url: str) -> dict:
-    """Load page and collect hidden ASP.NET fields."""
+    """GET page and return all hidden ASP.NET form fields."""
     r = SESSION.get(url, timeout=30)
     r.raise_for_status()
     soup = BeautifulSoup(r.text, "lxml")
@@ -164,76 +148,78 @@ def get_viewstate(url: str) -> dict:
     return fields
 
 
-def updatepanel_post(url: str, form_fields: dict, 
-                     script_manager_target: str, debug_name: str) -> str:
+def updatepanel_search(url: str, search_fields: dict, debug_name: str) -> Optional[str]:
     """
-    Submit an ASP.NET UpdatePanel search.
-    Returns extracted HTML from the Delta response.
+    Submit UpdatePanel AJAX search.
+    Returns the redirect URL from the Delta response, or None.
     """
-    # Step 1: get fresh ViewState
     vs = get_viewstate(url)
+    btn = "ctl00$ContentPlaceHolder1$btnSearch"
 
-    # Step 2: merge base fields + our search fields
-    payload = {**vs, **form_fields}
-    payload["ctl00$ScriptManager1"] = (
-        f"ctl00$ScriptManager1|{script_manager_target}"
-    )
-    payload["__ASYNCPOST"]    = "true"
-    payload["__EVENTTARGET"]  = ""
-    payload["__EVENTARGUMENT"] = ""
-
-    headers = {
-        "Referer":            url,
-        "Content-Type":       "application/x-www-form-urlencoded; charset=UTF-8",
-        "X-MicrosoftAjax":   "Delta=true",
-        "X-Requested-With":  "XMLHttpRequest",
-        "Origin":             "https://www.cclerk.hctx.net",
+    payload = {
+        **vs,
+        **search_fields,
+        "ctl00$ScriptManager1": f"ctl00$ScriptManager1|{btn}",
+        "__ASYNCPOST":          "true",
+        "__EVENTTARGET":        "",
+        "__EVENTARGUMENT":      "",
+        btn:                    "Search",
     }
 
-    log.info("  UpdatePanel POST → %s", url.split("/")[-1])
-    r = SESSION.post(url, data=payload, headers=headers, timeout=45)
+    r = SESSION.post(url, data=payload, timeout=45, headers={
+        "Referer":           url,
+        "Content-Type":      "application/x-www-form-urlencoded; charset=UTF-8",
+        "X-MicrosoftAjax":  "Delta=true",
+        "X-Requested-With": "XMLHttpRequest",
+        "Origin":            "https://www.cclerk.hctx.net",
+        "Accept":            "*/*",
+    })
     r.raise_for_status()
 
-    raw = r.text
-    save_debug(debug_name, raw)
-    log.info("  Response: %d bytes", len(raw))
+    delta = r.text
+    save_debug(debug_name, delta)
+    log.info("  Delta: %d bytes", len(delta))
 
-    # Step 3: extract HTML from Delta response
-    # Delta format: length|type|id|content|
-    # We want updatePanel sections and scriptBlock sections
-    html_parts = []
+    # Extract pageRedirect URL
+    m = re.search(r'pageRedirect\|\|([^|]+)', delta)
+    if m:
+        rel = unquote(m.group(1))
+        full = "https://www.cclerk.hctx.net" + rel
+        log.info("  Redirect → %s...", full[:80])
+        return full
 
-    # Pattern: digits|updatePanel|id|content|
-    for match in re.finditer(
-        r'\d+\|updatePanel\|[^|]+\|(.*?)(?=\d+\|(?:updatePanel|hiddenField|scriptBlock|pageTitle|asyncPostBackControlIDs|postBackControlIDs|updatePanelIDs|asyncPostBackTimeout|formAction|focus)|$)',
-        raw, re.DOTALL
-    ):
-        html_parts.append(match.group(1))
+    log.warning("  No pageRedirect found in Delta for %s", debug_name)
+    return None
 
-    if html_parts:
-        combined = "\n".join(html_parts)
-        log.info("  Extracted %d HTML parts from Delta (%d chars)", 
-                 len(html_parts), len(combined))
-        return combined
 
-    # Fallback: if not Delta format (maybe full page), return as-is
-    log.info("  Not a Delta response — using full response")
-    return raw
+def fetch_results_page(url: str, debug_name: str) -> str:
+    """GET a results page and return its HTML."""
+    r = SESSION.get(url, timeout=30)
+    r.raise_for_status()
+    save_debug(f"{debug_name}_results", r.text)
+    return r.text
+
+
+def get_next_page_url(html: str, base_url: str) -> Optional[str]:
+    """Find the 'Next' pagination link in results page."""
+    soup = BeautifulSoup(html, "lxml")
+    for a in soup.find_all("a", href=True):
+        text = a.get_text(strip=True).lower()
+        if text in ("next", "next >", ">>", "next page"):
+            href = a["href"]
+            if href.startswith("http"): return href
+            if href.startswith("/"): return "https://www.cclerk.hctx.net" + href
+            return base_url.rsplit("/",1)[0] + "/" + href
+    return None
 
 
 # ── results table parser ──────────────────────────────────────────────────────
 
-def parse_results(html: str, cat: str, cat_label: str, base_url: str) -> list:
+def parse_results(html: str, cat: str, cat_label: str) -> list:
     soup    = BeautifulSoup(html, "lxml")
     records = []
     tables  = soup.find_all("table")
-    log.info("  Tables found: %d", len(tables))
-
-    page_text = soup.get_text(" ").lower()
-    if any(x in page_text for x in ["no records found","no results","0 records",
-                                      "no documents found","nothing found"]):
-        log.info("  Portal: no records for this query")
-        return []
+    log.info("  Tables: %d", len(tables))
 
     for table in tables:
         rows = table.find_all("tr")
@@ -241,11 +227,10 @@ def parse_results(html: str, cat: str, cat_label: str, base_url: str) -> list:
         headers = [td.get_text(" ", strip=True).lower()
                    for td in rows[0].find_all(["th","td"])]
         joined  = " ".join(headers)
-        if not any(k in joined for k in ["file","instrument","grantor","date",
-                                          "type","case","party","deed","lien",
-                                          "name","sale","recorded"]):
+        if not any(k in joined for k in ["file","instrument","grantor","date","type",
+                                          "case","party","deed","lien","name","sale"]):
             continue
-        log.info("  Table headers: %s", headers[:8])
+        log.info("  Parsing table: %s (%d rows)", headers[:5], len(rows)-1)
 
         for row in rows[1:]:
             cells = row.find_all("td")
@@ -259,7 +244,7 @@ def parse_results(html: str, cat: str, cat_label: str, base_url: str) -> list:
                     if a:
                         href = a["href"]
                         link = href if href.startswith("http") else \
-                               f"https://www.cclerk.hctx.net{href}"
+                               "https://www.cclerk.hctx.net" + href
                         break
 
                 def f(*keys):
@@ -270,35 +255,30 @@ def parse_results(html: str, cat: str, cat_label: str, base_url: str) -> list:
                                 if v: return v
                     return ""
 
-                doc_num  = f("file number","instrument number","case number",
-                              "file no","number","doc no")
+                doc_num  = f("file number","instrument number","case number","file no","number")
                 doc_type = f("instrument type","type","code","doc type")
-                filed    = f("date filed","filed date","recording date",
-                              "file date","date","recorded","sale date")
+                filed    = f("date filed","filed date","recording date","file date","date","recorded")
                 grantor  = f("grantor","owner","debtor","party 1","applicant","name")
                 grantee  = f("grantee","lender","creditor","party 2","secured")
-                legal    = f("legal","description","subdivision","property desc")
+                legal    = f("legal","description","subdivision")
                 amount   = f("amount","consideration","debt","balance","judgment")
 
                 if not doc_num and not grantor: continue
                 records.append({
                     "doc_num":  doc_num,
                     "doc_type": doc_type or cat_label,
-                    "cat":      cat,
-                    "cat_label": cat_label,
+                    "cat":      cat, "cat_label": cat_label,
                     "filed":    norm_date(filed) if filed else "",
-                    "owner":    grantor,
-                    "grantee":  grantee,
-                    "amount":   parse_amount(amount),
-                    "legal":    legal,
+                    "owner":    grantor, "grantee": grantee,
+                    "amount":   parse_amount(amount), "legal": legal,
                     "clerk_url": link or "",
                     "prop_address":"","prop_city":"","prop_state":"TX","prop_zip":"",
                     "mail_address":"","mail_city":"","mail_state":"TX","mail_zip":"",
                 })
             except Exception as e:
-                log.debug("Row error: %s", e)
+                log.debug("Row: %s", e)
 
-    log.info("  → %d records parsed", len(records))
+    log.info("  → %d records", len(records))
     return records
 
 
@@ -307,25 +287,36 @@ def parse_results(html: str, cat: str, cat_label: str, base_url: str) -> list:
 def search_rp(start: str, end: str, code: str, cat: str, label: str) -> list:
     log.info("RP: %s (%s)", code, label)
     try:
-        html = updatepanel_post(
-            url=RP,
-            form_fields={
-                "ctl00$ContentPlaceHolder1$txtFrom":       start,
-                "ctl00$ContentPlaceHolder1$txtTo":         end,
-                "ctl00$ContentPlaceHolder1$txtInstrument": code,
-                "ctl00$ContentPlaceHolder1$btnSearch":     "Search",
-            },
-            script_manager_target="ctl00$ContentPlaceHolder1$btnSearch",
-            debug_name=f"rp_{code.replace('/','_')}",
-        )
-        return parse_results(html, cat, label, RP)
+        redirect = updatepanel_search(RP, {
+            "ctl00$ContentPlaceHolder1$txtFrom":       start,
+            "ctl00$ContentPlaceHolder1$txtTo":         end,
+            "ctl00$ContentPlaceHolder1$txtInstrument": code,
+        }, f"rp_{code.replace('/','_')}")
+
+        if not redirect:
+            return []
+
+        all_recs = []
+        page_num = 0
+        url = redirect
+        while url and page_num < 20:
+            page_num += 1
+            html = fetch_results_page(url, f"rp_{code.replace('/','_')}_p{page_num}")
+            recs = parse_results(html, cat, label)
+            all_recs.extend(recs)
+            log.info("  Page %d: %d records", page_num, len(recs))
+            if not recs: break
+            url = get_next_page_url(html, url)
+
+        return all_recs
     except Exception as e:
         log.warning("RP failed [%s]: %s", code, e)
         return []
 
 
 def search_foreclosures(start: str, end: str) -> list:
-    log.info("Foreclosures (by month)...")
+    """Foreclosure page uses year/month dropdowns."""
+    log.info("Foreclosures...")
     all_recs = []
     now = datetime.now()
     months = set()
@@ -336,21 +327,48 @@ def search_foreclosures(start: str, end: str) -> list:
     for year, month in sorted(months):
         log.info("  FRCL %s/%s", month, year)
         try:
-            html = updatepanel_post(
-                url=FRCL,
-                form_fields={
-                    "ctl00$ContentPlaceHolder1$ddlYear":   year,
-                    "ctl00$ContentPlaceHolder1$ddlMonth":  month,
-                    "ctl00$ContentPlaceHolder1$rbtlDate":  "SaleDate",
-                    "ctl00$ContentPlaceHolder1$btnSearch": "Search",
-                },
-                script_manager_target="ctl00$ContentPlaceHolder1$btnSearch",
-                debug_name=f"frcl_{year}_{month}",
-            )
-            recs = parse_results(html, "NOFC", "Notice of Foreclosure", FRCL)
+            # Foreclosures don't redirect — they use inline rendering
+            # We search by year+month and parse the results table directly
+            vs = get_viewstate(FRCL)
+            btn = "ctl00$ContentPlaceHolder1$btnSearch"
+            payload = {
+                **vs,
+                "ctl00$ContentPlaceHolder1$ddlYear":  year,
+                "ctl00$ContentPlaceHolder1$ddlMonth": month,
+                "ctl00$ContentPlaceHolder1$rbtlDate": "FileDate",
+                "ctl00$ScriptManager1": f"ctl00$ScriptManager1|{btn}",
+                "__ASYNCPOST": "true",
+                "__EVENTTARGET": "",
+                "__EVENTARGUMENT": "",
+                btn: "Search",
+            }
+            r = SESSION.post(FRCL, data=payload, timeout=45, headers={
+                "Referer": FRCL,
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                "X-MicrosoftAjax": "Delta=true",
+                "X-Requested-With": "XMLHttpRequest",
+                "Origin": "https://www.cclerk.hctx.net",
+                "Accept": "*/*",
+            })
+            r.raise_for_status()
+            delta = r.text
+            save_debug(f"frcl_{year}_{month}", delta)
+
+            # Check if there's a redirect
+            m = re.search(r'pageRedirect\|\|([^|]+)', delta)
+            if m:
+                redir = "https://www.cclerk.hctx.net" + unquote(m.group(1))
+                html = fetch_results_page(redir, f"frcl_{year}_{month}_r")
+                recs = parse_results(html, "NOFC", "Notice of Foreclosure")
+            else:
+                # Parse inline — look for table in the full page
+                full_r = SESSION.get(FRCL, timeout=30)
+                recs = parse_results(full_r.text, "NOFC", "Notice of Foreclosure")
+
             all_recs.extend(recs)
+            log.info("  FRCL %s/%s: %d records", month, year, len(recs))
         except Exception as e:
-            log.warning("FRCL failed %s/%s: %s", month, year, e)
+            log.warning("FRCL %s/%s failed: %s", month, year, e)
 
     log.info("Foreclosures total: %d", len(all_recs))
     return all_recs
@@ -359,21 +377,29 @@ def search_foreclosures(start: str, end: str) -> list:
 def search_probate(start: str, end: str) -> list:
     log.info("Probate...")
     try:
-        html = updatepanel_post(
-            url=PROB,
-            form_fields={
-                "ctl00$ContentPlaceHolder1$txtFrom2":              start,
-                "ctl00$ContentPlaceHolder1$txtTo2":                end,
-                "ctl00$ContentPlaceHolder1$ddlCourt":              "All",
-                "ctl00$ContentPlaceHolder1$DropDownListStatus":    "-All",
-                "ctl00$ContentPlaceHolder1$btnSearch":             "Search",
-            },
-            script_manager_target="ctl00$ContentPlaceHolder1$btnSearch",
-            debug_name="probate",
-        )
-        recs = parse_results(html, "PRO", "Probate", PROB)
-        log.info("Probate: %d", len(recs))
-        return recs
+        redirect = updatepanel_search(PROB, {
+            "ctl00$ContentPlaceHolder1$txtFrom2":           start,
+            "ctl00$ContentPlaceHolder1$txtTo2":             end,
+            "ctl00$ContentPlaceHolder1$ddlCourt":           "All",
+            "ctl00$ContentPlaceHolder1$DropDownListStatus": "-All",
+        }, "probate")
+
+        if not redirect:
+            return []
+
+        all_recs = []
+        page_num = 0
+        url = redirect
+        while url and page_num < 20:
+            page_num += 1
+            html = fetch_results_page(url, f"probate_p{page_num}")
+            recs = parse_results(html, "PRO", "Probate")
+            all_recs.extend(recs)
+            if not recs: break
+            url = get_next_page_url(html, url)
+
+        log.info("Probate total: %d", len(all_recs))
+        return all_recs
     except Exception as e:
         log.warning("Probate failed: %s", e)
         return []
@@ -385,7 +411,7 @@ class ParcelLookup:
     def __init__(self): self._d = {}
 
     def build(self, session):
-        log.info("Building HCAD parcel lookup...")
+        log.info("HCAD parcel lookup...")
         for year in [datetime.now().year, datetime.now().year - 1]:
             for url in [
                 f"https://pdata.hcad.org/GIS/Parcels/Parcels_{year}.zip",
@@ -491,7 +517,7 @@ def main():
     start  = cutoff.strftime("%m/%d/%Y")
     end    = now.strftime("%m/%d/%Y")
 
-    log.info("=== Harris County Lead Scraper v6 ===")
+    log.info("=== Harris County Lead Scraper v7 ===")
     log.info("Range: %s → %s", start, end)
 
     parcel = ParcelLookup()
@@ -500,7 +526,7 @@ def main():
     raw = []
     for code, cat, label in INSTRUMENT_TYPES:
         raw.extend(search_rp(start, end, code, cat, label))
-        time.sleep(1.5)
+        time.sleep(1)
     raw.extend(search_foreclosures(start, end))
     raw.extend(search_probate(start, end))
 
@@ -523,7 +549,7 @@ def main():
             r["score"], r["flags"] = compute_score(r, cutoff)
         except Exception as e:
             log.debug("Enrich: %s", e)
-            r.setdefault("score", 30); r.setdefault("flags", [])
+            r.setdefault("score",30); r.setdefault("flags",[])
 
     deduped.sort(key=lambda x: x.get("score",0), reverse=True)
 
