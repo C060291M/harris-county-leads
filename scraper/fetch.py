@@ -411,65 +411,138 @@ class ParcelLookup:
     def __init__(self): self._d = {}
 
     def build(self, session):
-        log.info("HCAD parcel lookup...")
-        for year in [datetime.now().year, datetime.now().year - 1]:
+        log.info("Building HCAD parcel lookup...")
+        year = datetime.now().year
+        loaded = False
+
+        for yr in [year, year - 1]:
+            if loaded: break
             for url in [
-                f"https://pdata.hcad.org/GIS/Parcels/Parcels_{year}.zip",
-                f"https://pdata.hcad.org/data/{year}/parcels.zip",
+                f"https://pdata.hcad.org/data/{yr}/Real_acct_owner.zip",
+                f"https://pdata.hcad.org/CAMA/{yr}/Real_acct_owner.zip",
+                f"https://pdata.hcad.org/data/{yr}/real_acct_owner.zip",
             ]:
                 try:
+                    log.info("  Trying parcel URL: %s", url)
                     r = session.get(url, timeout=120, stream=True)
-                    if r.status_code == 200 and self._load_zip(r.content):
-                        log.info("Parcels: %d entries", len(self._d)); return
-                except Exception: pass
-        log.warning("Parcel data unavailable")
+                    if r.status_code == 200:
+                        log.info("  Downloaded %d bytes", len(r.content))
+                        loaded = self._load_zip(r.content)
+                        if loaded: break
+                except Exception as e:
+                    log.debug("  URL failed: %s", e)
+
+        if not loaded:
+            for yr in [year, year - 1]:
+                if loaded: break
+                for url in [
+                    f"https://pdata.hcad.org/GIS/Parcels/Parcels_{yr}.zip",
+                    f"https://pdata.hcad.org/data/{yr}/parcels.zip",
+                ]:
+                    try:
+                        r = session.get(url, timeout=120, stream=True)
+                        if r.status_code == 200:
+                            loaded = self._load_zip(r.content)
+                            if loaded: break
+                    except Exception: pass
+
+        if loaded:
+            log.info("Parcel lookup ready: %d entries", len(self._d))
+        else:
+            log.warning("Parcel data unavailable")
 
     def lookup(self, owner):
+        if not owner: return None
         for v in name_variants(owner):
             if v in self._d: return self._d[v]
         return None
 
     def _load_zip(self, content):
-        try: zf = zipfile.ZipFile(io.BytesIO(content))
-        except Exception: return False
-        for n in zf.namelist():
-            lo = n.lower()
-            if lo.endswith(".dbf") and HAS_DBF: return self._load_dbf(zf.read(n))
-            if lo.endswith(".csv"): return self._load_csv(zf.read(n).decode("utf-8","replace"))
+        try:
+            zf = zipfile.ZipFile(io.BytesIO(content))
+        except Exception:
+            return False
+        names = zf.namelist()
+        log.info("  Zip contents: %s", names[:10])
+        for name in names:
+            lo = name.lower()
+            if "real_acct" in lo and lo.endswith(".txt"):
+                return self._load_tab(zf.read(name).decode("latin-1", errors="replace"))
+            if lo.endswith(".dbf") and HAS_DBF:
+                return self._load_dbf(zf.read(name))
+            if lo.endswith(".csv"):
+                return self._load_csv(zf.read(name).decode("utf-8", errors="replace"))
         return False
+
+    def _load_tab(self, text):
+        """Parse HCAD tab-delimited real_acct.txt.
+        Columns: acct, yr, owner_name, owner_name_2, owner_address,
+                 owner_city, owner_state, owner_zipcode,
+                 site_addr_1, site_addr_2, site_addr_3
+        """
+        lines = text.splitlines()
+        if not lines: return False
+        first = lines[0].lower()
+        start = 1 if ("acct" in first or "owner" in first) else 0
+        count = 0
+        for line in lines[start:]:
+            parts = line.split("\t")
+            if len(parts) < 5: continue
+            try:
+                owner = parts[2].strip()
+                if not owner: continue
+                info = {
+                    "prop_address": parts[8].strip()  if len(parts) > 8  else "",
+                    "prop_city":    parts[9].strip()  if len(parts) > 9  else "HOUSTON",
+                    "prop_state":   "TX",
+                    "prop_zip":     parts[10].strip() if len(parts) > 10 else "",
+                    "mail_address": parts[4].strip()  if len(parts) > 4  else "",
+                    "mail_city":    parts[5].strip()  if len(parts) > 5  else "",
+                    "mail_state":   parts[6].strip()  if len(parts) > 6  else "TX",
+                    "mail_zip":     parts[7].strip()  if len(parts) > 7  else "",
+                }
+                for v in name_variants(owner):
+                    self._d.setdefault(v, info)
+                count += 1
+            except Exception:
+                pass
+        log.info("  Parsed %d tab records", count)
+        return count > 0
 
     def _load_dbf(self, data):
         p = Path("/tmp/_p.dbf"); p.write_bytes(data)
         try:
             for row in DBF(str(p), encoding="latin-1", ignore_missing_memofile=True):
-                self._ingest(dict(row))
+                self._ingest_row(dict(row))
             return bool(self._d)
-        except Exception as e: log.warning("DBF: %s", e); return False
+        except Exception as e:
+            log.warning("DBF: %s", e); return False
 
     def _load_csv(self, text):
-        for row in csv.DictReader(io.StringIO(text)): self._ingest(row)
+        for row in csv.DictReader(io.StringIO(text)): self._ingest_row(row)
         return bool(self._d)
 
-    def _ingest(self, row):
+    def _ingest_row(self, row):
         def g(*ks):
             for k in ks:
                 for var in (k, k.upper(), k.lower()):
                     v = row.get(var)
                     if v and str(v).strip(): return str(v).strip()
             return ""
-        owner = g("OWNER","OWN1","OWNER1","OWNERNAME")
+        owner = g("OWNER_NAME","OWNER","OWN1","OWNER1","OWNERNAME")
         if not owner: return
         info = {
-            "prop_address": g("SITE_ADDR","SITEADDR"),
-            "prop_city":    g("SITE_CITY","SITECITY"),
+            "prop_address": g("SITE_ADDR_1","SITE_ADDR","SITEADDR"),
+            "prop_city":    g("SITE_ADDR_3","SITE_CITY","SITECITY") or "HOUSTON",
             "prop_state":   "TX",
             "prop_zip":     g("SITE_ZIP","SITEZIP"),
-            "mail_address": g("ADDR_1","MAILADR1","MAIL_ADDR"),
-            "mail_city":    g("CITY","MAILCITY"),
-            "mail_state":   g("STATE","MAILSTATE") or "TX",
-            "mail_zip":     g("ZIP","MAILZIP"),
+            "mail_address": g("OWNER_ADDRESS","ADDR_1","MAILADR1"),
+            "mail_city":    g("OWNER_CITY","CITY","MAILCITY"),
+            "mail_state":   g("OWNER_STATE","STATE","MAILSTATE") or "TX",
+            "mail_zip":     g("OWNER_ZIPCODE","ZIP","MAILZIP"),
         }
-        for v in name_variants(owner): self._d.setdefault(v, info)
+        for v in name_variants(owner):
+            self._d.setdefault(v, info)
 
 
 # ── GHL CSV ───────────────────────────────────────────────────────────────────
