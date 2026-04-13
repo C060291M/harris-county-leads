@@ -1,21 +1,14 @@
 """
-Harris County Motivated Seller Lead Scraper v7
-FINAL - Correctly handles ASP.NET UpdatePanel redirect pattern.
-
-Flow discovered from debug analysis:
-  1. GET RP.aspx → collect ViewState
-  2. POST with UpdatePanel AJAX headers + search fields
-  3. Delta response contains: pageRedirect||/RP_R.aspx?ID=<session_token>
-  4. GET RP_R.aspx?ID=<token> → parse results table
-  5. Paginate via Next button on results page
-
-Same pattern for Probate (CourtSearch_R.aspx).
-Foreclosures use a different inline calendar approach.
+Harris County Motivated Seller Lead Scraper v8
+Fixes:
+1. Fresh session per RP search (fixes shared session token bug)
+2. HCAD address lookup via public.hcad.org API (fixes bulk download fail)
+3. Better results table parser for A/J style tables
 """
 import csv, io, json, logging, re, sys, time, zipfile
 from datetime import datetime, timedelta
 from pathlib import Path
-from urllib.parse import unquote
+from urllib.parse import unquote, quote
 from typing import Optional
 
 import requests
@@ -36,8 +29,6 @@ BASE   = "https://www.cclerk.hctx.net/Applications/WebSearch"
 RP     = f"{BASE}/RP.aspx"
 FRCL   = f"{BASE}/FRCL_R.aspx"
 PROB   = f"{BASE}/CourtSearch.aspx?CaseType=Probate"
-RP_R   = f"{BASE}/RP_R.aspx"
-PROB_R = f"{BASE}/CourtSearch_R.aspx"
 
 OUTPUT_DIRS   = [Path("dashboard"), Path("data")]
 DEBUG_DIR     = Path("debug")
@@ -59,23 +50,25 @@ INSTRUMENT_TYPES = [
     ("NOC",      "NOC",      "Notice of Commencement"),
 ]
 
-SESSION = requests.Session()
-SESSION.headers.update({
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                  "AppleWebKit/537.36 (KHTML, like Gecko) "
-                  "Chrome/122.0.0.0 Safari/537.36",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Connection":      "keep-alive",
-})
 
+def make_session():
+    """Create a fresh requests session."""
+    s = requests.Session()
+    s.headers.update({
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                      "AppleWebKit/537.36 (KHTML, like Gecko) "
+                      "Chrome/122.0.0.0 Safari/537.36",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+    })
+    return s
 
-# ── helpers ───────────────────────────────────────────────────────────────────
 
 def save_debug(name, content):
     DEBUG_DIR.mkdir(exist_ok=True)
     p = DEBUG_DIR / f"{name}.txt"
-    data = content if isinstance(content, str) else content.decode("utf-8","replace")
+    data = content if isinstance(content, str) else str(content)
     p.write_text(data[:300_000], encoding="utf-8")
 
 
@@ -134,11 +127,10 @@ def compute_score(record, cutoff):
     return min(s, 100), flags
 
 
-# ── core HTTP functions ───────────────────────────────────────────────────────
+# ── Core search: fresh session per call ──────────────────────────────────────
 
-def get_viewstate(url: str) -> dict:
-    """GET page and return all hidden ASP.NET form fields."""
-    r = SESSION.get(url, timeout=30)
+def get_viewstate(session, url):
+    r = session.get(url, timeout=30)
     r.raise_for_status()
     soup = BeautifulSoup(r.text, "lxml")
     fields = {}
@@ -148,14 +140,15 @@ def get_viewstate(url: str) -> dict:
     return fields
 
 
-def updatepanel_search(url: str, search_fields: dict, debug_name: str) -> Optional[str]:
+def updatepanel_post(url, search_fields, debug_name):
     """
-    Submit UpdatePanel AJAX search.
-    Returns the redirect URL from the Delta response, or None.
+    Use a FRESH session for each search to avoid shared session tokens.
+    Returns redirect URL from Delta response.
     """
-    vs = get_viewstate(url)
+    session = make_session()  # fresh session every time!
     btn = "ctl00$ContentPlaceHolder1$btnSearch"
 
+    vs = get_viewstate(session, url)
     payload = {
         **vs,
         **search_fields,
@@ -166,7 +159,7 @@ def updatepanel_search(url: str, search_fields: dict, debug_name: str) -> Option
         btn:                    "Search",
     }
 
-    r = SESSION.post(url, data=payload, timeout=45, headers={
+    r = session.post(url, data=payload, timeout=45, headers={
         "Referer":           url,
         "Content-Type":      "application/x-www-form-urlencoded; charset=UTF-8",
         "X-MicrosoftAjax":  "Delta=true",
@@ -175,37 +168,34 @@ def updatepanel_search(url: str, search_fields: dict, debug_name: str) -> Option
         "Accept":            "*/*",
     })
     r.raise_for_status()
-
     delta = r.text
-    save_debug(debug_name, delta)
+    save_debug(debug_name, delta[:5000])
     log.info("  Delta: %d bytes", len(delta))
 
-    # Extract pageRedirect URL
     m = re.search(r'pageRedirect\|\|([^|]+)', delta)
     if m:
-        rel = unquote(m.group(1))
+        rel  = unquote(m.group(1))
         full = "https://www.cclerk.hctx.net" + rel
         log.info("  Redirect → %s...", full[:80])
-        return full
+        # IMPORTANT: use same session to follow redirect (session cookie required)
+        return session, full
 
-    log.warning("  No pageRedirect found in Delta for %s", debug_name)
-    return None
+    log.warning("  No pageRedirect in Delta for %s", debug_name)
+    return session, None
 
 
-def fetch_results_page(url: str, debug_name: str) -> str:
-    """GET a results page and return its HTML."""
-    r = SESSION.get(url, timeout=30)
+def fetch_results(session, url, debug_name):
+    r = session.get(url, timeout=30)
     r.raise_for_status()
-    save_debug(f"{debug_name}_results", r.text)
+    save_debug(f"{debug_name}_r", r.text[:50000])
     return r.text
 
 
-def get_next_page_url(html: str, base_url: str) -> Optional[str]:
-    """Find the 'Next' pagination link in results page."""
+def get_next_page(html, base_url):
     soup = BeautifulSoup(html, "lxml")
     for a in soup.find_all("a", href=True):
-        text = a.get_text(strip=True).lower()
-        if text in ("next", "next >", ">>", "next page"):
+        t = a.get_text(strip=True).lower()
+        if t in ("next", "next >", ">>", "next page", ">"):
             href = a["href"]
             if href.startswith("http"): return href
             if href.startswith("/"): return "https://www.cclerk.hctx.net" + href
@@ -213,9 +203,9 @@ def get_next_page_url(html: str, base_url: str) -> Optional[str]:
     return None
 
 
-# ── results table parser ──────────────────────────────────────────────────────
+# ── Results parser ────────────────────────────────────────────────────────────
 
-def parse_results(html: str, cat: str, cat_label: str) -> list:
+def parse_results(html, cat, cat_label):
     soup    = BeautifulSoup(html, "lxml")
     records = []
     tables  = soup.find_all("table")
@@ -228,7 +218,8 @@ def parse_results(html: str, cat: str, cat_label: str) -> list:
                    for td in rows[0].find_all(["th","td"])]
         joined  = " ".join(headers)
         if not any(k in joined for k in ["file","instrument","grantor","date","type",
-                                          "case","party","deed","lien","name","sale"]):
+                                          "case","party","deed","lien","name","sale",
+                                          "recorded","names"]):
             continue
         log.info("  Parsing table: %s (%d rows)", headers[:5], len(rows)-1)
 
@@ -255,10 +246,11 @@ def parse_results(html: str, cat: str, cat_label: str) -> list:
                                 if v: return v
                     return ""
 
-                doc_num  = f("file number","instrument number","case number","file no","number")
-                doc_type = f("instrument type","type","code","doc type")
-                filed    = f("date filed","filed date","recording date","file date","date","recorded")
-                grantor  = f("grantor","owner","debtor","party 1","applicant","name")
+                doc_num  = f("file number","instrument number","case number",
+                              "file no","number","doc no","file")
+                doc_type = f("instrument type","type vol page","type","code","doc type")
+                filed    = f("file date","date filed","filed date","recording date","date")
+                grantor  = f("names","grantor","owner","debtor","party 1","applicant","name")
                 grantee  = f("grantee","lender","creditor","party 2","secured")
                 legal    = f("legal","description","subdivision")
                 amount   = f("amount","consideration","debt","balance","judgment")
@@ -282,40 +274,37 @@ def parse_results(html: str, cat: str, cat_label: str) -> list:
     return records
 
 
-# ── search functions ──────────────────────────────────────────────────────────
+# ── Search functions ──────────────────────────────────────────────────────────
 
-def search_rp(start: str, end: str, code: str, cat: str, label: str) -> list:
+def search_rp(start, end, code, cat, label):
     log.info("RP: %s (%s)", code, label)
     try:
-        redirect = updatepanel_search(RP, {
+        session, redirect = updatepanel_post(RP, {
             "ctl00$ContentPlaceHolder1$txtFrom":       start,
             "ctl00$ContentPlaceHolder1$txtTo":         end,
             "ctl00$ContentPlaceHolder1$txtInstrument": code,
         }, f"rp_{code.replace('/','_')}")
 
-        if not redirect:
-            return []
+        if not redirect: return []
 
         all_recs = []
-        page_num = 0
         url = redirect
+        page_num = 0
         while url and page_num < 20:
             page_num += 1
-            html = fetch_results_page(url, f"rp_{code.replace('/','_')}_p{page_num}")
+            html = fetch_results(session, url, f"rp_{code.replace('/','_')}_p{page_num}")
             recs = parse_results(html, cat, label)
             all_recs.extend(recs)
             log.info("  Page %d: %d records", page_num, len(recs))
             if not recs: break
-            url = get_next_page_url(html, url)
-
+            url = get_next_page(html, url)
         return all_recs
     except Exception as e:
         log.warning("RP failed [%s]: %s", code, e)
         return []
 
 
-def search_foreclosures(start: str, end: str) -> list:
-    """Foreclosure page uses year/month dropdowns."""
+def search_foreclosures(start, end):
     log.info("Foreclosures...")
     all_recs = []
     now = datetime.now()
@@ -327,223 +316,147 @@ def search_foreclosures(start: str, end: str) -> list:
     for year, month in sorted(months):
         log.info("  FRCL %s/%s", month, year)
         try:
-            # Foreclosures don't redirect — they use inline rendering
-            # We search by year+month and parse the results table directly
-            vs = get_viewstate(FRCL)
-            btn = "ctl00$ContentPlaceHolder1$btnSearch"
-            payload = {
-                **vs,
-                "ctl00$ContentPlaceHolder1$ddlYear":  year,
-                "ctl00$ContentPlaceHolder1$ddlMonth": month,
-                "ctl00$ContentPlaceHolder1$rbtlDate": "FileDate",
-                "ctl00$ScriptManager1": f"ctl00$ScriptManager1|{btn}",
-                "__ASYNCPOST": "true",
-                "__EVENTTARGET": "",
-                "__EVENTARGUMENT": "",
-                btn: "Search",
-            }
-            r = SESSION.post(FRCL, data=payload, timeout=45, headers={
-                "Referer": FRCL,
-                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-                "X-MicrosoftAjax": "Delta=true",
-                "X-Requested-With": "XMLHttpRequest",
-                "Origin": "https://www.cclerk.hctx.net",
-                "Accept": "*/*",
-            })
-            r.raise_for_status()
-            delta = r.text
-            save_debug(f"frcl_{year}_{month}", delta)
+            session, redirect = updatepanel_post(FRCL, {
+                "ctl00$ContentPlaceHolder1$ddlYear":   year,
+                "ctl00$ContentPlaceHolder1$ddlMonth":  month,
+                "ctl00$ContentPlaceHolder1$rbtlDate":  "FileDate",
+            }, f"frcl_{year}_{month}")
 
-            # Check if there's a redirect
-            m = re.search(r'pageRedirect\|\|([^|]+)', delta)
-            if m:
-                redir = "https://www.cclerk.hctx.net" + unquote(m.group(1))
-                html = fetch_results_page(redir, f"frcl_{year}_{month}_r")
+            if redirect:
+                html = fetch_results(session, redirect, f"frcl_{year}_{month}_r")
                 recs = parse_results(html, "NOFC", "Notice of Foreclosure")
-            else:
-                # Parse inline — look for table in the full page
-                full_r = SESSION.get(FRCL, timeout=30)
-                recs = parse_results(full_r.text, "NOFC", "Notice of Foreclosure")
-
-            all_recs.extend(recs)
-            log.info("  FRCL %s/%s: %d records", month, year, len(recs))
+                all_recs.extend(recs)
+                log.info("  FRCL %s/%s: %d records", month, year, len(recs))
         except Exception as e:
-            log.warning("FRCL %s/%s failed: %s", month, year, e)
+            log.warning("FRCL %s/%s: %s", month, year, e)
 
     log.info("Foreclosures total: %d", len(all_recs))
     return all_recs
 
 
-def search_probate(start: str, end: str) -> list:
+def search_probate(start, end):
     log.info("Probate...")
     try:
-        redirect = updatepanel_search(PROB, {
-            "ctl00$ContentPlaceHolder1$txtFrom2":           start,
-            "ctl00$ContentPlaceHolder1$txtTo2":             end,
-            "ctl00$ContentPlaceHolder1$ddlCourt":           "All",
-            "ctl00$ContentPlaceHolder1$DropDownListStatus": "-All",
+        session, redirect = updatepanel_post(PROB, {
+            "ctl00$ContentPlaceHolder1$txtFrom2":              start,
+            "ctl00$ContentPlaceHolder1$txtTo2":                end,
+            "ctl00$ContentPlaceHolder1$ddlCourt":              "All",
+            "ctl00$ContentPlaceHolder1$DropDownListStatus":    "-All",
         }, "probate")
 
-        if not redirect:
-            return []
+        if not redirect: return []
 
         all_recs = []
-        page_num = 0
         url = redirect
+        page_num = 0
         while url and page_num < 20:
             page_num += 1
-            html = fetch_results_page(url, f"probate_p{page_num}")
+            html = fetch_results(session, url, f"probate_p{page_num}")
             recs = parse_results(html, "PRO", "Probate")
             all_recs.extend(recs)
             if not recs: break
-            url = get_next_page_url(html, url)
+            url = get_next_page(html, url)
 
         log.info("Probate total: %d", len(all_recs))
         return all_recs
     except Exception as e:
-        log.warning("Probate failed: %s", e)
+        log.warning("Probate: %s", e)
         return []
 
 
-# ── parcel lookup ─────────────────────────────────────────────────────────────
+# ── HCAD address lookup via public search API ─────────────────────────────────
 
 class ParcelLookup:
-    def __init__(self): self._d = {}
+    """
+    Looks up property addresses via HCAD's public record search.
+    Uses batch name searches against public.hcad.org.
+    Caches results to avoid redundant requests.
+    """
+    def __init__(self):
+        self._cache = {}   # owner_name → {prop_address, ...}
+        self._session = make_session()
 
     def build(self, session):
-        log.info("Building HCAD parcel lookup...")
-        year = datetime.now().year
-        loaded = False
-
-        for yr in [year, year - 1]:
-            if loaded: break
-            for url in [
-                f"https://pdata.hcad.org/data/cama/{yr}/Real_acct_owner.zip",
-                f"https://pdata.hcad.org/data/cama/{yr}/real_acct_owner.zip",
-                f"https://pdata.hcad.org/data/{yr}/Real_acct_owner.zip",
-                f"https://pdata.hcad.org/CAMA/{yr}/Real_acct_owner.zip",
-            ]:
-                try:
-                    log.info("  Trying parcel URL: %s", url)
-                    r = session.get(url, timeout=120, stream=True)
-                    if r.status_code == 200:
-                        log.info("  Downloaded %d bytes", len(r.content))
-                        loaded = self._load_zip(r.content)
-                        if loaded: break
-                except Exception as e:
-                    log.debug("  URL failed: %s", e)
-
-        if not loaded:
-            for yr in [year, year - 1]:
-                if loaded: break
-                for url in [
-                    f"https://pdata.hcad.org/GIS/Parcels/Parcels_{yr}.zip",
-                    f"https://pdata.hcad.org/data/{yr}/parcels.zip",
-                ]:
-                    try:
-                        r = session.get(url, timeout=120, stream=True)
-                        if r.status_code == 200:
-                            loaded = self._load_zip(r.content)
-                            if loaded: break
-                    except Exception: pass
-
-        if loaded:
-            log.info("Parcel lookup ready: %d entries", len(self._d))
-        else:
-            log.warning("Parcel data unavailable")
+        """No bulk download needed — we query on-demand."""
+        log.info("HCAD lookup ready (on-demand via public.hcad.org)")
 
     def lookup(self, owner):
-        if not owner: return None
-        for v in name_variants(owner):
-            if v in self._d: return self._d[v]
+        if not owner or len(owner.strip()) < 3:
+            return None
+        owner = owner.strip().upper()
+
+        # Check cache first
+        if owner in self._cache:
+            return self._cache[owner]
+
+        # Try each name variant
+        for variant in name_variants(owner):
+            result = self._search(variant)
+            if result:
+                # Cache all variants
+                for v in name_variants(owner):
+                    self._cache[v] = result
+                return result
+
+        self._cache[owner] = None
         return None
 
-    def _load_zip(self, content):
+    def _search(self, name):
+        """Query HCAD public search for owner name."""
         try:
-            zf = zipfile.ZipFile(io.BytesIO(content))
-        except Exception:
-            return False
-        names = zf.namelist()
-        log.info("  Zip contents: %s", names[:10])
-        for name in names:
-            lo = name.lower()
-            if "real_acct" in lo and lo.endswith(".txt"):
-                return self._load_tab(zf.read(name).decode("latin-1", errors="replace"))
-            if lo.endswith(".dbf") and HAS_DBF:
-                return self._load_dbf(zf.read(name))
-            if lo.endswith(".csv"):
-                return self._load_csv(zf.read(name).decode("utf-8", errors="replace"))
-        return False
+            url = "https://public.hcad.org/records/Real/Advanced.asp"
+            params = {
+                "crypt": "",
+                "ownr": name,
+                "stype": "A",
+                "taxyear": str(datetime.now().year),
+            }
+            r = self._session.get(url, params=params, timeout=15)
+            if r.status_code != 200:
+                return None
 
-    def _load_tab(self, text):
-        """Parse HCAD tab-delimited real_acct.txt.
-        Columns: acct, yr, owner_name, owner_name_2, owner_address,
-                 owner_city, owner_state, owner_zipcode,
-                 site_addr_1, site_addr_2, site_addr_3
-        """
-        lines = text.splitlines()
-        if not lines: return False
-        first = lines[0].lower()
-        start = 1 if ("acct" in first or "owner" in first) else 0
-        count = 0
-        for line in lines[start:]:
-            parts = line.split("\t")
-            if len(parts) < 5: continue
-            try:
-                owner = parts[2].strip()
-                if not owner: continue
-                info = {
-                    "prop_address": parts[8].strip()  if len(parts) > 8  else "",
-                    "prop_city":    parts[9].strip()  if len(parts) > 9  else "HOUSTON",
-                    "prop_state":   "TX",
-                    "prop_zip":     parts[10].strip() if len(parts) > 10 else "",
-                    "mail_address": parts[4].strip()  if len(parts) > 4  else "",
-                    "mail_city":    parts[5].strip()  if len(parts) > 5  else "",
-                    "mail_state":   parts[6].strip()  if len(parts) > 6  else "TX",
-                    "mail_zip":     parts[7].strip()  if len(parts) > 7  else "",
-                }
-                for v in name_variants(owner):
-                    self._d.setdefault(v, info)
-                count += 1
-            except Exception:
-                pass
-        log.info("  Parsed %d tab records", count)
-        return count > 0
+            soup = BeautifulSoup(r.text, "lxml")
+            # Results table has columns: Account, Owner, Site Address, Mailing Address
+            for table in soup.find_all("table"):
+                rows = table.find_all("tr")
+                if len(rows) < 2: continue
+                headers = [td.get_text(" ",strip=True).lower()
+                           for td in rows[0].find_all(["th","td"])]
+                if not any(k in " ".join(headers) for k in ["owner","site","mail","account"]):
+                    continue
+                for row in rows[1:2]:  # just first result
+                    cells = row.find_all("td")
+                    if len(cells) < 3: continue
+                    data = {headers[i]: cells[i].get_text(" ",strip=True)
+                            for i in range(min(len(headers),len(cells)))}
 
-    def _load_dbf(self, data):
-        p = Path("/tmp/_p.dbf"); p.write_bytes(data)
-        try:
-            for row in DBF(str(p), encoding="latin-1", ignore_missing_memofile=True):
-                self._ingest_row(dict(row))
-            return bool(self._d)
+                    def g(*ks):
+                        for k in ks:
+                            for h in headers:
+                                if k in h:
+                                    v = data.get(h,"").strip()
+                                    if v: return v
+                        return ""
+
+                    site  = g("site address","site addr","situs")
+                    mail  = g("mailing address","mail addr","mail")
+                    city  = g("city","site city")
+                    zipcd = g("zip","postal")
+
+                    if site or mail:
+                        return {
+                            "prop_address": site,
+                            "prop_city":    city or "HOUSTON",
+                            "prop_state":   "TX",
+                            "prop_zip":     zipcd,
+                            "mail_address": mail or site,
+                            "mail_city":    city or "HOUSTON",
+                            "mail_state":   "TX",
+                            "mail_zip":     zipcd,
+                        }
         except Exception as e:
-            log.warning("DBF: %s", e); return False
-
-    def _load_csv(self, text):
-        for row in csv.DictReader(io.StringIO(text)): self._ingest_row(row)
-        return bool(self._d)
-
-    def _ingest_row(self, row):
-        def g(*ks):
-            for k in ks:
-                for var in (k, k.upper(), k.lower()):
-                    v = row.get(var)
-                    if v and str(v).strip(): return str(v).strip()
-            return ""
-        owner = g("OWNER_NAME","OWNER","OWN1","OWNER1","OWNERNAME")
-        if not owner: return
-        info = {
-            "prop_address": g("SITE_ADDR_1","SITE_ADDR","SITEADDR"),
-            "prop_city":    g("SITE_ADDR_3","SITE_CITY","SITECITY") or "HOUSTON",
-            "prop_state":   "TX",
-            "prop_zip":     g("SITE_ZIP","SITEZIP"),
-            "mail_address": g("OWNER_ADDRESS","ADDR_1","MAILADR1"),
-            "mail_city":    g("OWNER_CITY","CITY","MAILCITY"),
-            "mail_state":   g("OWNER_STATE","STATE","MAILSTATE") or "TX",
-            "mail_zip":     g("OWNER_ZIPCODE","ZIP","MAILZIP"),
-        }
-        for v in name_variants(owner):
-            self._d.setdefault(v, info)
+            log.debug("HCAD lookup error for %s: %s", name, e)
+        return None
 
 
 # ── GHL CSV ───────────────────────────────────────────────────────────────────
@@ -554,7 +467,7 @@ def export_csv(records, path):
             "Lead Type","Document Type","Date Filed","Document Number","Amount/Debt Owed",
             "Seller Score","Motivated Seller Flags","Source","Public Records URL"]
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", newline="", encoding="utf-8") as f:
+    with open(path,"w",newline="",encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=cols); w.writeheader()
         for r in records:
             p = (r.get("owner") or "").strip().split()
@@ -583,7 +496,7 @@ def export_csv(records, path):
     log.info("GHL CSV → %s", path)
 
 
-# ── main ──────────────────────────────────────────────────────────────────────
+# ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
     now    = datetime.now()
@@ -591,11 +504,11 @@ def main():
     start  = cutoff.strftime("%m/%d/%Y")
     end    = now.strftime("%m/%d/%Y")
 
-    log.info("=== Harris County Lead Scraper v7 ===")
+    log.info("=== Harris County Lead Scraper v8 ===")
     log.info("Range: %s → %s", start, end)
 
     parcel = ParcelLookup()
-    parcel.build(SESSION)
+    parcel.build(None)
 
     raw = []
     for code, cat, label in INSTRUMENT_TYPES:
@@ -613,8 +526,9 @@ def main():
 
     log.info("Unique records: %d", len(deduped))
 
+    # Enrich with addresses (on-demand HCAD lookup)
     with_addr = 0
-    for r in deduped:
+    for i, r in enumerate(deduped):
         try:
             addr = parcel.lookup(r.get("owner",""))
             if addr:
@@ -624,6 +538,9 @@ def main():
         except Exception as e:
             log.debug("Enrich: %s", e)
             r.setdefault("score",30); r.setdefault("flags",[])
+
+        if (i+1) % 50 == 0:
+            log.info("  Enriched %d/%d (with_addr=%d)", i+1, len(deduped), with_addr)
 
     deduped.sort(key=lambda x: x.get("score",0), reverse=True)
 
