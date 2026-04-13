@@ -76,7 +76,7 @@
   /* ─── STATS BAR ───────────────────────────────────── */
   .stats-bar {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     border-bottom: 1px solid var(--border);
   }
 
@@ -210,10 +210,15 @@
     font-size: 0.7rem;
     font-weight: 700;
     flex-shrink: 0;
+    position: relative;
   }
-  .score-high   { background: rgba(232,255,71,0.15);  color: var(--accent);  border: 1.5px solid var(--accent); }
-  .score-med    { background: rgba(255,92,58,0.12);   color: var(--accent2); border: 1.5px solid var(--accent2); }
-  .score-low    { background: rgba(90,98,120,0.2);    color: var(--muted);   border: 1.5px solid var(--muted); }
+  /* Score colors: red=70+, orange=40-69, white=below 40 */
+  .score-red    { background: rgba(220,38,38,0.18);   color: #ff4444;  border: 2px solid #ff4444; box-shadow: 0 0 8px rgba(220,38,38,0.3); }
+  .score-orange { background: rgba(251,146,60,0.15);  color: #fb923c;  border: 2px solid #fb923c; }
+  .score-white  { background: rgba(255,255,255,0.06); color: #c8cdd8;  border: 1.5px solid #3a3f55; }
+  .lead-card.tier-red    { border-left: 3px solid #ff4444; }
+  .lead-card.tier-orange { border-left: 3px solid #fb923c; }
+  .lead-card.tier-white  { border-left: 3px solid #2a2f3d; }
 
   /* Main content */
   .card-body {
@@ -300,6 +305,8 @@
     color: var(--muted);
     letter-spacing: 0.04em;
   }
+  .flag-distress { border-color: rgba(255,68,68,0.4); color: #ff6b6b; background: rgba(255,68,68,0.08); }
+  .flag-warn     { border-color: rgba(251,146,60,0.4); color: #fb923c; background: rgba(251,146,60,0.08); }
 
   /* Amount column */
   .amount-col {
@@ -453,6 +460,14 @@
     <div class="stat-label">Avg Score</div>
     <div class="stat-value" id="stat-avg">—</div>
   </div>
+  <div class="stat-card" style="background:rgba(220,38,38,0.08);border-left:2px solid #ff4444">
+    <div class="stat-label" style="color:#ff4444">🔴 Hot (70+)</div>
+    <div class="stat-value" style="color:#ff4444" id="stat-red">—</div>
+  </div>
+  <div class="stat-card" style="background:rgba(251,146,60,0.06);border-left:2px solid #fb923c">
+    <div class="stat-label" style="color:#fb923c">🟠 Warm (40–69)</div>
+    <div class="stat-value" style="color:#fb923c" id="stat-orange">—</div>
+  </div>
 </div>
 
 <div class="toolbar">
@@ -467,6 +482,11 @@
   <button class="filter-btn" data-cat="PRO">PROBATE</button>
 
   <div class="spacer"></div>
+  <select id="sort-select" style="font-family:var(--mono);font-size:0.68rem;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.4rem 0.7rem;cursor:pointer;outline:none;">
+    <option value="score">Sort: Score ↓</option>
+    <option value="date">Sort: Date ↓</option>
+    <option value="amount">Sort: Amount ↓</option>
+  </select>
   <button class="export-btn" id="export-csv">↓ Export GHL CSV</button>
 </div>
 
@@ -508,6 +528,8 @@ fetch('./records.json')
       ? Math.round(allRecords.reduce((s, r) => s + (r.score || 0), 0) / allRecords.length)
       : 0;
     document.getElementById('stat-avg').textContent = avg;
+    document.getElementById('stat-red').textContent = allRecords.filter(r => (r.score||0) >= 70).length;
+    document.getElementById('stat-orange').textContent = allRecords.filter(r => (r.score||0) >= 40 && (r.score||0) < 70).length;
 
     render();
   })
@@ -527,12 +549,14 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 });
 
 document.getElementById('search-input').addEventListener('input', render);
+document.getElementById('sort-select').addEventListener('change', render);
 
 // ─── Render ──────────────────────────────────────────
 function render() {
-  const query = document.getElementById('search-input').value.toLowerCase().trim();
+  const query    = document.getElementById('search-input').value.toLowerCase().trim();
+  const sortBy   = document.getElementById('sort-select').value;
 
-  const filtered = allRecords.filter(r => {
+  let filtered = allRecords.filter(r => {
     if (activeFilter) {
       // Group liens
       if (activeFilter === 'LN') {
@@ -548,6 +572,16 @@ function render() {
   });
 
   const wrap = document.getElementById('results-wrap');
+
+  // Sort
+  filtered = [...filtered].sort((a, b) => {
+    if (sortBy === 'date') {
+      return (b.filed || '').localeCompare(a.filed || '');
+    } else if (sortBy === 'amount') {
+      return (b.amount || 0) - (a.amount || 0);
+    }
+    return (b.score || 0) - (a.score || 0); // default: score desc
+  });
 
   if (!filtered.length) {
     wrap.innerHTML = '<div class="empty-state"><h2>No Matches</h2><p>Try adjusting filters or search.</p></div>';
@@ -565,7 +599,8 @@ function render() {
 
   filtered.forEach((r, i) => {
     const score = r.score || 0;
-    const scoreCls = score >= 70 ? 'score-high' : score >= 50 ? 'score-med' : 'score-low';
+    const scoreCls = score >= 70 ? 'score-red' : score >= 40 ? 'score-orange' : 'score-white';
+    const tierCls  = score >= 70 ? 'tier-red'   : score >= 40 ? 'tier-orange'  : 'tier-white';
     const catCls = 'cat-' + (r.cat || 'OTHER');
     const propAddr = r.prop_address
       ? `${r.prop_address}, ${r.prop_city || ''} ${r.prop_zip || ''}`.trim()
@@ -574,15 +609,30 @@ function render() {
       ? `${r.mail_address}, ${r.mail_city || ''} ${r.mail_state || ''} ${r.mail_zip || ''}`.trim()
       : null;
     const amt = r.amount ? '$' + Number(r.amount).toLocaleString(undefined, {minimumFractionDigits:0}) : '—';
-    const flags = (r.flags || []).map(f => `<span class="flag">${f}</span>`).join('');
+    const distressFlags = new Set(['Tax delinquency','Code / HOA violation','Probate / estate','Divorce / bankruptcy']);
+    const warnFlags = new Set(['Lis pendens','Pre-foreclosure','Judgment lien','Lien on record']);
+    const flags = (r.flags || []).map(f => {
+      const cls = distressFlags.has(f) ? 'flag flag-distress' : warnFlags.has(f) ? 'flag flag-warn' : 'flag';
+      return `<span class="${cls}">${f}</span>`;
+    }).join('');
     const linkHtml = r.clerk_url
       ? `<a class="link-btn" href="${r.clerk_url}" target="_blank" rel="noopener">View Doc →</a>`
       : '<span style="font-family:var(--mono);font-size:0.62rem;color:var(--muted)">No link</span>';
 
     html += `
-      <div class="lead-card" style="animation-delay:${i * 20}ms">
+      <div class="lead-card ${tierCls}" style="animation-delay:${i * 20}ms">
         <div class="score-col">
-          <div class="score-ring ${scoreCls}">${score}</div>
+          <div class="score-ring ${scoreCls}" title="Seller Score: ${score}/100">
+            <svg width="38" height="38" viewBox="0 0 38 38" style="position:absolute;top:0;left:0;transform:rotate(-90deg)">
+              <circle cx="19" cy="19" r="15" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="3"/>
+              <circle cx="19" cy="19" r="15" fill="none"
+                stroke="${score>=70?'#ff4444':score>=40?'#fb923c':'#3a3f55'}"
+                stroke-width="3"
+                stroke-dasharray="${Math.round(score*0.942)} 94.2"
+                stroke-linecap="round"/>
+            </svg>
+            <span style="position:relative;z-index:1;font-size:0.62rem">${score}</span>
+          </div>
         </div>
         <div class="card-body">
           <div class="card-top">
