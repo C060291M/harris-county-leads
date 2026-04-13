@@ -102,28 +102,113 @@ def name_variants(name):
 
 
 def compute_score(record, cutoff):
-    flags, s = [], 30
-    cat   = record.get("cat","")
+    """
+    Enhanced seller score 0-100 with distress signal detection.
+
+    Distress signals:
+      Tax delinquency detected  → +30
+      Code violation present    → +25
+      Probate filing found      → +20
+      Multiple liens on record  → +15
+      Divorce or bankruptcy     → +10
+
+    Base signals:
+      Base score                → 10
+      Per flag                  → +5
+      Lis pendens               → +10
+      Pre-foreclosure           → +10
+      LP + FC combo             → +20
+      Judgment lien             → +10
+      Tax lien                  → +10
+      Amount > $100k            → +15
+      Amount > $50k             → +10
+      New this week             → +5
+      Has address               → +5
+    """
+    flags = []
+    s     = 10  # base
+    cat   = record.get("cat", "")
     amt   = record.get("amount")
     owner = (record.get("owner") or "").upper()
-    filed = record.get("filed","")
-    if cat in ("LP","RELLP"):                          flags.append("Lis pendens")
-    if cat == "NOFC":                                  flags.append("Pre-foreclosure")
-    if cat in ("JUD","CCJ","DRJUD"):                   flags.append("Judgment lien")
-    if cat in ("LNCORPTX","LNIRS","LNFED","TAXDEED"):  flags.append("Tax lien")
-    if cat == "LNMECH":                                flags.append("Mechanic lien")
-    if cat == "PRO":                                   flags.append("Probate / estate")
-    if re.search(r"\b(LLC|CORP|INC|LTD|TRUST)\b", owner): flags.append("LLC / corp owner")
+    filed = record.get("filed", "")
+    legal = (record.get("legal") or "").upper()
+    doc_type = (record.get("doc_type") or "").upper()
+
+    # ── Distress signal scoring ───────────────────────────────────────────────
+
+    # Tax delinquency (+30) — tax deed, IRS lien, corp tax lien, federal lien
+    if cat in ("TAXDEED", "LNIRS", "LNCORPTX", "LNFED"):
+        flags.append("Tax delinquency")
+        s += 30
+
+    # Code violation (+25) — mechanic lien, HOA lien often follow violations
+    if cat in ("LNMECH", "LNHOA"):
+        flags.append("Code / HOA violation")
+        s += 25
+
+    # Probate filing (+20)
+    if cat == "PRO":
+        flags.append("Probate / estate")
+        s += 20
+
+    # Multiple liens (+15) — detect via doc_type or legal description keywords
+    lien_cats = {"LN", "LNMECH", "LNHOA", "LNIRS", "LNFED", "LNCORPTX", "MEDLN"}
+    if cat in lien_cats:
+        flags.append("Lien on record")
+        s += 15
+
+    # Divorce or bankruptcy (+10) — detect in legal description or doc type
+    if any(k in legal for k in ["DIVORCE", "DISSOLUTION", "BANKRUPTCY", "BANKRUPT"]) or \
+       any(k in doc_type for k in ["DIVORCE", "DISSOLUTION", "BANKRUPTCY", "DRJUD"]):
+        flags.append("Divorce / bankruptcy")
+        s += 10
+    if cat == "DRJUD":
+        if "Divorce / bankruptcy" not in flags:
+            flags.append("Divorce / bankruptcy")
+            s += 10
+
+    # ── Standard distress flags ───────────────────────────────────────────────
+    if cat in ("LP", "RELLP"):
+        flags.append("Lis pendens")
+        s += 10
+
+    if cat == "NOFC":
+        flags.append("Pre-foreclosure")
+        s += 10
+
+    if cat in ("JUD", "CCJ"):
+        flags.append("Judgment lien")
+        s += 10
+
+    # LP + Foreclosure combo bonus
+    if "Lis pendens" in flags and "Pre-foreclosure" in flags:
+        s += 20
+
+    if re.search(r"\b(LLC|CORP|INC|LTD|TRUST)\b", owner):
+        flags.append("LLC / corp owner")
+
+    # New this week
     try:
         if datetime.strptime(filed[:10], "%Y-%m-%d") >= cutoff:
-            flags.append("New this week"); s += 5
-    except Exception: pass
-    s += len(flags) * 10
-    if "Lis pendens" in flags and "Pre-foreclosure" in flags: s += 20
+            flags.append("New this week")
+            s += 5
+    except Exception:
+        pass
+
+    # Amount bonuses
     if amt:
-        if amt > 100000: s += 15
-        elif amt > 50000: s += 10
-    if record.get("prop_address"): s += 5
+        if amt > 100_000:
+            s += 15
+        elif amt > 50_000:
+            s += 10
+
+    # Address bonus
+    if record.get("prop_address"):
+        s += 5
+
+    # Per-flag bonus (for flags not already scored above)
+    s += len(flags) * 2  # small additional boost per flag
+
     return min(s, 100), flags
 
 
