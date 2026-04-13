@@ -1,9 +1,9 @@
 {
-  "fetched_at": "2026-04-12T19:41:55.578740",
+  "fetched_at": "2026-04-13T00:06:35.999509",
   "source": "Harris County Clerk \u2013 cclerk.hctx.net",
   "date_range": {
-    "start": "2026-04-05",
-    "end": "2026-04-12"
+    "start": "2026-04-06",
+    "end": "2026-04-13"
   },
   "total": 603,
   "with_address": 0,
