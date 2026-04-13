@@ -418,9 +418,10 @@ class ParcelLookup:
         for yr in [year, year - 1]:
             if loaded: break
             for url in [
+                f"https://pdata.hcad.org/data/cama/{yr}/Real_acct_owner.zip",
+                f"https://pdata.hcad.org/data/cama/{yr}/real_acct_owner.zip",
                 f"https://pdata.hcad.org/data/{yr}/Real_acct_owner.zip",
                 f"https://pdata.hcad.org/CAMA/{yr}/Real_acct_owner.zip",
-                f"https://pdata.hcad.org/data/{yr}/real_acct_owner.zip",
             ]:
                 try:
                     log.info("  Trying parcel URL: %s", url)
