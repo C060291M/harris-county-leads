@@ -9,14 +9,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
 <style>
   :root {
-    --bg: #0a0c10;
-    --surface: #111318;
-    --border: #1e2330;
-    --accent: #e8ff47;
-    --accent2: #ff5c3a;
-    --accent3: #3affca;
-    --text: #e8ecf4;
-    --muted: #5a6278;
+    --bg:      #0a1e27;
+    --surface: #0d2e3a;
+    --border:  #1a4155;
+    --accent:  #F5A800;
+    --accent2: #C47A1E;
+    --accent3: #2AB8B8;
+    --text:    #e8f4f4;
+    --muted:   #5a8a95;
     --mono: 'Space Mono', monospace;
     --sans: 'Syne', sans-serif;
   }
@@ -54,7 +54,7 @@
     font-family: var(--mono);
     font-size: 0.7rem;
     background: var(--accent);
-    color: #0a0c10;
+    color: #0a1e27;
     padding: 0.15rem 0.5rem;
     font-weight: 700;
     letter-spacing: 0.05em;
@@ -144,7 +144,7 @@
   .filter-btn:hover, .filter-btn.active {
     border-color: var(--accent);
     color: var(--accent);
-    background: rgba(232,255,71,0.05);
+    background: rgba(245,168,0,0.08);
   }
 
   .spacer { flex: 1; }
@@ -155,7 +155,7 @@
     padding: 0.5rem 1.1rem;
     background: var(--accent);
     border: none;
-    color: #0a0c10;
+    color: #0a1e27;
     font-weight: 700;
     cursor: pointer;
     letter-spacing: 0.04em;
@@ -213,12 +213,12 @@
     position: relative;
   }
   /* Score colors: red=70+, orange=40-69, white=below 40 */
-  .score-red    { background: rgba(220,38,38,0.18);   color: #ff4444;  border: 2px solid #ff4444; box-shadow: 0 0 8px rgba(220,38,38,0.3); }
-  .score-orange { background: rgba(251,146,60,0.15);  color: #fb923c;  border: 2px solid #fb923c; }
-  .score-white  { background: rgba(255,255,255,0.06); color: #c8cdd8;  border: 1.5px solid #3a3f55; }
-  .lead-card.tier-red    { border-left: 3px solid #ff4444; }
-  .lead-card.tier-orange { border-left: 3px solid #fb923c; }
-  .lead-card.tier-white  { border-left: 3px solid #2a2f3d; }
+  .score-red    { background: rgba(245,168,0,0.18);   color: #F5A800;  border: 2px solid #F5A800; box-shadow: 0 0 10px rgba(245,168,0,0.25); }
+  .score-orange { background: rgba(42,184,184,0.15);  color: #2AB8B8;  border: 2px solid #2AB8B8; }
+  .score-white  { background: rgba(26,65,85,0.4);     color: #5a8a95;  border: 1.5px solid #1a4155; }
+  .lead-card.tier-red    { border-left: 3px solid #F5A800; }
+  .lead-card.tier-orange { border-left: 3px solid #2AB8B8; }
+  .lead-card.tier-white  { border-left: 3px solid #1a4155; }
 
   /* Main content */
   .card-body {
@@ -245,16 +245,16 @@
     text-transform: uppercase;
     flex-shrink: 0;
   }
-  .cat-LP       { background: rgba(255,92,58,0.18);  color: #ff7a62; }
-  .cat-NOFC     { background: rgba(255,92,58,0.28);  color: var(--accent2); }
-  .cat-TAXDEED  { background: rgba(255,180,50,0.18); color: #ffb432; }
-  .cat-JUD, .cat-CCJ, .cat-DRJUD { background: rgba(200,150,255,0.18); color: #c89eff; }
-  .cat-LN, .cat-LNMECH, .cat-LNHOA, .cat-LNCORPTX, .cat-LNIRS, .cat-LNFED { background: rgba(58,255,202,0.12); color: var(--accent3); }
-  .cat-MEDLN    { background: rgba(255,80,150,0.15); color: #ff5096; }
-  .cat-PRO      { background: rgba(150,180,255,0.15); color: #96b4ff; }
-  .cat-NOC      { background: rgba(232,255,71,0.12); color: var(--accent); }
-  .cat-RELLP    { background: rgba(90,98,120,0.25);  color: var(--muted); }
-  .cat-OTHER    { background: rgba(90,98,120,0.2);   color: var(--muted); }
+  .cat-LP       { background: rgba(245,168,0,0.18);  color: #F5A800; }
+  .cat-NOFC     { background: rgba(196,122,30,0.22); color: #e89030; }
+  .cat-TAXDEED  { background: rgba(245,168,0,0.14);  color: #f0b030; }
+  .cat-JUD, .cat-CCJ, .cat-DRJUD { background: rgba(42,184,184,0.15); color: #2AB8B8; }
+  .cat-LN, .cat-LNMECH, .cat-LNHOA, .cat-LNCORPTX, .cat-LNIRS, .cat-LNFED { background: rgba(42,184,184,0.12); color: var(--accent3); }
+  .cat-MEDLN    { background: rgba(196,122,30,0.15); color: #C47A1E; }
+  .cat-PRO      { background: rgba(30,100,120,0.35); color: #5ad0d0; }
+  .cat-NOC      { background: rgba(245,168,0,0.10);  color: var(--accent); }
+  .cat-RELLP    { background: rgba(26,65,85,0.5);    color: var(--muted); }
+  .cat-OTHER    { background: rgba(26,65,85,0.4);    color: var(--muted); }
 
   .doc-num {
     font-family: var(--mono);
@@ -305,8 +305,8 @@
     color: var(--muted);
     letter-spacing: 0.04em;
   }
-  .flag-distress { border-color: rgba(255,68,68,0.4); color: #ff6b6b; background: rgba(255,68,68,0.08); }
-  .flag-warn     { border-color: rgba(251,146,60,0.4); color: #fb923c; background: rgba(251,146,60,0.08); }
+  .flag-distress { border-color: rgba(245,168,0,0.5);  color: #F5A800; background: rgba(245,168,0,0.1); }
+  .flag-warn     { border-color: rgba(42,184,184,0.4); color: #2AB8B8; background: rgba(42,184,184,0.08); }
 
   /* Amount column */
   .amount-col {
@@ -322,7 +322,7 @@
     font-family: var(--mono);
     font-size: 0.82rem;
     font-weight: 700;
-    color: var(--accent2);
+    color: #F5A800;
   }
   .filed-date {
     font-family: var(--mono);
@@ -345,13 +345,13 @@
     font-size: 0.62rem;
     color: var(--accent);
     text-decoration: none;
-    border: 1px solid rgba(232,255,71,0.3);
+    border: 1px solid rgba(245,168,0,0.35);
     padding: 0.25rem 0.55rem;
     transition: all 0.15s;
     letter-spacing: 0.03em;
   }
   .link-btn:hover {
-    background: rgba(232,255,71,0.08);
+    background: rgba(245,168,0,0.1);
     border-color: var(--accent);
   }
 
@@ -439,7 +439,7 @@
   </div>
   <div class="header-meta">
     <div id="hdr-fetch">Loading…</div>
-    <div id="hdr-range" style="color:var(--accent)">—</div>
+    <div id="hdr-range" style="color:#2AB8B8">—</div>
   </div>
 </header>
 
@@ -460,13 +460,13 @@
     <div class="stat-label">Avg Score</div>
     <div class="stat-value" id="stat-avg">—</div>
   </div>
-  <div class="stat-card" style="background:rgba(220,38,38,0.08);border-left:2px solid #ff4444">
-    <div class="stat-label" style="color:#ff4444">🔴 Hot (70+)</div>
-    <div class="stat-value" style="color:#ff4444" id="stat-red">—</div>
+  <div class="stat-card" style="background:rgba(245,168,0,0.08);border-left:2px solid #F5A800">
+    <div class="stat-label" style="color:#F5A800">★ Hot (70+)</div>
+    <div class="stat-value" style="color:#F5A800" id="stat-red">—</div>
   </div>
-  <div class="stat-card" style="background:rgba(251,146,60,0.06);border-left:2px solid #fb923c">
-    <div class="stat-label" style="color:#fb923c">🟠 Warm (40–69)</div>
-    <div class="stat-value" style="color:#fb923c" id="stat-orange">—</div>
+  <div class="stat-card" style="background:rgba(42,184,184,0.06);border-left:2px solid #2AB8B8">
+    <div class="stat-label" style="color:#2AB8B8">◆ Warm (40–69)</div>
+    <div class="stat-value" style="color:#2AB8B8" id="stat-orange">—</div>
   </div>
 </div>
 
