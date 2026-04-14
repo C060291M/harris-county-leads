@@ -14,6 +14,10 @@ jobs:
   scrape:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
+    outputs:
+      hot_leads: ${{ steps.count.outputs.hot_leads }}
+      total:     ${{ steps.count.outputs.total }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,6 +26,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
 
       - name: Install dependencies
         run: pip install -r scraper/requirements.txt
@@ -31,7 +37,28 @@ jobs:
 
       - name: Run scraper
         run: python scraper/fetch.py
-       
+
+      - name: Count hot leads
+        id: count
+        run: |
+          python3 - << 'PYEOF'
+          import json, os
+          try:
+            with open("dashboard/records.json") as f:
+              data = json.load(f)
+            records = data.get("records", [])
+            hot = [r for r in records if (r.get("score") or 0) >= 70 and "New this week" in (r.get("flags") or [])]
+            total = len(records)
+            print(f"Total: {total}, Hot new: {len(hot)}")
+            with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"hot_leads={len(hot)}\n")
+              out.write(f"total={total}\n")
+          except Exception as e:
+            print(f"Count error: {e}")
+            with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write("hot_leads=0\ntotal=0\n")
+          PYEOF
+
       - name: Upload debug HTML
         uses: actions/upload-artifact@v4
         if: always()
@@ -53,7 +80,41 @@ jobs:
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
+
+  # ── Email alert for hot leads ──────────────────────────────────────────────
+  email-alert:
+    needs: scrape
+    runs-on: ubuntu-22.04
+    if: ${{ needs.scrape.outputs.hot_leads > 0 }}
+
+    steps:
+      - name: Send email alert
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.ALERT_EMAIL_USER }}
+          password: ${{ secrets.ALERT_EMAIL_PASS }}
+          to: ${{ secrets.ALERT_EMAIL_TO }}
+          from: Harris County Leads <${{ secrets.ALERT_EMAIL_USER }}>
+          subject: "🔥 ${{ needs.scrape.outputs.hot_leads }} New Hot Lead(s) — Harris County"
+          body: |
+            Your daily Harris County lead scraper has found new high-score leads.
+
+            Hot leads (score 70+) today: ${{ needs.scrape.outputs.hot_leads }}
+            Total leads in dashboard:    ${{ needs.scrape.outputs.total }}
+
+            View your dashboard:
+            https://c060291m.github.io/harris-county-leads
+
+            Leads are sorted by score — highest distress signals at the top.
+
+            ───────────────────────────────────
+            Harris County Motivated Seller Leads
+            Refreshed daily at 07:00 UTC
+
+  # ── Deploy dashboard to GitHub Pages ──────────────────────────────────────
   deploy-pages:
     needs: scrape
     runs-on: ubuntu-22.04
