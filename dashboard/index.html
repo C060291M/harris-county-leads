@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <style>
   :root {
     --bg:      #0a1e27;
@@ -20,231 +21,129 @@
     --mono: 'Space Mono', monospace;
     --sans: 'Syne', sans-serif;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; overflow-x: hidden; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ─── HEADER ─────────────────────────────────────── */
+  /* ─── HEADER ─── */
   header {
     border-bottom: 1px solid var(--border);
-    padding: 1.5rem 2.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: rgba(10,12,16,0.92);
-    backdrop-filter: blur(12px);
+    padding: 1.2rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 200;
+    background: rgba(10,30,39,0.95); backdrop-filter: blur(12px);
   }
+  .logo { display: flex; align-items: baseline; gap: 0.6rem; }
+  .logo-tag { font-family: var(--mono); font-size: 0.7rem; background: var(--accent); color: #0a1e27; padding: 0.15rem 0.5rem; font-weight: 700; }
+  .logo-title { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em; }
+  .header-meta { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); text-align: right; line-height: 1.6; }
 
-  .logo {
-    display: flex;
-    align-items: baseline;
-    gap: 0.6rem;
+  /* ─── TAB NAV ─── */
+  .tab-nav {
+    display: flex; gap: 0; border-bottom: 1px solid var(--border);
+    background: var(--surface); padding: 0 2rem;
   }
-  .logo-tag {
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    background: var(--accent);
-    color: #0a1e27;
-    padding: 0.15rem 0.5rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
+  .tab-btn {
+    font-family: var(--mono); font-size: 0.68rem; padding: 0.8rem 1.4rem;
+    background: transparent; border: none; border-bottom: 2px solid transparent;
+    color: var(--muted); cursor: pointer; letter-spacing: 0.06em; text-transform: uppercase;
+    transition: all 0.15s;
   }
-  .logo-title {
-    font-size: 1.1rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn:hover:not(.active) { color: var(--text); }
 
-  .header-meta {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    color: var(--muted);
-    text-align: right;
-    line-height: 1.6;
-  }
-
-  /* ─── STATS BAR ───────────────────────────────────── */
-  .stats-bar {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .stat-card {
-    padding: 1.4rem 2rem;
-    border-right: 1px solid var(--border);
-  }
+  /* ─── STATS BAR ─── */
+  .stats-bar { display: grid; grid-template-columns: repeat(6, 1fr); border-bottom: 1px solid var(--border); }
+  .stat-card { padding: 1.2rem 1.5rem; border-right: 1px solid var(--border); }
   .stat-card:last-child { border-right: none; }
-  .stat-label {
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 0.4rem;
-  }
-  .stat-value {
-    font-size: 2rem;
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    line-height: 1;
-  }
-  .stat-value.accent { color: var(--accent); }
-  .stat-value.danger { color: var(--accent2); }
-  .stat-value.teal   { color: var(--accent3); }
+  .stat-label { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.3rem; }
+  .stat-value { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1; color: var(--accent); }
 
-  /* ─── TOOLBAR ─────────────────────────────────────── */
+  /* ─── TOOLBAR ─── */
   .toolbar {
-    padding: 1rem 2.5rem;
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-    flex-wrap: wrap;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
+    padding: 0.85rem 2rem; display: flex; gap: 0.6rem; align-items: center;
+    flex-wrap: wrap; border-bottom: 1px solid var(--border); background: var(--surface);
   }
-
   .toolbar input[type="text"] {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 0.5rem 0.9rem;
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    width: 220px;
-    outline: none;
-    transition: border-color 0.15s;
+    background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    padding: 0.45rem 0.85rem; font-family: var(--mono); font-size: 0.75rem;
+    width: 200px; outline: none; transition: border-color 0.15s;
   }
-  .toolbar input[type="text"]:focus {
-    border-color: var(--accent);
+  .toolbar input[type="text"]:focus { border-color: var(--accent); }
+
+  /* Score range slider */
+  .score-filter-wrap { display: flex; align-items: center; gap: 0.5rem; }
+  .score-filter-wrap label { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); white-space: nowrap; }
+  .score-filter-wrap input[type="range"] {
+    width: 90px; accent-color: var(--accent); cursor: pointer;
   }
+  .score-filter-val { font-family: var(--mono); font-size: 0.65rem; color: var(--accent); min-width: 30px; }
 
   .filter-btn {
-    font-family: var(--mono);
-    font-size: 0.68rem;
-    padding: 0.4rem 0.85rem;
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.15s;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    font-family: var(--mono); font-size: 0.65rem; padding: 0.35rem 0.75rem;
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    cursor: pointer; transition: all 0.15s; letter-spacing: 0.04em; text-transform: uppercase;
+    display: flex; align-items: center; gap: 0.3rem; white-space: nowrap;
   }
-  .filter-btn:hover, .filter-btn.active {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: rgba(245,168,0,0.08);
-  }
+  .filter-btn:hover, .filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(245,168,0,0.08); }
+  .filter-count { font-size: 0.58rem; background: rgba(245,168,0,0.15); padding: 0.1rem 0.35rem; border-radius: 2px; }
+  .filter-btn.active .filter-count { background: rgba(245,168,0,0.25); }
 
   .spacer { flex: 1; }
-
   .export-btn {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    padding: 0.5rem 1.1rem;
-    background: var(--accent);
-    border: none;
-    color: #0a1e27;
-    font-weight: 700;
-    cursor: pointer;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    transition: opacity 0.15s;
+    font-family: var(--mono); font-size: 0.68rem; padding: 0.45rem 1rem;
+    background: var(--accent); border: none; color: #0a1e27; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.04em; text-transform: uppercase; transition: opacity 0.15s;
   }
   .export-btn:hover { opacity: 0.85; }
 
-  /* ─── MAIN GRID ───────────────────────────────────── */
-  main {
-    padding: 1.5rem 2.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
+  /* ─── VIEWS ─── */
+  .view { display: none; }
+  .view.active { display: block; }
 
-  /* ─── LEAD CARD ───────────────────────────────────── */
+  /* ─── MAP ─── */
+  #map-container { padding: 1.5rem 2rem; }
+  #map { height: 520px; border: 1px solid var(--border); border-radius: 4px; }
+  .map-legend {
+    display: flex; gap: 1.5rem; margin-top: 0.75rem; font-family: var(--mono);
+    font-size: 0.65rem; color: var(--muted);
+  }
+  .map-legend span { display: flex; align-items: center; gap: 0.4rem; }
+  .leg-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  /* Leaflet dark override */
+  .leaflet-container { background: #0a1e27 !important; }
+  .leaflet-tile-pane { filter: brightness(0.7) saturate(0.6) hue-rotate(180deg); }
+  .leaflet-popup-content-wrapper { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 4px; }
+  .leaflet-popup-tip { background: var(--surface); }
+  .leaflet-popup-content { font-family: var(--mono); font-size: 0.72rem; line-height: 1.6; }
+
+  /* ─── LEADS VIEW ─── */
+  main { padding: 1.5rem 2rem; display: flex; flex-direction: column; gap: 0; }
   .lead-card {
-    border: 1px solid var(--border);
-    border-top: none;
-    display: grid;
-    grid-template-columns: 56px 1fr 180px 120px;
-    align-items: stretch;
-    transition: background 0.12s;
-    animation: fadeIn 0.3s ease both;
+    border: 1px solid var(--border); border-top: none;
+    display: grid; grid-template-columns: 56px 1fr 180px 120px;
+    align-items: stretch; transition: background 0.12s; animation: fadeIn 0.3s ease both;
   }
   .lead-card:first-child { border-top: 1px solid var(--border); }
   .lead-card:hover { background: rgba(255,255,255,0.02); }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Score column */
-  .score-col {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-right: 1px solid var(--border);
-    padding: 0.6rem 0;
-    writing-mode: vertical-rl;
-  }
-  .score-ring {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    font-weight: 700;
-    flex-shrink: 0;
-    position: relative;
-  }
-  /* Score colors: red=70+, orange=40-69, white=below 40 */
-  .score-red    { background: rgba(245,168,0,0.18);   color: #F5A800;  border: 2px solid #F5A800; box-shadow: 0 0 10px rgba(245,168,0,0.25); }
-  .score-orange { background: rgba(42,184,184,0.15);  color: #2AB8B8;  border: 2px solid #2AB8B8; }
-  .score-white  { background: rgba(26,65,85,0.4);     color: #5a8a95;  border: 1.5px solid #1a4155; }
   .lead-card.tier-red    { border-left: 3px solid #F5A800; }
   .lead-card.tier-orange { border-left: 3px solid #2AB8B8; }
   .lead-card.tier-white  { border-left: 3px solid #1a4155; }
 
-  /* Main content */
-  .card-body {
-    padding: 0.85rem 1.2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    border-right: 1px solid var(--border);
+  .score-col { display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--border); padding: 0.6rem 0; }
+  .score-ring {
+    width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-family: var(--mono); font-size: 0.7rem; font-weight: 700;
+    flex-shrink: 0; position: relative;
   }
+  .score-red    { background: rgba(245,168,0,0.18);   color: #F5A800; border: 2px solid #F5A800; box-shadow: 0 0 10px rgba(245,168,0,0.25); }
+  .score-orange { background: rgba(42,184,184,0.15);  color: #2AB8B8; border: 2px solid #2AB8B8; }
+  .score-white  { background: rgba(26,65,85,0.4);     color: #5a8a95; border: 1.5px solid #1a4155; }
 
-  .card-top {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    flex-wrap: wrap;
-  }
-
-  .cat-badge {
-    font-family: var(--mono);
-    font-size: 0.6rem;
-    padding: 0.18rem 0.5rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    flex-shrink: 0;
-  }
+  .card-body { padding: 0.85rem 1.2rem; display: flex; flex-direction: column; gap: 0.3rem; border-right: 1px solid var(--border); }
+  .card-top { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+  .cat-badge { font-family: var(--mono); font-size: 0.58rem; padding: 0.15rem 0.45rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; flex-shrink: 0; }
   .cat-LP       { background: rgba(245,168,0,0.18);  color: #F5A800; }
   .cat-NOFC     { background: rgba(196,122,30,0.22); color: #e89030; }
   .cat-TAXDEED  { background: rgba(245,168,0,0.14);  color: #f0b030; }
@@ -256,176 +155,53 @@
   .cat-RELLP    { background: rgba(26,65,85,0.5);    color: var(--muted); }
   .cat-OTHER    { background: rgba(26,65,85,0.4);    color: var(--muted); }
 
-  .doc-num {
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    color: var(--muted);
-  }
-
-  .owner-name {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 400px;
-  }
-
-  .card-addresses {
-    display: flex;
-    gap: 2rem;
-    flex-wrap: wrap;
-  }
-
-  .addr-block { display: flex; flex-direction: column; gap: 0.05rem; }
-  .addr-label {
-    font-family: var(--mono);
-    font-size: 0.58rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-  .addr-value {
-    font-size: 0.78rem;
-    color: #9aa3bb;
-  }
+  .doc-num { font-family: var(--mono); font-size: 0.63rem; color: var(--muted); }
+  .owner-name { font-size: 0.92rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 420px; }
+  .card-addresses { display: flex; gap: 2rem; flex-wrap: wrap; }
+  .addr-block { display: flex; flex-direction: column; gap: 0.04rem; }
+  .addr-label { font-family: var(--mono); font-size: 0.56rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .addr-value { font-size: 0.76rem; color: #7aabb5; }
   .addr-value.no-addr { color: var(--muted); font-style: italic; }
-
-  .flag-row {
-    display: flex;
-    gap: 0.35rem;
-    flex-wrap: wrap;
-  }
-  .flag {
-    font-family: var(--mono);
-    font-size: 0.58rem;
-    padding: 0.1rem 0.42rem;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    letter-spacing: 0.04em;
-  }
+  .flag-row { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+  .flag { font-family: var(--mono); font-size: 0.56rem; padding: 0.1rem 0.4rem; border: 1px solid var(--border); color: var(--muted); letter-spacing: 0.04em; }
   .flag-distress { border-color: rgba(245,168,0,0.5);  color: #F5A800; background: rgba(245,168,0,0.1); }
   .flag-warn     { border-color: rgba(42,184,184,0.4); color: #2AB8B8; background: rgba(42,184,184,0.08); }
 
-  /* Amount column */
-  .amount-col {
-    padding: 0.85rem 1rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-end;
-    gap: 0.25rem;
-    border-right: 1px solid var(--border);
-  }
-  .amount-value {
-    font-family: var(--mono);
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: #F5A800;
-  }
-  .filed-date {
-    font-family: var(--mono);
-    font-size: 0.62rem;
-    color: var(--muted);
-  }
+  .amount-col { padding: 0.85rem 1rem; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: 0.22rem; border-right: 1px solid var(--border); }
+  .amount-value { font-family: var(--mono); font-size: 0.82rem; font-weight: 700; color: #F5A800; }
+  .filed-date { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); }
+  .actions-col { padding: 0.85rem 1rem; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: 0.5rem; }
+  .link-btn { font-family: var(--mono); font-size: 0.62rem; color: var(--accent); text-decoration: none; border: 1px solid rgba(245,168,0,0.35); padding: 0.25rem 0.55rem; transition: all 0.15s; }
+  .link-btn:hover { background: rgba(245,168,0,0.1); border-color: var(--accent); }
 
-  /* Actions column */
-  .actions-col {
-    padding: 0.85rem 1rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-end;
-    gap: 0.5rem;
-  }
-
-  .link-btn {
-    font-family: var(--mono);
-    font-size: 0.62rem;
-    color: var(--accent);
-    text-decoration: none;
-    border: 1px solid rgba(245,168,0,0.35);
-    padding: 0.25rem 0.55rem;
-    transition: all 0.15s;
-    letter-spacing: 0.03em;
-  }
-  .link-btn:hover {
-    background: rgba(245,168,0,0.1);
-    border-color: var(--accent);
-  }
-
-  /* ─── EMPTY STATE ─────────────────────────────────── */
-  .empty-state {
-    text-align: center;
-    padding: 5rem 2rem;
-    color: var(--muted);
-  }
-  .empty-state h2 {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin-bottom: 0.5rem;
-    color: var(--text);
-  }
-  .empty-state p { font-family: var(--mono); font-size: 0.75rem; }
-
-  /* ─── COLUMN HEADERS ──────────────────────────────── */
-  .col-headers {
-    display: grid;
-    grid-template-columns: 56px 1fr 180px 120px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-  }
-  .col-h {
-    padding: 0.5rem 1rem;
-    font-family: var(--mono);
-    font-size: 0.58rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    border-right: 1px solid var(--border);
-  }
+  .col-headers { display: grid; grid-template-columns: 56px 1fr 180px 120px; border: 1px solid var(--border); background: var(--surface); }
+  .col-h { padding: 0.5rem 1rem; font-family: var(--mono); font-size: 0.56rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; border-right: 1px solid var(--border); }
   .col-h:last-child { border-right: none; }
   .col-h.center { text-align: center; }
   .col-h.right  { text-align: right; }
 
-  /* ─── LOADING ─────────────────────────────────────── */
-  .loading {
-    text-align: center;
-    padding: 4rem;
-    font-family: var(--mono);
-    font-size: 0.8rem;
-    color: var(--muted);
-  }
-  .loading::after {
-    content: '';
-    display: inline-block;
-    animation: dots 1.2s steps(4, end) infinite;
-  }
-  @keyframes dots {
-    0%   { content: ''; }
-    25%  { content: '.'; }
-    50%  { content: '..'; }
-    75%  { content: '...'; }
-    100% { content: ''; }
-  }
+  .empty-state { text-align: center; padding: 5rem 2rem; color: var(--muted); }
+  .empty-state h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text); }
+  .loading { text-align: center; padding: 4rem; font-family: var(--mono); font-size: 0.8rem; color: var(--muted); }
 
-  /* ─── FOOTER ──────────────────────────────────────── */
-  footer {
-    text-align: center;
-    padding: 2rem;
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    color: var(--muted);
-    border-top: 1px solid var(--border);
-    margin-top: 2rem;
+  /* ─── FOOTER ─── */
+  footer { text-align: center; padding: 2rem; font-family: var(--mono); font-size: 0.65rem; color: var(--muted); border-top: 1px solid var(--border); margin-top: 2rem; }
+
+  /* ─── EMAIL ALERT BANNER ─── */
+  .alert-banner {
+    background: rgba(245,168,0,0.1); border: 1px solid rgba(245,168,0,0.3);
+    padding: 0.6rem 2rem; font-family: var(--mono); font-size: 0.7rem;
+    color: var(--accent); display: flex; align-items: center; gap: 0.8rem;
   }
+  .alert-banner a { color: var(--accent3); text-decoration: underline; cursor: pointer; }
 
   @media (max-width: 900px) {
-    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .stats-bar { grid-template-columns: repeat(3,1fr); }
     .lead-card { grid-template-columns: 50px 1fr; }
     .amount-col, .actions-col { display: none; }
     .col-headers { display: none; }
+    .toolbar { gap: 0.4rem; }
+    .toolbar input[type="text"] { width: 150px; }
   }
 </style>
 </head>
@@ -435,7 +211,7 @@
   <div class="logo">
     <span class="logo-tag">HC</span>
     <span class="logo-title">Motivated Seller Leads</span>
-    <span style="font-size:0.75rem;color:var(--muted);margin-left:0.3rem">Harris County, TX</span>
+    <span style="font-size:0.75rem;color:var(--muted);margin-left:0.4rem">Harris County, TX</span>
   </div>
   <div class="header-meta">
     <div id="hdr-fetch">Loading…</div>
@@ -443,18 +219,25 @@
   </div>
 </header>
 
+<!-- Email alert banner (shown when new high-score leads found) -->
+<div class="alert-banner" id="alert-banner" style="display:none">
+  <span>★</span>
+  <span id="alert-msg"></span>
+  <span>— <a onclick="document.getElementById('alert-banner').style.display='none'">dismiss</a></span>
+</div>
+
 <div class="stats-bar">
   <div class="stat-card">
     <div class="stat-label">Total Leads</div>
-    <div class="stat-value accent" id="stat-total">—</div>
+    <div class="stat-value" id="stat-total">—</div>
   </div>
   <div class="stat-card">
     <div class="stat-label">With Address</div>
-    <div class="stat-value teal" id="stat-addr">—</div>
+    <div class="stat-value" style="color:var(--accent3)" id="stat-addr">—</div>
   </div>
   <div class="stat-card">
     <div class="stat-label">High Score (70+)</div>
-    <div class="stat-value danger" id="stat-high">—</div>
+    <div class="stat-value" style="color:var(--accent2)" id="stat-high">—</div>
   </div>
   <div class="stat-card">
     <div class="stat-label">Avg Score</div>
@@ -462,24 +245,37 @@
   </div>
   <div class="stat-card" style="background:rgba(245,168,0,0.08);border-left:2px solid #F5A800">
     <div class="stat-label" style="color:#F5A800">★ Hot (70+)</div>
-    <div class="stat-value" style="color:#F5A800" id="stat-red">—</div>
+    <div class="stat-value" style="color:#F5A800;font-size:1.8rem" id="stat-red">—</div>
   </div>
   <div class="stat-card" style="background:rgba(42,184,184,0.06);border-left:2px solid #2AB8B8">
     <div class="stat-label" style="color:#2AB8B8">◆ Warm (40–69)</div>
-    <div class="stat-value" style="color:#2AB8B8" id="stat-orange">—</div>
+    <div class="stat-value" style="color:#2AB8B8;font-size:1.8rem" id="stat-orange">—</div>
   </div>
 </div>
 
+<!-- Tab navigation -->
+<div class="tab-nav">
+  <button class="tab-btn active" data-tab="leads">📋 Leads</button>
+  <button class="tab-btn" data-tab="map">🗺 Map View</button>
+</div>
+
+<!-- Toolbar (shared) -->
 <div class="toolbar">
   <input type="text" id="search-input" placeholder="Search owner, doc #, address…"/>
 
-  <button class="filter-btn active" data-cat="">ALL</button>
-  <button class="filter-btn" data-cat="LP">LP</button>
-  <button class="filter-btn" data-cat="NOFC">NOFC</button>
-  <button class="filter-btn" data-cat="TAXDEED">TAX DEED</button>
-  <button class="filter-btn" data-cat="JUD">JUD</button>
-  <button class="filter-btn" data-cat="LN">LIENS</button>
-  <button class="filter-btn" data-cat="PRO">PROBATE</button>
+  <button class="filter-btn active" data-cat="">ALL <span class="filter-count" id="cnt-all">0</span></button>
+  <button class="filter-btn" data-cat="LP">LP <span class="filter-count" id="cnt-lp">0</span></button>
+  <button class="filter-btn" data-cat="NOFC">NOFC <span class="filter-count" id="cnt-nofc">0</span></button>
+  <button class="filter-btn" data-cat="TAXDEED">TAX DEED <span class="filter-count" id="cnt-tax">0</span></button>
+  <button class="filter-btn" data-cat="JUD">JUD <span class="filter-count" id="cnt-jud">0</span></button>
+  <button class="filter-btn" data-cat="LN">LIENS <span class="filter-count" id="cnt-ln">0</span></button>
+  <button class="filter-btn" data-cat="PRO">PROBATE <span class="filter-count" id="cnt-pro">0</span></button>
+
+  <div class="score-filter-wrap">
+    <label>Score ≥</label>
+    <input type="range" id="score-min" min="0" max="100" value="0" step="5"/>
+    <span class="score-filter-val" id="score-min-val">0</span>
+  </div>
 
   <div class="spacer"></div>
   <select id="sort-select" style="font-family:var(--mono);font-size:0.68rem;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:0.4rem 0.7rem;cursor:pointer;outline:none;">
@@ -490,217 +286,397 @@
   <button class="export-btn" id="export-csv">↓ Export GHL CSV</button>
 </div>
 
-<main>
-  <div id="results-wrap">
-    <div class="loading">Loading records</div>
+<!-- Leads view -->
+<div class="view active" id="view-leads">
+  <main>
+    <div id="results-wrap"><div class="loading">Loading records</div></div>
+  </main>
+</div>
+
+<!-- Map view -->
+<div class="view" id="view-map">
+  <div id="map-container">
+    <div id="map"></div>
+    <div class="map-legend">
+      <span><span class="leg-dot" style="background:#F5A800"></span> Hot lead (70+)</span>
+      <span><span class="leg-dot" style="background:#2AB8B8"></span> Warm lead (40–69)</span>
+      <span><span class="leg-dot" style="background:#3a5a6a"></span> Cold lead (&lt;40)</span>
+      <span style="margin-left:auto;color:var(--muted)" id="map-count"></span>
+    </div>
   </div>
-</main>
+</div>
 
 <footer>
   Data sourced from Harris County Clerk public records &amp; HCAD parcel data.
   For informational purposes only. Refreshed daily at 07:00 CT.
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-// ─── State ───────────────────────────────────────────
+// ─── State ──────────────────────────────────────────────────────────────────
 let allRecords = [];
 let activeFilter = '';
+let mapInstance  = null;
+let mapMarkers   = [];
 
-// ─── Boot ────────────────────────────────────────────
+// ─── Boot ────────────────────────────────────────────────────────────────────
 fetch('./records.json')
   .then(r => r.json())
   .then(data => {
     allRecords = data.records || [];
 
-    // Header
     document.getElementById('hdr-fetch').textContent =
       'Fetched: ' + (data.fetched_at ? new Date(data.fetched_at).toLocaleString() : '—');
     const dr = data.date_range || {};
-    document.getElementById('hdr-range').textContent =
-      (dr.start || '—') + ' → ' + (dr.end || '—');
+    document.getElementById('hdr-range').textContent = (dr.start||'—') + ' → ' + (dr.end||'—');
 
     // Stats
-    document.getElementById('stat-total').textContent = data.total ?? allRecords.length;
-    document.getElementById('stat-addr').textContent = data.with_address ?? 0;
-    const highScore = allRecords.filter(r => (r.score || 0) >= 70).length;
-    document.getElementById('stat-high').textContent = highScore;
+    document.getElementById('stat-total').textContent  = data.total ?? allRecords.length;
+    document.getElementById('stat-addr').textContent   = data.with_address ?? 0;
+    const high = allRecords.filter(r => (r.score||0) >= 70).length;
+    document.getElementById('stat-high').textContent   = high;
     const avg = allRecords.length
-      ? Math.round(allRecords.reduce((s, r) => s + (r.score || 0), 0) / allRecords.length)
-      : 0;
-    document.getElementById('stat-avg').textContent = avg;
-    document.getElementById('stat-red').textContent = allRecords.filter(r => (r.score||0) >= 70).length;
-    document.getElementById('stat-orange').textContent = allRecords.filter(r => (r.score||0) >= 40 && (r.score||0) < 70).length;
+      ? Math.round(allRecords.reduce((s,r) => s+(r.score||0),0) / allRecords.length) : 0;
+    document.getElementById('stat-avg').textContent    = avg;
+    document.getElementById('stat-red').textContent    = high;
+    document.getElementById('stat-orange').textContent = allRecords.filter(r=>(r.score||0)>=40&&(r.score||0)<70).length;
+
+    // Category counts
+    updateCounts(allRecords);
+
+    // Alert banner for new hot leads
+    const hotNew = allRecords.filter(r => (r.score||0) >= 70 && (r.flags||[]).includes('New this week'));
+    if (hotNew.length > 0) {
+      document.getElementById('alert-banner').style.display = 'flex';
+      document.getElementById('alert-msg').textContent =
+        `${hotNew.length} new high-score lead${hotNew.length>1?'s':''} this week (score 70+)`;
+    }
+
+    // Check localStorage for previous count → alert on new additions
+    const prevCount = parseInt(localStorage.getItem('hc_prev_total') || '0');
+    if (allRecords.length > prevCount && prevCount > 0) {
+      const diff = allRecords.length - prevCount;
+      document.getElementById('alert-banner').style.display = 'flex';
+      document.getElementById('alert-msg').textContent =
+        `${diff} new lead${diff>1?'s':''} added since your last visit`;
+    }
+    localStorage.setItem('hc_prev_total', allRecords.length);
 
     render();
   })
-  .catch(err => {
+  .catch(() => {
     document.getElementById('results-wrap').innerHTML =
-      '<div class="empty-state"><h2>No Data</h2><p>records.json not found or empty. Run the scraper first.</p></div>';
+      '<div class="empty-state"><h2>No Data</h2><p>Run the scraper first.</p></div>';
   });
 
-// ─── Filters ─────────────────────────────────────────
+// ─── Category counts ──────────────────────────────────────────────────────────
+function countFor(cat, records) {
+  if (!cat) return records.length;
+  if (cat === 'LN') return records.filter(r => ['LN','LNMECH','LNHOA','LNCORPTX','LNIRS','LNFED','MEDLN'].includes(r.cat)).length;
+  return records.filter(r => r.cat.startsWith(cat)).length;
+}
+
+function updateCounts(records) {
+  document.getElementById('cnt-all').textContent  = records.length;
+  document.getElementById('cnt-lp').textContent   = countFor('LP', records);
+  document.getElementById('cnt-nofc').textContent = countFor('NOFC', records);
+  document.getElementById('cnt-tax').textContent  = countFor('TAXDEED', records);
+  document.getElementById('cnt-jud').textContent  = countFor('JUD', records);
+  document.getElementById('cnt-ln').textContent   = countFor('LN', records);
+  document.getElementById('cnt-pro').textContent  = countFor('PRO', records);
+}
+
+// ─── Tab switching ─────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    document.getElementById('view-' + tab).classList.add('active');
+    if (tab === 'map') initMap();
+  });
+});
+
+// ─── Filters & Controls ────────────────────────────────────────────────────────
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     activeFilter = btn.dataset.cat;
     render();
+    if (mapInstance) renderMap(getFiltered());
   });
 });
 
-document.getElementById('search-input').addEventListener('input', render);
+document.getElementById('search-input').addEventListener('input', () => { render(); if (mapInstance) renderMap(getFiltered()); });
 document.getElementById('sort-select').addEventListener('change', render);
 
-// ─── Render ──────────────────────────────────────────
-function render() {
-  const query    = document.getElementById('search-input').value.toLowerCase().trim();
-  const sortBy   = document.getElementById('sort-select').value;
+const scoreSlider = document.getElementById('score-min');
+const scoreVal    = document.getElementById('score-min-val');
+scoreSlider.addEventListener('input', () => {
+  scoreVal.textContent = scoreSlider.value;
+  render();
+  if (mapInstance) renderMap(getFiltered());
+});
 
-  let filtered = allRecords.filter(r => {
+// ─── Shared filter logic ──────────────────────────────────────────────────────
+function getFiltered() {
+  const query    = document.getElementById('search-input').value.toLowerCase().trim();
+  const minScore = parseInt(scoreSlider.value) || 0;
+
+  return allRecords.filter(r => {
+    if ((r.score||0) < minScore) return false;
     if (activeFilter) {
-      // Group liens
       if (activeFilter === 'LN') {
         if (!['LN','LNMECH','LNHOA','LNCORPTX','LNIRS','LNFED','MEDLN'].includes(r.cat)) return false;
       } else if (!r.cat.startsWith(activeFilter)) return false;
     }
     if (query) {
-      const hay = [r.owner, r.doc_num, r.prop_address, r.mail_address, r.cat_label]
-        .join(' ').toLowerCase();
+      const hay = [r.owner, r.doc_num, r.prop_address, r.mail_address, r.cat_label].join(' ').toLowerCase();
       if (!hay.includes(query)) return false;
     }
     return true;
   });
+}
 
-  const wrap = document.getElementById('results-wrap');
-
-  // Sort
-  filtered = [...filtered].sort((a, b) => {
-    if (sortBy === 'date') {
-      return (b.filed || '').localeCompare(a.filed || '');
-    } else if (sortBy === 'amount') {
-      return (b.amount || 0) - (a.amount || 0);
-    }
-    return (b.score || 0) - (a.score || 0); // default: score desc
+// ─── Render leads ─────────────────────────────────────────────────────────────
+function render() {
+  const sortBy = document.getElementById('sort-select').value;
+  let filtered = [...getFiltered()].sort((a,b) => {
+    if (sortBy === 'date')   return (b.filed||'').localeCompare(a.filed||'');
+    if (sortBy === 'amount') return (b.amount||0) - (a.amount||0);
+    return (b.score||0) - (a.score||0);
   });
 
+  // Update counts to reflect current filter
+  updateCounts(getFiltered());
+
+  const wrap = document.getElementById('results-wrap');
   if (!filtered.length) {
-    wrap.innerHTML = '<div class="empty-state"><h2>No Matches</h2><p>Try adjusting filters or search.</p></div>';
+    wrap.innerHTML = '<div class="empty-state"><h2>No Matches</h2><p>Try adjusting filters or score range.</p></div>';
     return;
   }
 
-  let html = `
-    <div class="col-headers">
-      <div class="col-h center">Score</div>
-      <div class="col-h">Owner / Document</div>
-      <div class="col-h right">Amount</div>
-      <div class="col-h right">Actions</div>
-    </div>
-  `;
+  const distressFlags = new Set(['Tax delinquency','Code / HOA violation','Probate / estate','Divorce / bankruptcy']);
+  const warnFlags     = new Set(['Lis pendens','Pre-foreclosure','Judgment lien','Lien on record']);
+
+  let html = `<div class="col-headers">
+    <div class="col-h center">Score</div>
+    <div class="col-h">Owner / Document</div>
+    <div class="col-h right">Amount</div>
+    <div class="col-h right">Actions</div>
+  </div>`;
 
   filtered.forEach((r, i) => {
-    const score = r.score || 0;
+    const score    = r.score || 0;
     const scoreCls = score >= 70 ? 'score-red' : score >= 40 ? 'score-orange' : 'score-white';
-    const tierCls  = score >= 70 ? 'tier-red'   : score >= 40 ? 'tier-orange'  : 'tier-white';
-    const catCls = 'cat-' + (r.cat || 'OTHER');
-    const propAddr = r.prop_address
-      ? `${r.prop_address}, ${r.prop_city || ''} ${r.prop_zip || ''}`.trim()
-      : null;
-    const mailAddr = r.mail_address
-      ? `${r.mail_address}, ${r.mail_city || ''} ${r.mail_state || ''} ${r.mail_zip || ''}`.trim()
-      : null;
-    const amt = r.amount ? '$' + Number(r.amount).toLocaleString(undefined, {minimumFractionDigits:0}) : '—';
-    const distressFlags = new Set(['Tax delinquency','Code / HOA violation','Probate / estate','Divorce / bankruptcy']);
-    const warnFlags = new Set(['Lis pendens','Pre-foreclosure','Judgment lien','Lien on record']);
-    const flags = (r.flags || []).map(f => {
+    const tierCls  = score >= 70 ? 'tier-red'  : score >= 40 ? 'tier-orange'  : 'tier-white';
+    const catCls   = 'cat-' + (r.cat || 'OTHER');
+    const propAddr = r.prop_address ? `${r.prop_address}, ${r.prop_city||''} ${r.prop_zip||''}`.trim() : null;
+    const mailAddr = r.mail_address ? `${r.mail_address}, ${r.mail_city||''} ${r.mail_state||''} ${r.mail_zip||''}`.trim() : null;
+    const amt      = r.amount ? '$' + Number(r.amount).toLocaleString(undefined,{minimumFractionDigits:0}) : '—';
+    const flags    = (r.flags||[]).map(f => {
       const cls = distressFlags.has(f) ? 'flag flag-distress' : warnFlags.has(f) ? 'flag flag-warn' : 'flag';
       return `<span class="${cls}">${f}</span>`;
     }).join('');
     const linkHtml = r.clerk_url
       ? `<a class="link-btn" href="${r.clerk_url}" target="_blank" rel="noopener">View Doc →</a>`
       : '<span style="font-family:var(--mono);font-size:0.62rem;color:var(--muted)">No link</span>';
+    const strokeColor = score>=70 ? '#F5A800' : score>=40 ? '#2AB8B8' : '#1a4155';
 
-    html += `
-      <div class="lead-card ${tierCls}" style="animation-delay:${i * 20}ms">
-        <div class="score-col">
-          <div class="score-ring ${scoreCls}" title="Seller Score: ${score}/100">
-            <svg width="38" height="38" viewBox="0 0 38 38" style="position:absolute;top:0;left:0;transform:rotate(-90deg)">
-              <circle cx="19" cy="19" r="15" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="3"/>
-              <circle cx="19" cy="19" r="15" fill="none"
-                stroke="${score>=70?'#ff4444':score>=40?'#fb923c':'#3a3f55'}"
-                stroke-width="3"
-                stroke-dasharray="${Math.round(score*0.942)} 94.2"
-                stroke-linecap="round"/>
-            </svg>
-            <span style="position:relative;z-index:1;font-size:0.62rem">${score}</span>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="card-top">
-            <span class="cat-badge ${catCls}">${r.cat_label || r.cat}</span>
-            <span class="doc-num">${r.doc_num || '—'}</span>
-          </div>
-          <div class="owner-name">${r.owner || '<em style="color:var(--muted)">Unknown Owner</em>'}</div>
-          <div class="card-addresses">
-            <div class="addr-block">
-              <span class="addr-label">Property</span>
-              <span class="addr-value ${propAddr ? '' : 'no-addr'}">${propAddr || 'No address matched'}</span>
-            </div>
-            <div class="addr-block">
-              <span class="addr-label">Mailing</span>
-              <span class="addr-value ${mailAddr ? '' : 'no-addr'}">${mailAddr || '—'}</span>
-            </div>
-          </div>
-          <div class="flag-row">${flags}</div>
-        </div>
-        <div class="amount-col">
-          <span class="amount-value">${amt}</span>
-          <span class="filed-date">${r.filed || '—'}</span>
-          <span class="filed-date" style="color:#3a3f55">${r.doc_type || ''}</span>
-        </div>
-        <div class="actions-col">
-          ${linkHtml}
+    html += `<div class="lead-card ${tierCls}" style="animation-delay:${Math.min(i,30)*20}ms">
+      <div class="score-col">
+        <div class="score-ring ${scoreCls}" title="Score: ${score}/100">
+          <svg width="38" height="38" viewBox="0 0 38 38" style="position:absolute;top:0;left:0;transform:rotate(-90deg)">
+            <circle cx="19" cy="19" r="15" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="3"/>
+            <circle cx="19" cy="19" r="15" fill="none" stroke="${strokeColor}" stroke-width="3"
+              stroke-dasharray="${Math.round(score*0.942)} 94.2" stroke-linecap="round"/>
+          </svg>
+          <span style="position:relative;z-index:1;font-size:0.62rem">${score}</span>
         </div>
       </div>
-    `;
+      <div class="card-body">
+        <div class="card-top">
+          <span class="cat-badge ${catCls}">${r.cat_label||r.cat}</span>
+          <span class="doc-num">${r.doc_num||'—'}</span>
+        </div>
+        <div class="owner-name">${r.owner||'<em style="color:var(--muted)">Unknown Owner</em>'}</div>
+        <div class="card-addresses">
+          <div class="addr-block">
+            <span class="addr-label">Property</span>
+            <span class="addr-value ${propAddr?'':'no-addr'}">${propAddr||'No address matched'}</span>
+          </div>
+          <div class="addr-block">
+            <span class="addr-label">Mailing</span>
+            <span class="addr-value ${mailAddr?'':'no-addr'}">${mailAddr||'—'}</span>
+          </div>
+        </div>
+        <div class="flag-row">${flags}</div>
+      </div>
+      <div class="amount-col">
+        <span class="amount-value">${amt}</span>
+        <span class="filed-date">${r.filed||'—'}</span>
+        <span class="filed-date" style="color:#2a4a55">${r.doc_type||''}</span>
+      </div>
+      <div class="actions-col">${linkHtml}</div>
+    </div>`;
   });
 
   wrap.innerHTML = html;
 }
 
-// ─── CSV Export ──────────────────────────────────────
-document.getElementById('export-csv').addEventListener('click', () => {
-  const cols = [
-    'First Name','Last Name','Mailing Address','Mailing City','Mailing State','Mailing Zip',
-    'Property Address','Property City','Property State','Property Zip',
-    'Lead Type','Document Type','Date Filed','Document Number',
-    'Amount/Debt Owed','Seller Score','Motivated Seller Flags','Source','Public Records URL'
-  ];
+// ─── Map view ──────────────────────────────────────────────────────────────────
+function initMap() {
+  if (mapInstance) { renderMap(getFiltered()); return; }
 
-  const rows = allRecords.map(r => {
-    const parts = (r.owner || '').trim().split(/\s+/);
-    const first = parts[0] || '';
-    const last = parts.slice(1).join(' ');
-    return [
-      first, last,
-      r.mail_address || '', r.mail_city || '', r.mail_state || 'TX', r.mail_zip || '',
-      r.prop_address || '', r.prop_city || '', r.prop_state || 'TX', r.prop_zip || '',
-      r.cat_label || '', r.doc_type || '', r.filed || '', r.doc_num || '',
-      r.amount ? '$' + Number(r.amount).toLocaleString() : '',
-      r.score || 0,
-      (r.flags || []).join('; '),
-      'Harris County Clerk',
-      r.clerk_url || ''
-    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+  mapInstance = L.map('map', { zoomControl: true }).setView([29.7604, -95.3698], 10);
+
+  // Dark tile layer
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 18,
+  }).addTo(mapInstance);
+
+  renderMap(getFiltered());
+}
+
+function renderMap(records) {
+  // Remove existing markers
+  mapMarkers.forEach(m => mapInstance.removeLayer(m));
+  mapMarkers = [];
+
+  // Harris County boundary approximate center markers for records without geocode
+  // We cluster by zip code (approximate lat/lng for common Houston zips)
+  const zipCoords = {
+    '77001':[29.750,-95.357],'77002':[29.756,-95.366],'77003':[29.744,-95.348],
+    '77004':[29.727,-95.368],'77005':[29.715,-95.418],'77006':[29.739,-95.397],
+    '77007':[29.759,-95.403],'77008':[29.776,-95.418],'77009':[29.779,-95.373],
+    '77010':[29.751,-95.360],'77011':[29.737,-95.330],'77012':[29.717,-95.323],
+    '77013':[29.754,-95.265],'77014':[29.897,-95.444],'77015':[29.754,-95.228],
+    '77016':[29.826,-95.328],'77017':[29.700,-95.277],'77018':[29.828,-95.429],
+    '77019':[29.753,-95.415],'77020':[29.763,-95.329],'77021':[29.694,-95.361],
+    '77022':[29.810,-95.385],'77023':[29.718,-95.340],'77024':[29.766,-95.506],
+    '77025':[29.693,-95.436],'77026':[29.793,-95.346],'77027':[29.738,-95.442],
+    '77028':[29.830,-95.299],'77029':[29.762,-95.280],'77030':[29.706,-95.402],
+    '77031':[29.668,-95.540],'77032':[29.927,-95.337],'77033':[29.680,-95.323],
+    '77034':[29.637,-95.218],'77035':[29.648,-95.486],'77036':[29.695,-95.530],
+    '77037':[29.880,-95.395],'77038':[29.893,-95.424],'77039':[29.867,-95.320],
+    '77040':[29.867,-95.541],'77041':[29.849,-95.589],'77042':[29.730,-95.559],
+    '77043':[29.792,-95.562],'77044':[29.825,-95.180],'77045':[29.647,-95.427],
+    '77046':[29.737,-95.440],'77047':[29.641,-95.368],'77048':[29.620,-95.332],
+    '77049':[29.811,-95.157],'77050':[29.888,-95.261],'77051':[29.643,-95.395],
+    '77053':[29.614,-95.428],'77054':[29.685,-95.394],'77055':[29.797,-95.494],
+    '77056':[29.750,-95.462],'77057':[29.745,-95.481],'77058':[29.563,-95.098],
+    '77059':[29.588,-95.139],'77060':[29.926,-95.384],'77061':[29.668,-95.275],
+    '77062':[29.577,-95.123],'77063':[29.724,-95.527],'77064':[29.908,-95.533],
+    '77065':[29.921,-95.574],'77066':[29.948,-95.479],'77067':[29.946,-95.451],
+    '77068':[29.965,-95.464],'77069':[29.983,-95.486],'77070':[29.958,-95.555],
+    '77071':[29.659,-95.509],'77072':[29.700,-95.577],'77073':[29.970,-95.395],
+    '77074':[29.681,-95.529],'77075':[29.631,-95.270],'77076':[29.852,-95.379],
+    '77077':[29.745,-95.591],'77078':[29.819,-95.246],'77079':[29.762,-95.565],
+    '77080':[29.809,-95.511],'77081':[29.706,-95.481],'77082':[29.713,-95.604],
+    '77083':[29.699,-95.614],'77084':[29.840,-95.648],'77085':[29.642,-95.462],
+    '77086':[29.916,-95.454],'77087':[29.690,-95.306],'77088':[29.901,-95.451],
+    '77089':[29.612,-95.199],'77090':[29.984,-95.439],'77091':[29.858,-95.417],
+    '77092':[29.836,-95.474],'77093':[29.863,-95.351],'77094':[29.767,-95.644],
+    '77095':[29.878,-95.629],'77096':[29.663,-95.467],'77098':[29.731,-95.416],
+    '77099':[29.701,-95.598],'77338':[29.979,-95.240],'77339':[29.993,-95.196],
+    '77345':[29.987,-95.164],'77346':[29.962,-95.153],'77357':[30.053,-95.204],
+    '77373':[30.014,-95.337],'77375':[29.997,-95.573],'77377':[29.970,-95.624],
+    '77379':[29.982,-95.575],'77380':[30.162,-95.477],'77381':[30.184,-95.501],
+    '77382':[30.196,-95.528],'77384':[30.200,-95.494],'77385':[30.180,-95.455],
+    '77386':[30.149,-95.416],'77388':[29.998,-95.476],'77389':[30.010,-95.530],
+    '77396':[29.873,-95.192],'77401':[29.706,-95.463],'77406':[29.686,-95.714],
+    '77407':[29.682,-95.675],'77429':[29.969,-95.655],'77433':[29.963,-95.691],
+    '77447':[29.917,-95.724],'77449':[29.846,-95.703],'77450':[29.762,-95.695],
+    '77477':[29.600,-95.546],'77478':[29.613,-95.470],'77479':[29.597,-95.512],
+    '77489':[29.609,-95.434],'77494':[29.730,-95.743],'77498':[29.706,-95.650],
+    '77502':[29.707,-95.186],'77503':[29.694,-95.155],'77504':[29.677,-95.178],
+    '77505':[29.672,-95.131],'77506':[29.726,-95.198],'77507':[29.627,-95.077],
+    '77520':[29.751,-94.993],'77521':[29.783,-95.015],'77530':[29.749,-95.084],
+    '77532':[29.862,-95.061],'77536':[29.685,-95.055],'77546':[29.568,-95.219],
+    '77547':[29.717,-95.099],'77571':[29.671,-95.044],'77573':[29.570,-95.165],
+    '77578':[29.530,-95.405],'77581':[29.552,-95.312],'77584':[29.544,-95.431],
+    '77586':[29.580,-95.066],'77587':[29.654,-95.238],'77598':[29.578,-95.063],
+  };
+
+  const withCoords = [];
+  const withoutCoords = [];
+
+  records.forEach(r => {
+    const zip = (r.prop_zip||r.mail_zip||'').replace(/\D/g,'').slice(0,5);
+    const coords = zipCoords[zip];
+    if (coords) {
+      // Slight jitter so markers don't stack exactly
+      const jitter = () => (Math.random()-0.5)*0.012;
+      withCoords.push({r, lat: coords[0]+jitter(), lng: coords[1]+jitter()});
+    } else {
+      withoutCoords.push(r);
+    }
   });
 
-  const csv = [cols.map(c => `"${c}"`).join(','), ...rows].join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `hc_leads_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
+  withCoords.forEach(({r, lat, lng}) => {
+    const score = r.score||0;
+    const color = score>=70 ? '#F5A800' : score>=40 ? '#2AB8B8' : '#3a5a6a';
+    const size  = score>=70 ? 14 : score>=40 ? 11 : 8;
+
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2px solid rgba(0,0,0,0.4);box-shadow:0 0 6px ${color}44;"></div>`,
+      iconSize: [size,size],
+      iconAnchor: [size/2,size/2],
+    });
+
+    const popup = `
+      <strong>${r.owner||'Unknown'}</strong><br/>
+      ${r.cat_label} · Score: <strong style="color:${color}">${score}</strong><br/>
+      ${r.prop_address||'No address'}<br/>
+      Filed: ${r.filed||'—'}<br/>
+      ${r.clerk_url ? '<a href="'+r.clerk_url+'" target="_blank">View Document →</a>' : ''}
+    `;
+
+    const marker = L.marker([lat,lng], {icon}).bindPopup(popup);
+    marker.addTo(mapInstance);
+    mapMarkers.push(marker);
+  });
+
+  const shown = withCoords.length;
+  const total = records.length;
+  document.getElementById('map-count').textContent =
+    `Showing ${shown} of ${total} leads (${total-shown} without address)`;
+
+  // If no markers, center on Harris County
+  if (shown === 0) {
+    mapInstance.setView([29.7604, -95.3698], 10);
+  }
+}
+
+// ─── CSV Export ──────────────────────────────────────────────────────────────
+document.getElementById('export-csv').addEventListener('click', () => {
+  const cols = ['First Name','Last Name','Mailing Address','Mailing City','Mailing State',
+    'Mailing Zip','Property Address','Property City','Property State','Property Zip',
+    'Lead Type','Document Type','Date Filed','Document Number','Amount/Debt Owed',
+    'Seller Score','Motivated Seller Flags','Source','Public Records URL'];
+  const rows = getFiltered().map(r => {
+    const p = (r.owner||'').trim().split(/\s+/);
+    const amt = r.amount;
+    return [
+      p[0]||'', p.slice(1).join(' '),
+      r.mail_address||'', r.mail_city||'', r.mail_state||'TX', r.mail_zip||'',
+      r.prop_address||'', r.prop_city||'', r.prop_state||'TX', r.prop_zip||'',
+      r.cat_label||'', r.doc_type||'', r.filed||'', r.doc_num||'',
+      amt ? '$'+Number(amt).toLocaleString() : '',
+      r.score||0, (r.flags||[]).join('; '),
+      'Harris County Clerk', r.clerk_url||''
+    ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+  });
+  const csv  = [cols.map(c=>`"${c}"`).join(','), ...rows].join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `hc_leads_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
 });
 </script>
 </body>
