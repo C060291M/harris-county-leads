@@ -20,7 +20,7 @@ Config:
   Falls back to scraping cclerk.hctx.net if FTP not configured.
 """
 
-import csv, ftplib, io, json, logging, os, re, sys, time, zipfile
+import csv, io, json, logging, os, re, sys, time, zipfile
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
@@ -168,49 +168,68 @@ def blank_record(doc_num, doc_type, cat, cat_label, filed, owner,
     }
 
 
-# ── FTP downloader ────────────────────────────────────────────────────────────
+# ── SFTP downloader (Harris County uses SFTP at sftp.cclerk.hctx.net) ──────────
 
 class FTPClient:
+    """
+    SFTP client for Harris County Clerk FTP server.
+    Server: sftp.cclerk.hctx.net (SFTP / SSH protocol, port 22)
+    Files are in /IndexData/ folder.
+    """
     def __init__(self, host, user, password):
-        self.host = host
-        self.user = user
+        self.host     = host
+        self.user     = user
         self.password = password
-        self._ftp = None
+        self._ssh     = None
+        self._sftp    = None
 
     def connect(self):
-        log.info("Connecting to FTP: %s", self.host)
-        self._ftp = ftplib.FTP(self.host, timeout=30)
-        self._ftp.login(self.user, self.password)
-        log.info("FTP connected. Welcome: %s", self._ftp.getwelcome()[:80])
+        import paramiko
+        log.info("Connecting to SFTP: %s", self.host)
+        self._ssh = paramiko.SSHClient()
+        self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self._ssh.connect(
+            hostname = self.host,
+            port     = 22,
+            username = self.user,
+            password = self.password,
+            timeout  = 30,
+            banner_timeout = 30,
+            auth_timeout   = 30,
+        )
+        self._sftp = self._ssh.open_sftp()
+        log.info("SFTP connected to %s", self.host)
 
     def disconnect(self):
-        if self._ftp:
-            try: self._ftp.quit()
-            except Exception: pass
+        try:
+            if self._sftp: self._sftp.close()
+            if self._ssh:  self._ssh.close()
+        except Exception: pass
 
     def list_files(self, path="/IndexData") -> list[str]:
-        """List files in a directory."""
-        files = []
         try:
-            self._ftp.cwd(path)
-            self._ftp.retrlines("LIST", lambda l: files.append(l.split()[-1]))
+            return self._sftp.listdir(path)
         except Exception as e:
-            log.warning("FTP list error at %s: %s", path, e)
-        return files
+            log.warning("SFTP list error at %s: %s", path, e)
+            return []
 
     def download_zip(self, filename: str, path="/IndexData") -> Optional[bytes]:
-        """Download a zip file and return its bytes."""
+        full_path = f"{path}/{filename}"
         buf = io.BytesIO()
         try:
-            self._ftp.retrbinary(f"RETR {path}/{filename}", buf.write)
-            log.info("Downloaded %s (%d bytes)", filename, buf.tell())
-            return buf.getvalue()
+            self._sftp.getfo(full_path, buf)
+            size = buf.tell()
+            log.info("Downloaded %s (%d bytes)", filename, size)
+            buf.seek(0)
+            return buf.read()
+        except FileNotFoundError:
+            log.debug("File not found on SFTP: %s", full_path)
+            return None
         except Exception as e:
-            log.warning("FTP download failed %s: %s", filename, e)
+            log.warning("SFTP download failed %s: %s", filename, e)
             return None
 
     def get_daily_zips(self, date_str: str, record_type: str) -> Optional[bytes]:
-        """Get zip for a specific date and record type (RP, ASN, PRO, FRCL)."""
         filename = f"{date_str}_{record_type}Subscriber.zip"
         return self.download_zip(filename)
 
