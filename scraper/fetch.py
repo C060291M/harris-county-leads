@@ -619,6 +619,27 @@ def main():
         ftp = FTPClient(FTP_HOST, FTP_USER, FTP_PASS)
         try:
             ftp.connect()
+
+            # ── Auto-discover folder structure ──────────────────────────────
+            log.info("Listing SFTP root directory...")
+            try:
+                root_files = ftp._sftp.listdir("/")
+                log.info("Root contents: %s", root_files)
+            except Exception as e:
+                log.warning("Cannot list root: %s", e)
+
+            # Try common folder names
+            for folder in ["/", "/IndexData", "/indexdata", "/Index", 
+                           "/Data", "/data", "/files", "/RP", "/Subscriber",
+                           "/IndexData/RP", "/IndexData/ASN"]:
+                try:
+                    contents = ftp._sftp.listdir(folder)
+                    log.info("Folder %s exists, contains %d items: %s",
+                             folder, len(contents), contents[:10])
+                except Exception:
+                    pass
+            # ────────────────────────────────────────────────────────────────
+
             dates = business_days_back(LOOKBACK_DAYS)
             log.info("Fetching %d business days: %s … %s", len(dates), dates[-1], dates[0])
 
