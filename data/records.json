@@ -1,9 +1,9 @@
 {
-  "fetched_at": "2026-04-20T23:32:09.720976",
+  "fetched_at": "2026-04-21T10:55:15.705831",
   "source": "Harris County Clerk FTP",
   "date_range": {
-    "start": "2026-04-13",
-    "end": "2026-04-20"
+    "start": "2026-04-14",
+    "end": "2026-04-21"
   },
   "total": 0,
   "with_address": 0,
