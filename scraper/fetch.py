@@ -182,6 +182,7 @@ class FTPClient:
         self.password = password
         self._ssh     = None
         self._sftp    = None
+        self._home    = f"/users/{user}"
 
     def connect(self):
         import paramiko
@@ -198,7 +199,14 @@ class FTPClient:
             auth_timeout   = 30,
         )
         self._sftp = self._ssh.open_sftp()
-        log.info("SFTP connected to %s", self.host)
+        # Get home directory to build correct paths
+        try:
+            self._home = self._sftp.getcwd() or f"/users/{user}"
+            if not self._home or self._home == "/":
+                self._home = f"/users/{user}"
+        except Exception:
+            self._home = f"/users/{user}"
+        log.info("SFTP connected to %s, home: %s", self.host, self._home)
 
     def disconnect(self):
         try:
@@ -230,8 +238,26 @@ class FTPClient:
             return None
 
     def get_daily_zips(self, date_str: str, record_type: str) -> Optional[bytes]:
-        filename = f"{date_str}_{record_type}Subscriber.zip"
-        return self.download_zip(filename)
+        """
+        Harris County SFTP folder/filename mapping (confirmed from web interface):
+          Real Property:  /users/<user>/Index_RP/YYYYMMDD_RPISubscriber.zip
+          Probate:        /users/<user>/Index_PRO/YYYYMMDD_PROSubscriber.zip
+          Foreclosure:    /users/<user>/Index_FRCL/YYYYMMDD_FRCLSubscriber.zip
+          Assumed Names:  /users/<user>/Index_ASN/YYYYMMDD_ASNSubscriber.zip
+        """
+        folder_map = {
+            "RP":   ("Index_RP",   f"{date_str}_RPISubscriber.zip"),
+            "PRO":  ("Index_PRO",  f"{date_str}_PROSubscriber.zip"),
+            "FRCL": ("Index_FRCL", f"{date_str}_FRCLSubscriber.zip"),
+            "ASN":  ("Index_ASN",  f"{date_str}_ASNSubscriber.zip"),
+        }
+        if record_type not in folder_map:
+            log.warning("Unknown record type: %s", record_type)
+            return None
+        folder, filename = folder_map[record_type]
+        full_path = f"{self._home}/{folder}"
+        log.info("Looking for %s in %s", filename, full_path)
+        return self.download_zip(filename, path=full_path)
 
 
 # ── FTP zip parsers ───────────────────────────────────────────────────────────
@@ -619,26 +645,6 @@ def main():
         ftp = FTPClient(FTP_HOST, FTP_USER, FTP_PASS)
         try:
             ftp.connect()
-
-            # ── Auto-discover folder structure ──────────────────────────────
-            log.info("Listing SFTP root directory...")
-            try:
-                root_files = ftp._sftp.listdir("/")
-                log.info("Root contents: %s", root_files)
-            except Exception as e:
-                log.warning("Cannot list root: %s", e)
-
-            # Try common folder names
-            for folder in ["/", "/IndexData", "/indexdata", "/Index", 
-                           "/Data", "/data", "/files", "/RP", "/Subscriber",
-                           "/IndexData/RP", "/IndexData/ASN"]:
-                try:
-                    contents = ftp._sftp.listdir(folder)
-                    log.info("Folder %s exists, contains %d items: %s",
-                             folder, len(contents), contents[:10])
-                except Exception:
-                    pass
-            # ────────────────────────────────────────────────────────────────
 
             dates = business_days_back(LOOKBACK_DAYS)
             log.info("Fetching %d business days: %s … %s", len(dates), dates[-1], dates[0])
