@@ -182,7 +182,7 @@ class FTPClient:
         self.password = password
         self._ssh     = None
         self._sftp    = None
-        self._home    = f"/users/{user}"
+        self._home    = f"/users/{self.user}"
 
     def connect(self):
         import paramiko
@@ -201,11 +201,11 @@ class FTPClient:
         self._sftp = self._ssh.open_sftp()
         # Get home directory to build correct paths
         try:
-            self._home = self._sftp.getcwd() or f"/users/{user}"
+            self._home = self._sftp.getcwd() or f"/users/{self.user}"
             if not self._home or self._home == "/":
-                self._home = f"/users/{user}"
+                self._home = f"/users/{self.user}"
         except Exception:
-            self._home = f"/users/{user}"
+            self._home = f"/users/{self.user}"
         log.info("SFTP connected to %s, home: %s", self.host, self._home)
 
     def disconnect(self):
