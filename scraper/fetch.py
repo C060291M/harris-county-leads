@@ -264,12 +264,12 @@ class FTPClient:
 
 def parse_rp_zip(zip_bytes: bytes, date_str: str) -> list[dict]:
     """
-    Parse Real Property zip.
-    Files: RPInstruments.txt, RPGrantors.txt (or RPOwners.txt), RPGrantees.txt
-    Columns in RPInstruments.txt (pipe-delimited):
-      File Number | Film Code | File Date | Instrument Type |
-      No. of Pages | Consideration Amount | Legal Description |
-      Subdivision | Vol | Page | ...
+    Parse Real Property zip from Harris County SFTP.
+    Actual files inside zip (confirmed from live server):
+      YYYYMMDD_RPI_Instruments.txt  — main instrument record
+      YYYYMMDD_RPI_Names.txt        — grantor/grantee names
+      YYYYMMDD_RPI_LegalDesc.txt    — legal descriptions
+      YYYYMMDD_RPI_RelatedDocs.txt  — related documents
     """
     records = []
     try:
@@ -281,93 +281,155 @@ def parse_rp_zip(zip_bytes: bytes, date_str: str) -> list[dict]:
     names = {n.lower(): n for n in zf.namelist()}
     log.info("RP zip %s contains: %s", date_str, list(zf.namelist()))
 
-    # Find instrument file
-    instr_key = next((k for k in names if "instrument" in k), None)
-    owner_key  = next((k for k in names if "grantor" in k or "owner" in k), None)
-    grantee_key = next((k for k in names if "grantee" in k), None)
+    # Find files using actual naming pattern YYYYMMDD_RPI_Instruments.txt
+    instr_key  = next((k for k in names if "instrument" in k), None)
+    names_key  = next((k for k in names if "_names" in k), None)
+    legal_key  = next((k for k in names if "legal" in k or "legaldesc" in k), None)
 
     if not instr_key:
-        log.warning("No instrument file in RP zip %s", date_str)
+        log.warning("No instrument file in RP zip %s — keys: %s", date_str, list(names.keys()))
         return []
 
-    # Parse instruments
-    instr_rows = {}
+    # ── Parse Instruments file ───────────────────────────────────────────────
     instr_text = zf.read(names[instr_key]).decode("latin-1", errors="replace")
+    # Log first line to see actual column names
+    first_lines = instr_text.splitlines()[:3]
+    log.info("RPI_Instruments columns: %s", first_lines[0][:200] if first_lines else "EMPTY")
+    if len(first_lines) > 1:
+        log.info("RPI_Instruments first row: %s", first_lines[1][:200])
+
+    instr_rows = {}
+    all_itypes = set()
     for row in csv.DictReader(io.StringIO(instr_text), delimiter="|"):
-        fn = row.get("File Number","").strip()
+        # Try every possible field name for file number
+        fn = (row.get("FileNumber") or row.get("File Number") or
+              row.get("FILENUMBER") or row.get("file_number") or
+              row.get("FilmCode") or "").strip()
         if fn:
             instr_rows[fn] = row
+            # Collect all instrument types seen
+            for k in row.keys():
+                if "type" in k.lower() or "instrument" in k.lower() or "code" in k.lower():
+                    all_itypes.add(f"{k}={row[k].strip()}")
 
-    # Parse owners/grantors
-    owner_rows = {}
-    if owner_key:
-        owner_text = zf.read(names[owner_key]).decode("latin-1", errors="replace")
-        for row in csv.DictReader(io.StringIO(owner_text), delimiter="|"):
-            fn = row.get("File Number","").strip()
+    log.info("Parsed %d instrument rows. Sample itypes: %s", len(instr_rows), list(all_itypes)[:10])
+
+    # ── Parse Names file (grantors + grantees) ───────────────────────────────
+    grantor_rows  = {}
+    grantee_rows  = {}
+    if names_key:
+        names_text = zf.read(names[names_key]).decode("latin-1", errors="replace")
+        name_lines = names_text.splitlines()[:2]
+        log.info("RPI_Names columns: %s", name_lines[0][:200] if name_lines else "EMPTY")
+        for row in csv.DictReader(io.StringIO(names_text), delimiter="|"):
+            fn = (row.get("FileNumber") or row.get("File Number") or
+                  row.get("FILENUMBER") or "").strip()
+            if not fn:
+                continue
+            # Determine if grantor or grantee by NameType or Party field
+            ntype = (row.get("NameType") or row.get("Name Type") or
+                     row.get("NAMETYPE") or row.get("Party") or
+                     row.get("PartyType") or "").strip().upper()
+            name  = (row.get("Name") or row.get("NAME") or
+                     row.get("FullName") or row.get("Full Name") or "").strip()
+            addr  = (row.get("Address") or row.get("ADDRESS") or
+                     row.get("Addr1") or "").strip()
+            city  = (row.get("City") or row.get("CITY") or "").strip()
+            state = (row.get("State") or row.get("STATE") or "TX").strip()
+            zipcd = (row.get("Zip") or row.get("ZIP") or
+                     row.get("ZipCode") or "").strip()
+            entry = {"name": name, "addr": addr, "city": city,
+                     "state": state or "TX", "zip": zipcd}
+            # G = grantor, R = grantee (common coding)
+            if ntype in ("G","GRANTOR","1","PARTY1","DR"):
+                grantor_rows.setdefault(fn, []).append(entry)
+            elif ntype in ("E","GRANTEE","2","PARTY2","EE"):
+                grantee_rows.setdefault(fn, []).append(entry)
+            else:
+                # Default: first occurrence = grantor
+                grantor_rows.setdefault(fn, []).append(entry)
+
+    # ── Parse Legal Description file ─────────────────────────────────────────
+    legal_rows = {}
+    if legal_key:
+        legal_text = zf.read(names[legal_key]).decode("latin-1", errors="replace")
+        for row in csv.DictReader(io.StringIO(legal_text), delimiter="|"):
+            fn = (row.get("FileNumber") or row.get("File Number") or
+                  row.get("FILENUMBER") or "").strip()
             if fn:
-                owner_rows.setdefault(fn, []).append(row)
+                desc = (row.get("LegalDescription") or row.get("Legal Description") or
+                        row.get("LEGALDESCRIPTION") or row.get("Description") or
+                        row.get("Subdivision") or "").strip()
+                legal_rows[fn] = desc
 
-    # Parse grantees
-    grantee_rows = {}
-    if grantee_key:
-        grantee_text = zf.read(names[grantee_key]).decode("latin-1", errors="replace")
-        for row in csv.DictReader(io.StringIO(grantee_text), delimiter="|"):
-            fn = row.get("File Number","").strip()
-            if fn:
-                grantee_rows.setdefault(fn, []).append(row)
-
-    # Build records
+    # ── Build records ─────────────────────────────────────────────────────────
+    seen_itypes = {}
     for fn, instr in instr_rows.items():
-        # Get instrument type — try multiple field name variants
-        itype = (instr.get("Instrument Type") or
-                 instr.get("Instrument Code") or
-                 instr.get("Doc Type") or "").strip().upper()
+        # Find instrument type field — try every key
+        itype = ""
+        for k in instr.keys():
+            kl = k.lower()
+            if "instrtype" in kl or "instrumenttype" in kl or "instrument_type" in kl:
+                itype = instr[k].strip().upper(); break
+            if kl == "type" or kl == "doctype" or kl == "doc_type":
+                itype = instr[k].strip().upper(); break
+            if "type" in kl and len(instr[k].strip()) <= 15:
+                itype = instr[k].strip().upper()
+
+        seen_itypes[itype] = seen_itypes.get(itype, 0) + 1
 
         cat, cat_label = RP_CAT_MAP.get(itype, (None, None))
         if not cat:
-            # Try partial match
-            for code, (c, l) in RP_CAT_MAP.items():
-                if code in itype:
-                    cat, cat_label = c, l
-                    break
+            for code_key, (c, l) in RP_CAT_MAP.items():
+                if code_key and itype and code_key in itype:
+                    cat, cat_label = c, l; break
         if not cat:
-            continue  # Not a target document type
+            continue
 
-        filed = norm_date(instr.get("File Date", date_str))
-        amount = parse_amount(instr.get("Consideration Amount") or
-                              instr.get("Amount") or "")
-        legal = (instr.get("Legal Description") or
-                 instr.get("Subdivision") or "").strip()
-        film = instr.get("Film Code Number","").strip()
-        clerk_url = f"https://www.cclerk.hctx.net/Applications/WebSearch/RP_R.aspx?FilmCode={film}" if film else ""
+        # Find date field
+        filed_raw = ""
+        for k in instr.keys():
+            if "filedate" in k.lower() or "file_date" in k.lower() or k.lower() == "date":
+                filed_raw = instr[k].strip(); break
+        filed = norm_date(filed_raw) if filed_raw else date_str
 
-        owners = owner_rows.get(fn, [])
+        # Find amount field
+        amount = None
+        for k in instr.keys():
+            if "amount" in k.lower() or "consideration" in k.lower():
+                amount = parse_amount(instr[k]); break
+
+        # Find film/doc number for URL
+        film = ""
+        for k in instr.keys():
+            if "film" in k.lower() or "filmcode" in k.lower():
+                film = instr[k].strip(); break
+
+        clerk_url = (f"https://www.cclerk.hctx.net/Applications/WebSearch/"
+                     f"RP_R.aspx?FilmCode={film}") if film else ""
+
+        grantors = grantor_rows.get(fn, [])
         grantees = grantee_rows.get(fn, [])
+        legal    = legal_rows.get(fn, "")
 
-        owner_name = " / ".join(
-            o.get("Owner Name", o.get("Grantor Name","")).strip()
-            for o in owners if o.get("Owner Name", o.get("Grantor Name","")).strip()
-        ) or ""
-
-        grantee_name = " / ".join(
-            g.get("Grantee Name","").strip()
-            for g in grantees if g.get("Grantee Name","").strip()
-        ) or ""
+        owner_name   = " / ".join(g["name"] for g in grantors if g["name"]) or ""
+        grantee_name = " / ".join(g["name"] for g in grantees if g["name"]) or ""
 
         rec = blank_record(fn, itype, cat, cat_label, filed,
                            owner_name, grantee_name, amount, legal, clerk_url)
 
-        # Enrich with owner address if available
-        if owners:
-            o = owners[0]
-            rec["mail_address"] = o.get("Address","").strip()
-            rec["mail_city"]    = o.get("City","").strip()
-            rec["mail_state"]   = o.get("State","TX").strip() or "TX"
-            rec["mail_zip"]     = o.get("Zip","").strip()
+        if grantors:
+            g = grantors[0]
+            rec["mail_address"] = g["addr"]
+            rec["mail_city"]    = g["city"]
+            rec["mail_state"]   = g["state"]
+            rec["mail_zip"]     = g["zip"]
 
         records.append(rec)
 
-    log.info("RP %s: %d target records (from %d instruments)", date_str, len(records), len(instr_rows))
+    log.info("RP %s: %d target records (from %d instruments). Types seen: %s",
+             date_str, len(records), len(instr_rows),
+             sorted(seen_itypes.items(), key=lambda x: -x[1])[:10])
     return records
 
 
