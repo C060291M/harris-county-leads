@@ -1,90 +1,101 @@
 """
-Harris County Clerk FTP Scraper
-Pulls daily index files from the Clerk's FTP server and processes:
-  - Real Property (RP) records — LP, liens, judgments, tax deeds, etc.
-  - Assumed Names (ASN) — DBA filings (bonus leads: LLC owners)
-  - Probate (PRO) — estate/probate filings
-  - Foreclosures (FRCL) — trustee sale notices
-
-FTP Structure (per ReadMe):
-  /IndexData/
-    YYYYMMDD_RPSubscriber.zip   → RPInstruments.txt, RPOwners.txt, RPGrantees.txt
-    YYYYMMDD_ASNSubscriber.zip  → ASNInstruments.txt, ASNOwners.txt, ASNDBAs.txt
-    YYYYMMDD_PROSubscriber.zip  → PROInstruments.txt, PROOwners.txt
-    YYYYMMDD_FRCLSubscriber.zip → FRCLInstruments.txt
-
-All files: pipe-delimited (|), first row = header.
-
-Config:
-  Set FTP_HOST, FTP_USER, FTP_PASS as GitHub Secrets (env vars).
-  Falls back to scraping cclerk.hctx.net if FTP not configured.
+Harris County Clerk SFTP Scraper v9 - Production
+SFTP: sftp.cclerk.hctx.net
+Folder: /users/<user>/Index_RP/
+Files:  YYYYMMDD_RPISubscriber.zip
+Confirmed column names from live server:
+  RPI_Instruments.txt: File No | Document Type | FileDate | Film Code No. | No. of Pages
+  RPI_Names.txt:       File No | Name | NType | Document Type
+  RPI_LegalDesc.txt:   File No | Legal Description (approx)
 """
-
 import csv, io, json, logging, os, re, sys, time, zipfile
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
+from urllib.parse import unquote
 
 import requests
 from bs4 import BeautifulSoup
 
-logging.basicConfig(level=logging.INFO,
+try:
+    import paramiko
+    HAS_PARAMIKO = True
+except ImportError:
+    HAS_PARAMIKO = False
+
+logging.basicConfig(
+    level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)])
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
 log = logging.getLogger(__name__)
 
 OUTPUT_DIRS   = [Path("dashboard"), Path("data")]
 DEBUG_DIR     = Path("debug")
 LOOKBACK_DAYS = int(os.environ.get("LOOKBACK_DAYS", "7"))
 
-# FTP credentials from environment / GitHub Secrets
 FTP_HOST = os.environ.get("FTP_HOST", "")
 FTP_USER = os.environ.get("FTP_USER", "")
 FTP_PASS = os.environ.get("FTP_PASS", "")
 
-# ── Instrument type → category mapping ───────────────────────────────────────
-# Real Property instrument codes (from Codes.aspx?DTI=1)
 RP_CAT_MAP = {
-    "LP":       ("LP",       "Lis Pendens"),
-    "RELLP":    ("RELLP",    "Release Lis Pendens"),
-    "A/J":      ("JUD",      "Abstract of Judgment"),
-    "CCJ":      ("CCJ",      "Certified Judgment"),
-    "DRJUD":    ("DRJUD",    "Domestic Relations Judgment"),
-    "LNIRS":    ("LNIRS",    "IRS Lien"),
-    "LNFED":    ("LNFED",    "Federal Lien"),
-    "LNCORPTX": ("LNCORPTX", "Corp Tax Lien"),
-    "LN":       ("LN",       "Lien"),
-    "LNMECH":   ("LNMECH",   "Mechanic Lien"),
-    "LNHOA":    ("LNHOA",    "HOA Lien"),
-    "MEDLN":    ("MEDLN",    "Medicaid Lien"),
-    "TAXDEED":  ("TAXDEED",  "Tax Deed"),
-    "NOC":      ("NOC",      "Notice of Commencement"),
-    "NOFC":     ("NOFC",     "Notice of Foreclosure"),
-    "PRO":      ("PRO",      "Probate"),
+    "LP":           ("LP",       "Lis Pendens"),
+    "RELLP":        ("RELLP",    "Release Lis Pendens"),
+    "A/J":          ("JUD",      "Abstract of Judgment"),
+    "ABST OF JUD":  ("JUD",      "Abstract of Judgment"),
+    "ABSTRACT OF JUDGMENT": ("JUD", "Abstract of Judgment"),
+    "CCJ":          ("CCJ",      "Certified Judgment"),
+    "CERT JUDG":    ("CCJ",      "Certified Judgment"),
+    "DRJUD":        ("DRJUD",    "Domestic Relations Judgment"),
+    "LNIRS":        ("LNIRS",    "IRS Lien"),
+    "IRS LIEN":     ("LNIRS",    "IRS Lien"),
+    "LNFED":        ("LNFED",    "Federal Lien"),
+    "FED LIEN":     ("LNFED",    "Federal Lien"),
+    "LNCORPTX":     ("LNCORPTX", "Corp Tax Lien"),
+    "CORP TAX":     ("LNCORPTX", "Corp Tax Lien"),
+    "LN":           ("LN",       "Lien"),
+    "LIEN":         ("LN",       "Lien"),
+    "LNMECH":       ("LNMECH",   "Mechanic Lien"),
+    "MECH LIEN":    ("LNMECH",   "Mechanic Lien"),
+    "MECHANIC":     ("LNMECH",   "Mechanic Lien"),
+    "LNHOA":        ("LNHOA",    "HOA Lien"),
+    "HOA LIEN":     ("LNHOA",    "HOA Lien"),
+    "MEDLN":        ("MEDLN",    "Medicaid Lien"),
+    "MEDICAID":     ("MEDLN",    "Medicaid Lien"),
+    "TAXDEED":      ("TAXDEED",  "Tax Deed"),
+    "TAX DEED":     ("TAXDEED",  "Tax Deed"),
+    "NOC":          ("NOC",      "Notice of Commencement"),
+    "NOTICE OF COM":("NOC",      "Notice of Commencement"),
+    "NOFC":         ("NOFC",     "Notice of Foreclosure"),
+    "FORECLOSURE":  ("NOFC",     "Notice of Foreclosure"),
+    "PRO":          ("PRO",      "Probate"),
+    "PROBATE":      ("PRO",      "Probate"),
 }
 
-TARGET_CATS = set(RP_CAT_MAP.keys())
-
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
 
 def parse_amount(text) -> Optional[float]:
-    if not text: return None
+    if not text:
+        return None
     c = re.sub(r"[^\d.]", "", str(text).replace(",", ""))
     try:
-        v = float(c); return v if v > 0 else None
-    except ValueError: return None
+        v = float(c)
+        return v if v > 0 else None
+    except ValueError:
+        return None
 
 
 def norm_date(raw: str) -> str:
-    """Handle YYYYMMDD (FTP format) and MM/DD/YYYY (portal format)."""
     raw = raw.strip()
     if re.match(r"^\d{8}$", raw):
-        try: return datetime.strptime(raw, "%Y%m%d").strftime("%Y-%m-%d")
-        except ValueError: pass
-    for fmt in ("%m/%d/%Y", "%Y-%m-%d", "%m-%d-%Y"):
-        try: return datetime.strptime(raw, fmt).strftime("%Y-%m-%d")
-        except ValueError: pass
+        try:
+            return datetime.strptime(raw, "%Y%m%d").strftime("%Y-%m-%d")
+        except ValueError:
+            pass
+    for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%m-%d-%Y"):
+        try:
+            return datetime.strptime(raw, fmt).strftime("%Y-%m-%d")
+        except ValueError:
+            pass
     return raw
 
 
@@ -93,7 +104,8 @@ def name_variants(name: str):
     v = {name}
     if "," in name:
         p = [x.strip() for x in name.split(",", 1)]
-        if len(p) == 2: v.add(f"{p[1]} {p[0]}")
+        if len(p) == 2:
+            v.add(f"{p[1]} {p[0]}")
     else:
         p = name.split()
         if len(p) >= 2:
@@ -102,15 +114,24 @@ def name_variants(name: str):
     return v
 
 
-def business_days_back(n: int) -> list[str]:
-    """Return list of YYYYMMDD strings for last n business days."""
+def business_days_back(n: int) -> list:
     dates = []
     d = datetime.now()
     while len(dates) < n:
         d -= timedelta(days=1)
-        if d.weekday() < 5:  # Mon–Fri
+        if d.weekday() < 5:
             dates.append(d.strftime("%Y%m%d"))
     return dates
+
+
+def classify(raw_type: str):
+    t = raw_type.strip().upper()
+    if t in RP_CAT_MAP:
+        return RP_CAT_MAP[t]
+    for key, val in RP_CAT_MAP.items():
+        if key and t and (key in t or t in key):
+            return val
+    return None, None
 
 
 def compute_score(record: dict, cutoff: datetime):
@@ -122,23 +143,22 @@ def compute_score(record: dict, cutoff: datetime):
     legal = (record.get("legal") or "").upper()
     dtype = (record.get("doc_type") or "").upper()
 
-    # Distress signals
     if cat in ("TAXDEED", "LNIRS", "LNCORPTX", "LNFED"):
         flags.append("Tax delinquency"); s += 30
     if cat in ("LNMECH", "LNHOA"):
         flags.append("Code / HOA violation"); s += 25
     if cat == "PRO":
         flags.append("Probate / estate"); s += 20
-    if cat in {"LN","LNMECH","LNHOA","LNIRS","LNFED","LNCORPTX","MEDLN"}:
+    if cat in {"LN", "LNMECH", "LNHOA", "LNIRS", "LNFED", "LNCORPTX", "MEDLN"}:
         if "Lien on record" not in flags:
             flags.append("Lien on record"); s += 15
-    if any(k in legal+dtype for k in ["DIVORCE","DISSOLUTION","BANKRUPTCY"]) or cat=="DRJUD":
+    if any(k in legal + dtype for k in ["DIVORCE", "DISSOLUTION", "BANKRUPTCY"]) or cat == "DRJUD":
         flags.append("Divorce / bankruptcy"); s += 10
-    if cat in ("LP","RELLP"):
+    if cat in ("LP", "RELLP"):
         flags.append("Lis pendens"); s += 10
     if cat == "NOFC":
         flags.append("Pre-foreclosure"); s += 10
-    if cat in ("JUD","CCJ"):
+    if cat in ("JUD", "CCJ"):
         flags.append("Judgment lien"); s += 10
     if "Lis pendens" in flags and "Pre-foreclosure" in flags:
         s += 20
@@ -147,129 +167,97 @@ def compute_score(record: dict, cutoff: datetime):
     try:
         if datetime.strptime(filed[:10], "%Y-%m-%d") >= cutoff:
             flags.append("New this week"); s += 5
-    except Exception: pass
+    except Exception:
+        pass
     if amt:
         if amt > 100000: s += 15
         elif amt > 50000: s += 10
-    if record.get("prop_address"): s += 5
+    if record.get("prop_address") or record.get("mail_address"):
+        s += 5
     s += len(flags) * 2
     return min(s, 100), flags
 
 
-def blank_record(doc_num, doc_type, cat, cat_label, filed, owner,
-                 grantee="", amount=None, legal="", clerk_url=""):
+def blank_rec(fn, dtype, cat, cat_label, filed, owner,
+              grantee="", amount=None, legal="", url=""):
     return {
-        "doc_num": doc_num, "doc_type": doc_type,
+        "doc_num": fn, "doc_type": dtype,
         "cat": cat, "cat_label": cat_label,
         "filed": filed, "owner": owner, "grantee": grantee,
-        "amount": amount, "legal": legal, "clerk_url": clerk_url,
-        "prop_address":"","prop_city":"","prop_state":"TX","prop_zip":"",
-        "mail_address":"","mail_city":"","mail_state":"TX","mail_zip":"",
+        "amount": amount, "legal": legal, "clerk_url": url,
+        "prop_address": "", "prop_city": "", "prop_state": "TX", "prop_zip": "",
+        "mail_address": "", "mail_city": "", "mail_state": "TX", "mail_zip": "",
     }
 
 
-# ── SFTP downloader (Harris County uses SFTP at sftp.cclerk.hctx.net) ──────────
-
-class FTPClient:
-    """
-    SFTP client for Harris County Clerk FTP server.
-    Server: sftp.cclerk.hctx.net (SFTP / SSH protocol, port 22)
-    Files are in /IndexData/ folder.
-    """
+class SFTPClient:
     def __init__(self, host, user, password):
         self.host     = host
         self.user     = user
         self.password = password
         self._ssh     = None
         self._sftp    = None
-        self._home    = f"/users/{self.user}"
+        self._home    = f"/users/{user}"
 
     def connect(self):
-        import paramiko
-        log.info("Connecting to SFTP: %s", self.host)
+        log.info("Connecting SFTP: %s", self.host)
         self._ssh = paramiko.SSHClient()
         self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self._ssh.connect(
-            hostname = self.host,
-            port     = 22,
-            username = self.user,
-            password = self.password,
-            timeout  = 30,
-            banner_timeout = 30,
-            auth_timeout   = 30,
+            hostname=self.host, port=22,
+            username=self.user, password=self.password,
+            timeout=30, banner_timeout=30, auth_timeout=30,
         )
         self._sftp = self._ssh.open_sftp()
-        # Get home directory to build correct paths
         try:
-            self._home = self._sftp.getcwd() or f"/users/{self.user}"
-            if not self._home or self._home == "/":
-                self._home = f"/users/{self.user}"
+            cwd = self._sftp.getcwd()
+            if cwd and cwd != "/":
+                self._home = cwd
         except Exception:
-            self._home = f"/users/{self.user}"
-        log.info("SFTP connected to %s, home: %s", self.host, self._home)
+            pass
+        log.info("SFTP connected. Home: %s", self._home)
 
     def disconnect(self):
         try:
             if self._sftp: self._sftp.close()
             if self._ssh:  self._ssh.close()
-        except Exception: pass
+        except Exception:
+            pass
 
-    def list_files(self, path="/IndexData") -> list[str]:
+    def download(self, folder: str, filename: str) -> Optional[bytes]:
+        path = f"{self._home}/{folder}/{filename}"
+        buf  = io.BytesIO()
         try:
-            return self._sftp.listdir(path)
-        except Exception as e:
-            log.warning("SFTP list error at %s: %s", path, e)
-            return []
-
-    def download_zip(self, filename: str, path="/IndexData") -> Optional[bytes]:
-        full_path = f"{path}/{filename}"
-        buf = io.BytesIO()
-        try:
-            self._sftp.getfo(full_path, buf)
-            size = buf.tell()
-            log.info("Downloaded %s (%d bytes)", filename, size)
+            self._sftp.getfo(path, buf)
             buf.seek(0)
-            return buf.read()
+            data = buf.read()
+            log.info("Downloaded %s (%d bytes)", filename, len(data))
+            return data
         except FileNotFoundError:
-            log.debug("File not found on SFTP: %s", full_path)
             return None
         except Exception as e:
-            log.warning("SFTP download failed %s: %s", filename, e)
+            log.warning("SFTP download failed %s: %s", path, e)
             return None
 
-    def get_daily_zips(self, date_str: str, record_type: str) -> Optional[bytes]:
-        """
-        Harris County SFTP folder/filename mapping (confirmed from web interface):
-          Real Property:  /users/<user>/Index_RP/YYYYMMDD_RPISubscriber.zip
-          Probate:        /users/<user>/Index_PRO/YYYYMMDD_PROSubscriber.zip
-          Foreclosure:    /users/<user>/Index_FRCL/YYYYMMDD_FRCLSubscriber.zip
-          Assumed Names:  /users/<user>/Index_ASN/YYYYMMDD_ASNSubscriber.zip
-        """
-        folder_map = {
-            "RP":   ("Index_RP",   f"{date_str}_RPISubscriber.zip"),
-            "PRO":  ("Index_PRO",  f"{date_str}_PROSubscriber.zip"),
-            "FRCL": ("Index_FRCL", f"{date_str}_FRCLSubscriber.zip"),
-            "ASN":  ("Index_ASN",  f"{date_str}_ASNSubscriber.zip"),
-        }
-        if record_type not in folder_map:
-            log.warning("Unknown record type: %s", record_type)
-            return None
-        folder, filename = folder_map[record_type]
-        full_path = f"{self._home}/{folder}"
-        log.info("Looking for %s in %s", filename, full_path)
-        return self.download_zip(filename, path=full_path)
+    def get_rp(self, date_str: str) -> Optional[bytes]:
+        return self.download("Index_RP", f"{date_str}_RPISubscriber.zip")
+
+    def get_pro(self, date_str: str) -> Optional[bytes]:
+        return self.download("Index_PRO", f"{date_str}_PROSubscriber.zip")
+
+    def get_frcl(self, date_str: str) -> Optional[bytes]:
+        return self.download("Index_FRCL", f"{date_str}_FRCLSubscriber.zip")
+
+    def get_asn(self, date_str: str) -> Optional[bytes]:
+        return self.download("Index_ASN", f"{date_str}_ASNSubscriber.zip")
 
 
-# ── FTP zip parsers ───────────────────────────────────────────────────────────
-
-def parse_rp_zip(zip_bytes: bytes, date_str: str) -> list[dict]:
+def parse_rp_zip(zip_bytes: bytes, date_str: str) -> list:
     """
-    Parse Real Property zip from Harris County SFTP.
-    Actual files inside zip (confirmed from live server):
-      YYYYMMDD_RPI_Instruments.txt  — main instrument record
-      YYYYMMDD_RPI_Names.txt        — grantor/grantee names
-      YYYYMMDD_RPI_LegalDesc.txt    — legal descriptions
-      YYYYMMDD_RPI_RelatedDocs.txt  — related documents
+    Parse Real Property zip.
+    Confirmed column names from live server (2026-04-23 logs):
+      RPI_Instruments.txt: File No | Document Type | FileDate | Film Code No. | No. of Pages
+      RPI_Names.txt:       File No | Name | NType | Document Type
     """
     records = []
     try:
@@ -278,133 +266,91 @@ def parse_rp_zip(zip_bytes: bytes, date_str: str) -> list[dict]:
         log.warning("Bad RP zip %s: %s", date_str, e)
         return []
 
-    names = {n.lower(): n for n in zf.namelist()}
-    log.info("RP zip %s contains: %s", date_str, list(zf.namelist()))
+    znames = {n.lower(): n for n in zf.namelist()}
 
-    # Find files using actual naming pattern YYYYMMDD_RPI_Instruments.txt
-    instr_key  = next((k for k in names if "instrument" in k), None)
-    names_key  = next((k for k in names if "_names" in k), None)
-    legal_key  = next((k for k in names if "legal" in k or "legaldesc" in k), None)
+    instr_key = next((k for k in znames if "instrument" in k), None)
+    names_key = next((k for k in znames if "_names" in k), None)
+    legal_key = next((k for k in znames if "legal" in k), None)
 
     if not instr_key:
-        log.warning("No instrument file in RP zip %s — keys: %s", date_str, list(names.keys()))
+        log.warning("No instruments file in RP zip %s", date_str)
         return []
 
-    # ── Parse Instruments file ───────────────────────────────────────────────
-    instr_text = zf.read(names[instr_key]).decode("latin-1", errors="replace")
-    # Log first line to see actual column names
-    first_lines = instr_text.splitlines()[:3]
-    log.info("RPI_Instruments columns: %s", first_lines[0][:200] if first_lines else "EMPTY")
-    if len(first_lines) > 1:
-        log.info("RPI_Instruments first row: %s", first_lines[1][:200])
-
+    # ── Instruments ──────────────────────────────────────────────────────────
+    instr_text = zf.read(znames[instr_key]).decode("latin-1", errors="replace")
     instr_rows = {}
-    all_itypes = set()
     for row in csv.DictReader(io.StringIO(instr_text), delimiter="|"):
-        # Try every possible field name for file number
-        fn = (row.get("FileNumber") or row.get("File Number") or
-              row.get("FILENUMBER") or row.get("file_number") or
-              row.get("FilmCode") or "").strip()
+        fn = (row.get("File No") or row.get("File Number") or
+              row.get("FileNo") or "").strip()
         if fn:
             instr_rows[fn] = row
-            # Collect all instrument types seen
-            for k in row.keys():
-                if "type" in k.lower() or "instrument" in k.lower() or "code" in k.lower():
-                    all_itypes.add(f"{k}={row[k].strip()}")
 
-    log.info("Parsed %d instrument rows. Sample itypes: %s", len(instr_rows), list(all_itypes)[:10])
+    log.info("RP %s: %d instrument rows", date_str, len(instr_rows))
 
-    # ── Parse Names file (grantors + grantees) ───────────────────────────────
-    grantor_rows  = {}
-    grantee_rows  = {}
+    # ── Names (grantors + grantees) ───────────────────────────────────────────
+    grantor_rows = {}
+    grantee_rows = {}
     if names_key:
-        names_text = zf.read(names[names_key]).decode("latin-1", errors="replace")
-        name_lines = names_text.splitlines()[:2]
-        log.info("RPI_Names columns: %s", name_lines[0][:200] if name_lines else "EMPTY")
+        names_text = zf.read(znames[names_key]).decode("latin-1", errors="replace")
         for row in csv.DictReader(io.StringIO(names_text), delimiter="|"):
-            fn = (row.get("FileNumber") or row.get("File Number") or
-                  row.get("FILENUMBER") or "").strip()
+            fn = (row.get("File No") or row.get("File Number") or
+                  row.get("FileNo") or "").strip()
             if not fn:
                 continue
-            # Determine if grantor or grantee by NameType or Party field
-            ntype = (row.get("NameType") or row.get("Name Type") or
-                     row.get("NAMETYPE") or row.get("Party") or
-                     row.get("PartyType") or "").strip().upper()
-            name  = (row.get("Name") or row.get("NAME") or
-                     row.get("FullName") or row.get("Full Name") or "").strip()
-            addr  = (row.get("Address") or row.get("ADDRESS") or
-                     row.get("Addr1") or "").strip()
-            city  = (row.get("City") or row.get("CITY") or "").strip()
-            state = (row.get("State") or row.get("STATE") or "TX").strip()
-            zipcd = (row.get("Zip") or row.get("ZIP") or
-                     row.get("ZipCode") or "").strip()
-            entry = {"name": name, "addr": addr, "city": city,
-                     "state": state or "TX", "zip": zipcd}
-            # G = grantor, R = grantee (common coding)
-            if ntype in ("G","GRANTOR","1","PARTY1","DR"):
+            ntype = (row.get("NType") or row.get("NameType") or
+                     row.get("Name Type") or row.get("Party") or "").strip().upper()
+            name  = (row.get("Name") or row.get("FullName") or "").strip()
+            addr  = (row.get("Address") or row.get("Addr1") or row.get("Addr") or "").strip()
+            city  = (row.get("City") or "").strip()
+            state = (row.get("State") or "TX").strip() or "TX"
+            zipcd = (row.get("Zip") or row.get("ZipCode") or row.get("ZIP") or "").strip()
+            entry = {"name": name, "addr": addr, "city": city, "state": state, "zip": zipcd}
+            # NType: G/GR/GRANTOR = grantor; E/EE/GRANTEE = grantee
+            if ntype in ("G", "GR", "GRANTOR", "1", "DR", "OR"):
                 grantor_rows.setdefault(fn, []).append(entry)
-            elif ntype in ("E","GRANTEE","2","PARTY2","EE"):
+            elif ntype in ("E", "EE", "GRANTEE", "2", "EE", "OE"):
                 grantee_rows.setdefault(fn, []).append(entry)
             else:
-                # Default: first occurrence = grantor
+                # Default first party = grantor
                 grantor_rows.setdefault(fn, []).append(entry)
 
-    # ── Parse Legal Description file ─────────────────────────────────────────
+    # ── Legal descriptions ────────────────────────────────────────────────────
     legal_rows = {}
     if legal_key:
-        legal_text = zf.read(names[legal_key]).decode("latin-1", errors="replace")
+        legal_text = zf.read(znames[legal_key]).decode("latin-1", errors="replace")
         for row in csv.DictReader(io.StringIO(legal_text), delimiter="|"):
-            fn = (row.get("FileNumber") or row.get("File Number") or
-                  row.get("FILENUMBER") or "").strip()
+            fn = (row.get("File No") or row.get("File Number") or
+                  row.get("FileNo") or "").strip()
             if fn:
                 desc = (row.get("LegalDescription") or row.get("Legal Description") or
-                        row.get("LEGALDESCRIPTION") or row.get("Description") or
-                        row.get("Subdivision") or "").strip()
+                        row.get("Description") or row.get("Subdivision") or
+                        " ".join(str(v) for v in list(row.values())[1:3])).strip()
                 legal_rows[fn] = desc
 
     # ── Build records ─────────────────────────────────────────────────────────
-    seen_itypes = {}
+    type_counts = {}
     for fn, instr in instr_rows.items():
-        # Find instrument type field — try every key
-        itype = ""
-        for k in instr.keys():
-            kl = k.lower()
-            if "instrtype" in kl or "instrumenttype" in kl or "instrument_type" in kl:
-                itype = instr[k].strip().upper(); break
-            if kl == "type" or kl == "doctype" or kl == "doc_type":
-                itype = instr[k].strip().upper(); break
-            if "type" in kl and len(instr[k].strip()) <= 15:
-                itype = instr[k].strip().upper()
+        # Exact column names confirmed: "Document Type", "FileDate", "Film Code No."
+        raw_type = (instr.get("Document Type") or instr.get("Instrument Type") or
+                    instr.get("Doc Type") or "").strip()
+        type_counts[raw_type] = type_counts.get(raw_type, 0) + 1
 
-        seen_itypes[itype] = seen_itypes.get(itype, 0) + 1
-
-        cat, cat_label = RP_CAT_MAP.get(itype, (None, None))
-        if not cat:
-            for code_key, (c, l) in RP_CAT_MAP.items():
-                if code_key and itype and code_key in itype:
-                    cat, cat_label = c, l; break
+        cat, cat_label = classify(raw_type)
         if not cat:
             continue
 
-        # Find date field
-        filed_raw = ""
-        for k in instr.keys():
-            if "filedate" in k.lower() or "file_date" in k.lower() or k.lower() == "date":
-                filed_raw = instr[k].strip(); break
-        filed = norm_date(filed_raw) if filed_raw else date_str
+        filed_raw = (instr.get("FileDate") or instr.get("File Date") or
+                     instr.get("FileDate") or date_str).strip()
+        filed = norm_date(filed_raw)
 
-        # Find amount field
         amount = None
         for k in instr.keys():
             if "amount" in k.lower() or "consideration" in k.lower():
-                amount = parse_amount(instr[k]); break
+                amount = parse_amount(instr[k])
+                break
 
-        # Find film/doc number for URL
-        film = ""
-        for k in instr.keys():
-            if "film" in k.lower() or "filmcode" in k.lower():
-                film = instr[k].strip(); break
-
+        film = (instr.get("Film Code No.") or instr.get("Film Code") or
+                instr.get("FilmCode") or fn).strip()
         clerk_url = (f"https://www.cclerk.hctx.net/Applications/WebSearch/"
                      f"RP_R.aspx?FilmCode={film}") if film else ""
 
@@ -412,11 +358,11 @@ def parse_rp_zip(zip_bytes: bytes, date_str: str) -> list[dict]:
         grantees = grantee_rows.get(fn, [])
         legal    = legal_rows.get(fn, "")
 
-        owner_name   = " / ".join(g["name"] for g in grantors if g["name"]) or ""
-        grantee_name = " / ".join(g["name"] for g in grantees if g["name"]) or ""
+        owner_name   = " / ".join(g["name"] for g in grantors if g["name"])
+        grantee_name = " / ".join(g["name"] for g in grantees if g["name"])
 
-        rec = blank_record(fn, itype, cat, cat_label, filed,
-                           owner_name, grantee_name, amount, legal, clerk_url)
+        rec = blank_rec(fn, raw_type, cat, cat_label, filed,
+                        owner_name, grantee_name, amount, legal, clerk_url)
 
         if grantors:
             g = grantors[0]
@@ -427,161 +373,154 @@ def parse_rp_zip(zip_bytes: bytes, date_str: str) -> list[dict]:
 
         records.append(rec)
 
-    log.info("RP %s: %d target records (from %d instruments). Types seen: %s",
-             date_str, len(records), len(instr_rows),
-             sorted(seen_itypes.items(), key=lambda x: -x[1])[:10])
+    top_types = sorted(type_counts.items(), key=lambda x: -x[1])[:8]
+    log.info("RP %s: %d target records. Top doc types: %s",
+             date_str, len(records), top_types)
     return records
 
 
-def parse_pro_zip(zip_bytes: bytes, date_str: str) -> list[dict]:
-    """Parse Probate zip."""
+def parse_pro_zip(zip_bytes: bytes, date_str: str) -> list:
     records = []
     try:
         zf = zipfile.ZipFile(io.BytesIO(zip_bytes))
     except Exception as e:
-        log.warning("Bad PRO zip %s: %s", date_str, e); return []
+        log.warning("Bad PRO zip %s: %s", date_str, e)
+        return []
 
-    names = {n.lower(): n for n in zf.namelist()}
-    instr_key = next((k for k in names if "instrument" in k), None)
-    owner_key  = next((k for k in names if "owner" in k or "party" in k), None)
-    if not instr_key: return []
+    znames = {n.lower(): n for n in zf.namelist()}
+    instr_key = next((k for k in znames if "instrument" in k), None)
+    names_key = next((k for k in znames if "name" in k), None)
+    if not instr_key:
+        return []
 
-    instr_text = zf.read(names[instr_key]).decode("latin-1", errors="replace")
-    owner_rows = {}
-    if owner_key:
-        owner_text = zf.read(names[owner_key]).decode("latin-1", errors="replace")
-        for row in csv.DictReader(io.StringIO(owner_text), delimiter="|"):
-            fn = row.get("File Number","").strip()
-            if fn: owner_rows.setdefault(fn, []).append(row)
+    instr_text = zf.read(znames[instr_key]).decode("latin-1", errors="replace")
+    name_rows  = {}
+    if names_key:
+        nt = zf.read(znames[names_key]).decode("latin-1", errors="replace")
+        for row in csv.DictReader(io.StringIO(nt), delimiter="|"):
+            fn = (row.get("File No") or row.get("File Number") or "").strip()
+            if fn:
+                name_rows.setdefault(fn, []).append(row)
 
     for row in csv.DictReader(io.StringIO(instr_text), delimiter="|"):
-        fn    = row.get("File Number","").strip()
-        filed = norm_date(row.get("File Date", date_str))
-        film  = row.get("Film Code Number","").strip()
-        clerk_url = f"https://www.cclerk.hctx.net/Applications/WebSearch/PRO_R.aspx?FilmCode={film}" if film else ""
-
-        owners = owner_rows.get(fn, [])
-        owner_name = " / ".join(
-            o.get("Owner Name", o.get("Party Name","")).strip()
-            for o in owners if (o.get("Owner Name") or o.get("Party Name","")).strip()
-        )
-        rec = blank_record(fn, "PRO", "PRO", "Probate", filed, owner_name,
-                           clerk_url=clerk_url)
-        if owners:
-            o = owners[0]
-            rec["mail_address"] = o.get("Address","").strip()
-            rec["mail_city"]    = o.get("City","").strip()
-            rec["mail_state"]   = o.get("State","TX").strip() or "TX"
-            rec["mail_zip"]     = o.get("Zip","").strip()
+        fn    = (row.get("File No") or row.get("File Number") or "").strip()
+        filed = norm_date((row.get("FileDate") or row.get("File Date") or date_str).strip())
+        film  = (row.get("Film Code No.") or row.get("Film Code") or fn).strip()
+        clerk_url = (f"https://www.cclerk.hctx.net/Applications/WebSearch/"
+                     f"PRO_R.aspx?FilmCode={film}") if film else ""
+        names  = name_rows.get(fn, [])
+        owner  = " / ".join((n.get("Name","") or "").strip() for n in names if n.get("Name","").strip())
+        rec    = blank_rec(fn, "PRO", "PRO", "Probate", filed, owner, clerk_url=clerk_url)
+        if names:
+            n = names[0]
+            rec["mail_address"] = (n.get("Address") or "").strip()
+            rec["mail_city"]    = (n.get("City") or "").strip()
+            rec["mail_state"]   = (n.get("State") or "TX").strip()
+            rec["mail_zip"]     = (n.get("Zip") or n.get("ZipCode") or "").strip()
         records.append(rec)
 
     log.info("PRO %s: %d records", date_str, len(records))
     return records
 
 
-def parse_frcl_zip(zip_bytes: bytes, date_str: str) -> list[dict]:
-    """Parse Foreclosure zip."""
+def parse_frcl_zip(zip_bytes: bytes, date_str: str) -> list:
     records = []
     try:
         zf = zipfile.ZipFile(io.BytesIO(zip_bytes))
     except Exception as e:
-        log.warning("Bad FRCL zip %s: %s", date_str, e); return []
+        log.warning("Bad FRCL zip %s: %s", date_str, e)
+        return []
 
-    names = {n.lower(): n for n in zf.namelist()}
-    instr_key = next((k for k in names if "instrument" in k or "frcl" in k), None)
-    if not instr_key: return []
+    znames = {n.lower(): n for n in zf.namelist()}
+    instr_key = next((k for k in znames if "instrument" in k or "frcl" in k), None)
+    if not instr_key:
+        return []
 
-    instr_text = zf.read(names[instr_key]).decode("latin-1", errors="replace")
+    instr_text = zf.read(znames[instr_key]).decode("latin-1", errors="replace")
     for row in csv.DictReader(io.StringIO(instr_text), delimiter="|"):
-        fn    = row.get("File Number","").strip()
-        filed = norm_date(row.get("File Date") or row.get("Sale Date", date_str))
-        owner = (row.get("Grantor Name") or row.get("Debtor","")).strip()
-        grantee = (row.get("Grantee Name") or row.get("Trustee","")).strip()
-        amount = parse_amount(row.get("Amount") or row.get("Consideration",""))
-        legal  = row.get("Legal Description","").strip()
-        film   = row.get("Film Code Number","").strip()
-        clerk_url = f"https://www.cclerk.hctx.net/Applications/WebSearch/FRCL_R.aspx?FilmCode={film}" if film else ""
-        rec = blank_record(fn, "NOFC", "NOFC", "Notice of Foreclosure",
-                           filed, owner, grantee, amount, legal, clerk_url)
+        fn      = (row.get("File No") or row.get("File Number") or "").strip()
+        filed   = norm_date((row.get("FileDate") or row.get("File Date") or
+                             row.get("Sale Date") or date_str).strip())
+        owner   = (row.get("Grantor Name") or row.get("Name") or
+                   row.get("Debtor") or "").strip()
+        grantee = (row.get("Grantee Name") or row.get("Trustee") or "").strip()
+        amount  = parse_amount(row.get("Amount") or row.get("Consideration") or "")
+        legal   = (row.get("Legal Description") or row.get("Description") or "").strip()
+        film    = (row.get("Film Code No.") or row.get("Film Code") or fn).strip()
+        clerk_url = (f"https://www.cclerk.hctx.net/Applications/WebSearch/"
+                     f"FRCL_R.aspx?FilmCode={film}") if film else ""
+        rec = blank_rec(fn, "NOFC", "NOFC", "Notice of Foreclosure",
+                        filed, owner, grantee, amount, legal, clerk_url)
         records.append(rec)
 
     log.info("FRCL %s: %d records", date_str, len(records))
     return records
 
 
-def parse_asn_zip(zip_bytes: bytes, date_str: str) -> list[dict]:
-    """
-    Parse Assumed Names zip for LLC/Corp owner leads.
-    Active filings by incorporated entities are motivated seller signals.
-    """
+def parse_asn_zip(zip_bytes: bytes, date_str: str) -> list:
     records = []
     try:
         zf = zipfile.ZipFile(io.BytesIO(zip_bytes))
     except Exception as e:
-        log.warning("Bad ASN zip %s: %s", date_str, e); return []
+        log.warning("Bad ASN zip %s: %s", date_str, e)
+        return []
 
-    names_map = {n.lower(): n for n in zf.namelist()}
-    instr_key  = next((k for k in names_map if "instrument" in k), None)
-    owner_key  = next((k for k in names_map if "owner" in k), None)
-    dba_key    = next((k for k in names_map if "dba" in k), None)
-    if not instr_key: return []
+    znames = {n.lower(): n for n in zf.namelist()}
+    instr_key = next((k for k in znames if "instrument" in k), None)
+    owner_key = next((k for k in znames if "owner" in k), None)
+    dba_key   = next((k for k in znames if "dba" in k), None)
+    if not instr_key:
+        return []
 
-    instr_text = zf.read(names_map[instr_key]).decode("latin-1", errors="replace")
+    instr_text = zf.read(znames[instr_key]).decode("latin-1", errors="replace")
     owner_rows = {}
     dba_rows   = {}
 
     if owner_key:
-        owner_text = zf.read(names_map[owner_key]).decode("latin-1", errors="replace")
-        for row in csv.DictReader(io.StringIO(owner_text), delimiter="|"):
+        ot = zf.read(znames[owner_key]).decode("latin-1", errors="replace")
+        for row in csv.DictReader(io.StringIO(ot), delimiter="|"):
             fn = row.get("File Number","").strip()
-            if fn: owner_rows.setdefault(fn, []).append(row)
+            if fn:
+                owner_rows.setdefault(fn, []).append(row)
 
     if dba_key:
-        dba_text = zf.read(names_map[dba_key]).decode("latin-1", errors="replace")
-        for row in csv.DictReader(io.StringIO(dba_text), delimiter="|"):
+        dt = zf.read(znames[dba_key]).decode("latin-1", errors="replace")
+        for row in csv.DictReader(io.StringIO(dt), delimiter="|"):
             fn = row.get("File Number","").strip()
-            if fn: dba_rows[fn] = row
+            if fn:
+                dba_rows[fn] = row
 
     for row in csv.DictReader(io.StringIO(instr_text), delimiter="|"):
-        # Only active (not withdrawn)
         if row.get("Assumed Name or Withdrawn","").strip().upper() == "W":
             continue
-
         fn    = row.get("File Number","").strip()
         filed = norm_date(row.get("File Date", date_str))
         film  = row.get("Film Code Number","").strip()
-        clerk_url = f"https://www.cclerk.hctx.net/Applications/WebSearch/ASN_R.aspx?FilmCode={film}" if film else ""
-
-        owners = owner_rows.get(fn, [])
-        dba    = dba_rows.get(fn, {})
-
-        owner_name = " / ".join(
-            o.get("Owner Name","").strip() for o in owners if o.get("Owner Name","").strip()
-        )
+        clerk_url = (f"https://www.cclerk.hctx.net/Applications/WebSearch/"
+                     f"ASN_R.aspx?FilmCode={film}") if film else ""
+        owners   = owner_rows.get(fn, [])
+        dba      = dba_rows.get(fn, {})
         dba_name = dba.get("DBA Name","").strip()
-
-        rec = blank_record(fn, "ASN", "ASN", f"Assumed Name: {dba_name}",
-                           filed, owner_name, clerk_url=clerk_url)
+        owner_name = " / ".join(o.get("Owner Name","").strip()
+                                for o in owners if o.get("Owner Name","").strip())
+        rec = blank_rec(fn, "ASN", "ASN", f"Assumed Name: {dba_name}",
+                        filed, owner_name, clerk_url=clerk_url)
         rec["legal"] = dba_name
-
         if owners:
             o = owners[0]
             rec["mail_address"] = o.get("Address","").strip()
             rec["mail_city"]    = o.get("City","").strip()
-            rec["mail_state"]   = o.get("State","TX").strip() or "TX"
+            rec["mail_state"]   = (o.get("State","TX") or "TX").strip()
             rec["mail_zip"]     = o.get("Zip","").strip()
             rec["prop_address"] = dba.get("Address","").strip()
             rec["prop_city"]    = dba.get("City","").strip()
             rec["prop_state"]   = "TX"
             rec["prop_zip"]     = dba.get("Zip","").strip()
-
         records.append(rec)
 
     log.info("ASN %s: %d active records", date_str, len(records))
     return records
 
-
-# ── Fallback: scrape portal (used when FTP not configured) ────────────────────
 
 def make_session():
     s = requests.Session()
@@ -593,67 +532,79 @@ def make_session():
     return s
 
 
-def portal_search_rp(start: str, end: str, code: str, cat: str, label: str) -> list[dict]:
-    from urllib.parse import unquote
+def portal_fallback(start: str, end: str) -> list:
+    log.info("Portal fallback mode (FTP not configured)")
+    records = []
+    TYPES = [
+        ("LP","LP","Lis Pendens"),("A/J","JUD","Abstract of Judgment"),
+        ("CCJ","CCJ","Certified Judgment"),("LNIRS","LNIRS","IRS Lien"),
+        ("LNFED","LNFED","Federal Lien"),("LNCORPTX","LNCORPTX","Corp Tax Lien"),
+        ("LN","LN","Lien"),("LNMECH","LNMECH","Mechanic Lien"),
+        ("LNHOA","LNHOA","HOA Lien"),("TAXDEED","TAXDEED","Tax Deed"),
+        ("NOC","NOC","Notice of Commencement"),
+    ]
     session = make_session()
     RP = "https://www.cclerk.hctx.net/Applications/WebSearch/RP.aspx"
     btn = "ctl00$ContentPlaceHolder1$btnSearch"
-    try:
-        r = session.get(RP, timeout=30); r.raise_for_status()
-        soup = BeautifulSoup(r.text,"lxml")
-        vs = {i.get("name"):i.get("value","") for i in soup.find_all("input",type="hidden") if i.get("name")}
-        payload = {**vs,
-            "ctl00$ContentPlaceHolder1$txtFrom": start,
-            "ctl00$ContentPlaceHolder1$txtTo":   end,
-            "ctl00$ContentPlaceHolder1$txtInstrument": code,
-            "ctl00$ScriptManager1": f"ctl00$ScriptManager1|{btn}",
-            "__ASYNCPOST":"true","__EVENTTARGET":"","__EVENTARGUMENT":"",
-            btn:"Search"}
-        r2 = session.post(RP, data=payload, timeout=45, headers={
-            "Referer":RP,"Content-Type":"application/x-www-form-urlencoded; charset=UTF-8",
-            "X-MicrosoftAjax":"Delta=true","X-Requested-With":"XMLHttpRequest",
-            "Origin":"https://www.cclerk.hctx.net","Accept":"*/*"})
-        delta = r2.text
-        m = re.search(r'pageRedirect\|\|([^|]+)', delta)
-        if not m: return []
-        redir = "https://www.cclerk.hctx.net" + unquote(m.group(1))
-        rp = session.get(redir, timeout=30)
-        return _parse_portal_table(rp.text, cat, label)
-    except Exception as e:
-        log.warning("Portal search failed [%s]: %s", code, e); return []
-
-
-def _parse_portal_table(html: str, cat: str, cat_label: str) -> list[dict]:
-    soup = BeautifulSoup(html,"lxml")
-    records = []
-    for table in soup.find_all("table"):
-        rows = table.find_all("tr")
-        if len(rows)<2: continue
-        headers = [td.get_text(" ",strip=True).lower() for td in rows[0].find_all(["th","td"])]
-        if not any(k in " ".join(headers) for k in ["file","grantor","date","names"]): continue
-        for row in rows[1:]:
-            cells = row.find_all("td")
-            if not cells: continue
-            data = {headers[i]: cells[i].get_text(" ",strip=True) for i in range(min(len(headers),len(cells)))}
-            link = next((("https://www.cclerk.hctx.net"+a["href"] if not a["href"].startswith("http") else a["href"])
-                         for cell in cells for a in cell.find_all("a",href=True)), "")
-            def f(*k):
-                for key in k:
-                    for h in headers:
-                        if key in h:
-                            v=data.get(h,"").strip()
-                            if v: return v
-                return ""
-            doc_num = f("file number","number","case number")
-            grantor = f("names","grantor","owner","debtor","name")
-            filed   = f("file date","date filed","date")
-            if not doc_num and not grantor: continue
-            records.append(blank_record(doc_num, cat_label, cat, cat_label,
-                           norm_date(filed) if filed else "", grantor, clerk_url=link))
+    for code, cat, label in TYPES:
+        try:
+            r = session.get(RP, timeout=30); r.raise_for_status()
+            soup = BeautifulSoup(r.text, "lxml")
+            vs = {i.get("name"): i.get("value","")
+                  for i in soup.find_all("input", type="hidden") if i.get("name")}
+            payload = {**vs,
+                "ctl00$ContentPlaceHolder1$txtFrom": start,
+                "ctl00$ContentPlaceHolder1$txtTo":   end,
+                "ctl00$ContentPlaceHolder1$txtInstrument": code,
+                "ctl00$ScriptManager1": f"ctl00$ScriptManager1|{btn}",
+                "__ASYNCPOST": "true", "__EVENTTARGET": "", "__EVENTARGUMENT": "",
+                btn: "Search"}
+            r2 = session.post(RP, data=payload, timeout=45, headers={
+                "Referer": RP,
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                "X-MicrosoftAjax": "Delta=true",
+                "X-Requested-With": "XMLHttpRequest",
+                "Origin": "https://www.cclerk.hctx.net", "Accept": "*/*"})
+            m = re.search(r'pageRedirect\|\|([^|]+)', r2.text)
+            if not m:
+                continue
+            redir = "https://www.cclerk.hctx.net" + unquote(m.group(1))
+            rp = session.get(redir, timeout=30)
+            soup2 = BeautifulSoup(rp.text, "lxml")
+            for table in soup2.find_all("table"):
+                rows = table.find_all("tr")
+                if len(rows) < 2: continue
+                headers = [td.get_text(" ",strip=True).lower()
+                           for td in rows[0].find_all(["th","td"])]
+                if not any(k in " ".join(headers) for k in ["file","grantor","names"]): continue
+                for row in rows[1:]:
+                    cells = row.find_all("td")
+                    if not cells: continue
+                    data = {headers[i]: cells[i].get_text(" ",strip=True)
+                            for i in range(min(len(headers),len(cells)))}
+                    link = next((("https://www.cclerk.hctx.net"+a["href"]
+                                  if not a["href"].startswith("http") else a["href"])
+                                 for cell in cells
+                                 for a in cell.find_all("a", href=True)), "")
+                    def f(*keys):
+                        for k in keys:
+                            for h in headers:
+                                if k in h:
+                                    v = data.get(h,"").strip()
+                                    if v: return v
+                        return ""
+                    doc_num = f("file number","number","case number")
+                    grantor = f("names","grantor","owner","name")
+                    filed   = f("file date","date filed","date")
+                    if not doc_num and not grantor: continue
+                    records.append(blank_rec(doc_num, label, cat, label,
+                                             norm_date(filed) if filed else "", grantor,
+                                             clerk_url=link))
+            time.sleep(1)
+        except Exception as e:
+            log.warning("Portal %s failed: %s", code, e)
     return records
 
-
-# ── GHL CSV export ────────────────────────────────────────────────────────────
 
 def export_csv(records: list, path: Path):
     cols = ["First Name","Last Name","Mailing Address","Mailing City","Mailing State",
@@ -661,14 +612,15 @@ def export_csv(records: list, path: Path):
             "Lead Type","Document Type","Date Filed","Document Number","Amount/Debt Owed",
             "Seller Score","Motivated Seller Flags","Source","Public Records URL"]
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path,"w",newline="",encoding="utf-8") as f:
-        w = csv.DictWriter(f,fieldnames=cols); w.writeheader()
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=cols)
+        w.writeheader()
         for r in records:
-            p = (r.get("owner") or "").strip().split()
+            p   = (r.get("owner") or "").strip().split()
             amt = r.get("amount")
             w.writerow({
-                "First Name":  p[0].title() if p else "",
-                "Last Name":   " ".join(p[1:]).title() if len(p)>1 else "",
+                "First Name":   p[0].title() if p else "",
+                "Last Name":    " ".join(p[1:]).title() if len(p) > 1 else "",
                 "Mailing Address": r.get("mail_address",""),
                 "Mailing City":    r.get("mail_city",""),
                 "Mailing State":   r.get("mail_state","TX"),
@@ -690,74 +642,40 @@ def export_csv(records: list, path: Path):
     log.info("GHL CSV → %s", path)
 
 
-# ── Main ──────────────────────────────────────────────────────────────────────
-
 def main():
     now    = datetime.now()
     cutoff = now - timedelta(days=LOOKBACK_DAYS)
 
-    log.info("=== Harris County FTP Scraper ===")
+    log.info("=== Harris County Scraper v9 ===")
     log.info("FTP configured: %s", bool(FTP_HOST and FTP_USER and FTP_PASS))
-    log.info("Lookback: %d days", LOOKBACK_DAYS)
 
     raw = []
 
-    if FTP_HOST and FTP_USER and FTP_PASS:
-        # ── FTP MODE: fast, complete, reliable ──
-        ftp = FTPClient(FTP_HOST, FTP_USER, FTP_PASS)
+    if FTP_HOST and FTP_USER and FTP_PASS and HAS_PARAMIKO:
+        sftp = SFTPClient(FTP_HOST, FTP_USER, FTP_PASS)
         try:
-            ftp.connect()
+            sftp.connect()
+            for date_str in business_days_back(LOOKBACK_DAYS):
+                log.info("Fetching %s", date_str)
+                zb = sftp.get_rp(date_str)
+                if zb: raw.extend(parse_rp_zip(zb, date_str))
 
-            dates = business_days_back(LOOKBACK_DAYS)
-            log.info("Fetching %d business days: %s … %s", len(dates), dates[-1], dates[0])
+                zb = sftp.get_pro(date_str)
+                if zb: raw.extend(parse_pro_zip(zb, date_str))
 
-            for date_str in dates:
-                # Real Property
-                log.info("Fetching RP %s", date_str)
-                rp_zip = ftp.get_daily_zips(date_str, "RP")
-                if rp_zip:
-                    raw.extend(parse_rp_zip(rp_zip, date_str))
-                else:
-                    log.info("  No RP file for %s (non-business day or not yet posted)", date_str)
+                zb = sftp.get_frcl(date_str)
+                if zb: raw.extend(parse_frcl_zip(zb, date_str))
 
-                # Probate
-                pro_zip = ftp.get_daily_zips(date_str, "PRO")
-                if pro_zip:
-                    raw.extend(parse_pro_zip(pro_zip, date_str))
+                zb = sftp.get_asn(date_str)
+                if zb: raw.extend(parse_asn_zip(zb, date_str))
 
-                # Foreclosures
-                frcl_zip = ftp.get_daily_zips(date_str, "FRCL")
-                if frcl_zip:
-                    raw.extend(parse_frcl_zip(frcl_zip, date_str))
-
-                # Assumed Names (bonus LLC leads)
-                asn_zip = ftp.get_daily_zips(date_str, "ASN")
-                if asn_zip:
-                    raw.extend(parse_asn_zip(asn_zip, date_str))
-
-                time.sleep(0.5)  # be polite to FTP
-
+                time.sleep(0.3)
         finally:
-            ftp.disconnect()
-
+            sftp.disconnect()
     else:
-        # ── PORTAL FALLBACK MODE ──
-        log.warning("FTP credentials not set — falling back to portal scraping")
-        log.warning("Set FTP_HOST, FTP_USER, FTP_PASS as GitHub Secrets for full data")
         start = cutoff.strftime("%m/%d/%Y")
         end   = now.strftime("%m/%d/%Y")
-        PORTAL_TYPES = [
-            ("LP","LP","Lis Pendens"),("RELLP","RELLP","Release Lis Pendens"),
-            ("A/J","JUD","Abstract of Judgment"),("CCJ","CCJ","Certified Judgment"),
-            ("LNIRS","LNIRS","IRS Lien"),("LNFED","LNFED","Federal Lien"),
-            ("LNCORPTX","LNCORPTX","Corp Tax Lien"),("LN","LN","Lien"),
-            ("LNMECH","LNMECH","Mechanic Lien"),("LNHOA","LNHOA","HOA Lien"),
-            ("MEDLN","MEDLN","Medicaid Lien"),("TAXDEED","TAXDEED","Tax Deed"),
-            ("NOC","NOC","Notice of Commencement"),
-        ]
-        for code, cat, label in PORTAL_TYPES:
-            raw.extend(portal_search_rp(start, end, code, cat, label))
-            time.sleep(1)
+        raw   = portal_fallback(start, end)
 
     # Deduplicate
     seen, deduped = set(), []
@@ -768,7 +686,6 @@ def main():
 
     log.info("Unique records: %d", len(deduped))
 
-    # Score
     with_addr = 0
     for r in deduped:
         try:
@@ -777,9 +694,10 @@ def main():
                 with_addr += 1
         except Exception as e:
             log.debug("Score error: %s", e)
-            r.setdefault("score",10); r.setdefault("flags",[])
+            r.setdefault("score", 10)
+            r.setdefault("flags", [])
 
-    deduped.sort(key=lambda x: x.get("score",0), reverse=True)
+    deduped.sort(key=lambda x: x.get("score", 0), reverse=True)
 
     payload = {
         "fetched_at":   now.isoformat(),
@@ -792,7 +710,7 @@ def main():
 
     for d in OUTPUT_DIRS:
         d.mkdir(parents=True, exist_ok=True)
-        (d/"records.json").write_text(json.dumps(payload, indent=2, default=str))
+        (d / "records.json").write_text(json.dumps(payload, indent=2, default=str))
         log.info("Saved → %s/records.json", d)
 
     export_csv(deduped, Path("data/leads_ghl.csv"))
