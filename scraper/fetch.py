@@ -39,37 +39,63 @@ FTP_USER = os.environ.get("FTP_USER", "")
 FTP_PASS = os.environ.get("FTP_PASS", "")
 
 RP_CAT_MAP = {
-    "LP":           ("LP",       "Lis Pendens"),
-    "RELLP":        ("RELLP",    "Release Lis Pendens"),
-    "A/J":          ("JUD",      "Abstract of Judgment"),
-    "ABST OF JUD":  ("JUD",      "Abstract of Judgment"),
-    "ABSTRACT OF JUDGMENT": ("JUD", "Abstract of Judgment"),
-    "CCJ":          ("CCJ",      "Certified Judgment"),
-    "CERT JUDG":    ("CCJ",      "Certified Judgment"),
-    "DRJUD":        ("DRJUD",    "Domestic Relations Judgment"),
-    "LNIRS":        ("LNIRS",    "IRS Lien"),
-    "IRS LIEN":     ("LNIRS",    "IRS Lien"),
-    "LNFED":        ("LNFED",    "Federal Lien"),
-    "FED LIEN":     ("LNFED",    "Federal Lien"),
-    "LNCORPTX":     ("LNCORPTX", "Corp Tax Lien"),
-    "CORP TAX":     ("LNCORPTX", "Corp Tax Lien"),
-    "LN":           ("LN",       "Lien"),
-    "LIEN":         ("LN",       "Lien"),
-    "LNMECH":       ("LNMECH",   "Mechanic Lien"),
-    "MECH LIEN":    ("LNMECH",   "Mechanic Lien"),
-    "MECHANIC":     ("LNMECH",   "Mechanic Lien"),
-    "LNHOA":        ("LNHOA",    "HOA Lien"),
-    "HOA LIEN":     ("LNHOA",    "HOA Lien"),
-    "MEDLN":        ("MEDLN",    "Medicaid Lien"),
-    "MEDICAID":     ("MEDLN",    "Medicaid Lien"),
-    "TAXDEED":      ("TAXDEED",  "Tax Deed"),
-    "TAX DEED":     ("TAXDEED",  "Tax Deed"),
-    "NOC":          ("NOC",      "Notice of Commencement"),
-    "NOTICE OF COM":("NOC",      "Notice of Commencement"),
-    "NOFC":         ("NOFC",     "Notice of Foreclosure"),
-    "FORECLOSURE":  ("NOFC",     "Notice of Foreclosure"),
-    "PRO":          ("PRO",      "Probate"),
-    "PROBATE":      ("PRO",      "Probate"),
+    # ── Lis Pendens ───────────────────────────────────────────────────────────
+    "LP":               ("LP",       "Lis Pendens"),
+    "LIS PENDENS":      ("LP",       "Lis Pendens"),
+    "LIS PEN":          ("LP",       "Lis Pendens"),
+    # ── Release Lis Pendens ───────────────────────────────────────────────────
+    "RELLP":            ("RELLP",    "Release Lis Pendens"),
+    "REL LIS PEN":      ("RELLP",    "Release Lis Pendens"),
+    "REL":              ("RELLP",    "Release Lis Pendens"),
+    # ── Judgments ─────────────────────────────────────────────────────────────
+    "A/J":              ("JUD",      "Abstract of Judgment"),
+    "ABST OF JUD":      ("JUD",      "Abstract of Judgment"),
+    "ABSTRACT OF JUDGMENT": ("JUD",  "Abstract of Judgment"),
+    "CCJ":              ("CCJ",      "Certified Judgment"),
+    "CERT JUDG":        ("CCJ",      "Certified Judgment"),
+    "DRJUD":            ("DRJUD",    "Domestic Relations Judgment"),
+    "DOM REL JUD":      ("DRJUD",    "Domestic Relations Judgment"),
+    # ── Tax / Federal Liens ───────────────────────────────────────────────────
+    "LNIRS":            ("LNIRS",    "IRS Lien"),
+    "IRS LIEN":         ("LNIRS",    "IRS Lien"),
+    "FED TAX LIEN":     ("LNIRS",    "IRS Lien"),
+    "LNFED":            ("LNFED",    "Federal Lien"),
+    "FED LIEN":         ("LNFED",    "Federal Lien"),
+    "LNCORPTX":         ("LNCORPTX", "Corp Tax Lien"),
+    "CORP TAX":         ("LNCORPTX", "Corp Tax Lien"),
+    "STATE TAX LIEN":   ("LNCORPTX", "Corp Tax Lien"),
+    # ── General / Mechanic / HOA Liens ────────────────────────────────────────
+    "LN":               ("LN",       "Lien"),
+    "LIEN":             ("LN",       "Lien"),
+    "LNMECH":           ("LNMECH",   "Mechanic Lien"),
+    "MECH LIEN":        ("LNMECH",   "Mechanic Lien"),
+    "MECHANIC":         ("LNMECH",   "Mechanic Lien"),
+    "LNHOA":            ("LNHOA",    "HOA Lien"),
+    "HOA LIEN":         ("LNHOA",    "HOA Lien"),
+    "MEDLN":            ("MEDLN",    "Medicaid Lien"),
+    "MEDICAID":         ("MEDLN",    "Medicaid Lien"),
+    # ── Tax Deed ──────────────────────────────────────────────────────────────
+    "TAXDEED":          ("TAXDEED",  "Tax Deed"),
+    "TAX DEED":         ("TAXDEED",  "Tax Deed"),
+    "DEED":             ("TAXDEED",  "Tax Deed"),
+    # ── Notices (LP, Foreclosure, Commencement) ───────────────────────────────
+    # FTP uses "NOTICE" as a generic code — we sub-classify by checking
+    # related docs or default to LP (most common notice type)
+    "NOTICE":           ("LP",       "Lis Pendens"),
+    "NOC":              ("NOC",      "Notice of Commencement"),
+    "NOTICE OF COM":    ("NOC",      "Notice of Commencement"),
+    "NOFC":             ("NOFC",     "Notice of Foreclosure"),
+    "FORECLOSURE":      ("NOFC",     "Notice of Foreclosure"),
+    "NOTICE OF FORECLOSURE": ("NOFC","Notice of Foreclosure"),
+    # ── Probate ───────────────────────────────────────────────────────────────
+    "PRO":              ("PRO",      "Probate"),
+    "PROBATE":          ("PRO",      "Probate"),
+    # ── Quit Claim Deed (distress signal) ────────────────────────────────────
+    "QCD":              ("LP",       "Quit Claim Deed"),
+    "QUIT CLAIM":       ("LP",       "Quit Claim Deed"),
+    # ── Assignment (often accompanies distressed properties) ─────────────────
+    "ASSGN":            ("LN",       "Assignment of Lien"),
+    "ASSIGNMENT":       ("LN",       "Assignment of Lien"),
 }
 
 
