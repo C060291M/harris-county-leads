@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-04-26T10:06:56.677708",
+  "fetched_at": "2026-04-26T23:04:29.963391",
   "source": "Harris County Clerk FTP",
   "date_range": {
     "start": "2026-04-19",
@@ -28966,8 +28966,8 @@
     {
       "doc_num": "RP-2026-152504",
       "doc_type": "NOTICE",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "cat": "NOFC",
+      "cat_label": "Notice of Foreclosure",
       "filed": "2026-04-21",
       "owner": "STELLAR BANK / JONES CLINTON E / THE BERKLEY ANN JONES 2026 FAMILY TRUST",
       "grantee": "STELLAR BANK / JONES CLINTON E / THE BERKLEY ANN JONES 2026 FAMILY TRUST",
@@ -28984,7 +28984,7 @@
       "mail_zip": "",
       "score": 31,
       "flags": [
-        "Lis pendens",
+        "Pre-foreclosure",
         "LLC / corp owner",
         "New this week"
       ]
@@ -28992,8 +28992,8 @@
     {
       "doc_num": "RP-2026-152505",
       "doc_type": "NOTICE",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "cat": "NOFC",
+      "cat_label": "Notice of Foreclosure",
       "filed": "2026-04-21",
       "owner": "STELLAR BANK / JONES CLINTON E / THE BERKLEY ANN JONES 2026 FAMILY TRUST",
       "grantee": "STELLAR BANK / JONES CLINTON E / THE BERKLEY ANN JONES 2026 FAMILY TRUST",
@@ -29010,7 +29010,7 @@
       "mail_zip": "",
       "score": 31,
       "flags": [
-        "Lis pendens",
+        "Pre-foreclosure",
         "LLC / corp owner",
         "New this week"
       ]
@@ -38300,8 +38300,8 @@
     {
       "doc_num": "RP-2026-150652",
       "doc_type": "NOTICE",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "cat": "NOFC",
+      "cat_label": "Notice of Foreclosure",
       "filed": "2026-04-21",
       "owner": "FARINE TRISHA TAYLOR / LAKESHORE COMMUNITY ASSOCIATION INC",
       "grantee": "MORENO NATALY / MORENO MARISOL / ARTEMIO MORENO JR TRUST / QUINTANA MARIA L / CADANCE BANK N A",
@@ -38318,7 +38318,7 @@
       "mail_zip": "",
       "score": 31,
       "flags": [
-        "Lis pendens",
+        "Pre-foreclosure",
         "LLC / corp owner",
         "New this week"
       ]
@@ -50676,8 +50676,8 @@
     {
       "doc_num": "RP-2026-149189",
       "doc_type": "NOTICE",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "cat": "NOFC",
+      "cat_label": "Notice of Foreclosure",
       "filed": "2026-04-20",
       "owner": "FREEDOM MORTGAGE CORPORATION / XOME HOLDINGS LLC / OLMOS LAUREN",
       "grantee": "FREEDOM MORTGAGE CORPORATION / XOME HOLDINGS LLC / OLMOS LAUREN",
@@ -50694,7 +50694,7 @@
       "mail_zip": "",
       "score": 31,
       "flags": [
-        "Lis pendens",
+        "Pre-foreclosure",
         "LLC / corp owner",
         "New this week"
       ]
@@ -50702,8 +50702,8 @@
     {
       "doc_num": "RP-2026-149190",
       "doc_type": "NOTICE",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "cat": "NOFC",
+      "cat_label": "Notice of Foreclosure",
       "filed": "2026-04-20",
       "owner": "FREEDOM MORTGAGE CORPORATION / XOME HOLDINGS LLC / OLMOS LAUREN",
       "grantee": "FREEDOM MORTGAGE CORPORATION / XOME HOLDINGS LLC / OLMOS LAUREN",
@@ -50720,7 +50720,7 @@
       "mail_zip": "",
       "score": 31,
       "flags": [
-        "Lis pendens",
+        "Pre-foreclosure",
         "LLC / corp owner",
         "New this week"
       ]
@@ -61587,8 +61587,8 @@
     {
       "doc_num": "RP-2026-152948",
       "doc_type": "NOTICE",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "cat": "NOFC",
+      "cat_label": "Notice of Foreclosure",
       "filed": "2026-04-21",
       "owner": "PROSPERITY BANK / CHAVEZ TERESA / CHAVEZ MICHELE IVETT / CHAVEZ ISRAEL",
       "grantee": "PROSPERITY BANK / CHAVEZ TERESA / CHAVEZ MICHELE IVETT / CHAVEZ ISRAEL",
@@ -61605,7 +61605,7 @@
       "mail_zip": "",
       "score": 29,
       "flags": [
-        "Lis pendens",
+        "Pre-foreclosure",
         "New this week"
       ]
     },
@@ -70012,8 +70012,8 @@
     {
       "doc_num": "RP-2026-151235",
       "doc_type": "NOTICE",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "cat": "NOFC",
+      "cat_label": "Notice of Foreclosure",
       "filed": "2026-04-21",
       "owner": "PHAN HIEP / LAM LOAN TU / TIMBROOK ALEXANDER THOMAS",
       "grantee": "LAM LOAN TU / PHAN HIEP / TIMBROOK ALEXANDER THOMAS",
@@ -70030,7 +70030,7 @@
       "mail_zip": "",
       "score": 29,
       "flags": [
-        "Lis pendens",
+        "Pre-foreclosure",
         "New this week"
       ]
     },
@@ -75537,8 +75537,8 @@
     {
       "doc_num": "RP-2026-148999",
       "doc_type": "NOTICE",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "cat": "NOFC",
+      "cat_label": "Notice of Foreclosure",
       "filed": "2026-04-20",
       "owner": "SCOTT JOEL / BANKS CALVIN JR / BANKS KEYANNA L",
       "grantee": "SCOTT JOEL / BANKS CALVIN JR / BANKS KEYANNA L",
@@ -75555,7 +75555,7 @@
       "mail_zip": "",
       "score": 29,
       "flags": [
-        "Lis pendens",
+        "Pre-foreclosure",
         "New this week"
       ]
     },
@@ -103073,8 +103073,8 @@
     {
       "doc_num": "RP-2026-144265",
       "doc_type": "NOTICE",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "cat": "NOFC",
+      "cat_label": "Notice of Foreclosure",
       "filed": "2026-04-16",
       "owner": "BANK OF TEXAS / BOKF N A / EARLY TYLER / REED LORRAINE H / EARLY KYLIE / LORRAINE H REED MANAGEMENT TRUST",
       "grantee": "BANK OF TEXAS / BOKF N A / EARLY TYLER / REED LORRAINE H / EARLY KYLIE / LORRAINE H REED MANAGEMENT TRUST",
@@ -103091,7 +103091,7 @@
       "mail_zip": "",
       "score": 24,
       "flags": [
-        "Lis pendens",
+        "Pre-foreclosure",
         "LLC / corp owner"
       ]
     },
@@ -112989,8 +112989,8 @@
     {
       "doc_num": "RP-2026-147855",
       "doc_type": "NOTICE",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "cat": "NOFC",
+      "cat_label": "Notice of Foreclosure",
       "filed": "2026-04-17",
       "owner": "PHAN LOAN THI / REYES ELADIO A / REYES CINTHIA J",
       "grantee": "PHAN LOAN THI / REYES ELADIO A / REYES CINTHIA J",
@@ -113007,14 +113007,14 @@
       "mail_zip": "",
       "score": 22,
       "flags": [
-        "Lis pendens"
+        "Pre-foreclosure"
       ]
     },
     {
       "doc_num": "RP-2026-147856",
       "doc_type": "NOTICE",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "cat": "NOFC",
+      "cat_label": "Notice of Foreclosure",
       "filed": "2026-04-17",
       "owner": "REYES ELADIO A / REYES CINTHIA J / PHAN LOAN THI",
       "grantee": "PHAN LOAN THI / REYES ELADIO A / REYES CINTHIA J",
@@ -113031,14 +113031,14 @@
       "mail_zip": "",
       "score": 22,
       "flags": [
-        "Lis pendens"
+        "Pre-foreclosure"
       ]
     },
     {
       "doc_num": "RP-2026-147857",
       "doc_type": "NOTICE",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "cat": "NOFC",
+      "cat_label": "Notice of Foreclosure",
       "filed": "2026-04-17",
       "owner": "PHAN LOAN THI / REYES ELADIO A / REYES CINTHIA J",
       "grantee": "PHAN LOAN THI / REYES ELADIO A / REYES CINTHIA J",
@@ -113055,7 +113055,7 @@
       "mail_zip": "",
       "score": 22,
       "flags": [
-        "Lis pendens"
+        "Pre-foreclosure"
       ]
     },
     {
