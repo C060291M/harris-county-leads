@@ -150,10 +150,21 @@ def business_days_back(n: int) -> list:
     return dates
 
 
-def classify(raw_type: str):
+def classify(raw_type: str, grantor: str = "", grantee: str = ""):
     t = raw_type.strip().upper()
     if t in RP_CAT_MAP:
-        return RP_CAT_MAP[t]
+        cat, label = RP_CAT_MAP[t]
+        # NOTICE can be LP or NOFC — distinguish by grantee
+        if t == "NOTICE":
+            grantee_up = grantee.upper()
+            foreclosure_words = ["TRUSTEE", "MORTGAGE", "BANK", "LENDER",
+                                 "FINANCIAL", "CREDIT", "LOAN", "MTGE",
+                                 "SUBSTITUTE", "NATIONAL ASSOC", "N.A.",
+                                 "FEDERAL", "HOME LOAN"]
+            if any(w in grantee_up for w in foreclosure_words):
+                return "NOFC", "Notice of Foreclosure"
+            return "LP", "Lis Pendens"
+        return cat, label
     for key, val in RP_CAT_MAP.items():
         if key and t and (key in t or t in key):
             return val
@@ -331,14 +342,23 @@ def parse_rp_zip(zip_bytes: bytes, date_str: str) -> list:
             state = (row.get("State") or "TX").strip() or "TX"
             zipcd = (row.get("Zip") or row.get("ZipCode") or row.get("ZIP") or "").strip()
             entry = {"name": name, "addr": addr, "city": city, "state": state, "zip": zipcd}
-            # NType: G/GR/GRANTOR = grantor; E/EE/GRANTEE = grantee
-            if ntype in ("G", "GR", "GRANTOR", "1", "DR", "OR"):
+            # NType values from Harris County FTP:
+            # OR = Obligor/Grantor, OE = Obligee/Grantee
+            # G/DR/1 = grantor side, E/EE/2 = grantee side
+            grantor_ntypes = {"G","GR","GRANTOR","1","DR","OR","OBLIGOR",
+                              "DEBTOR","TRUSTOR","GRANTOR/TRUSTOR"}
+            grantee_ntypes = {"E","EE","GRANTEE","2","OE","OBLIGEE",
+                              "BENEFICIARY","TRUSTEE","GRANTEE/BENEFICIARY"}
+            if ntype in grantor_ntypes:
                 grantor_rows.setdefault(fn, []).append(entry)
-            elif ntype in ("E", "EE", "GRANTEE", "2", "EE", "OE"):
+            elif ntype in grantee_ntypes:
                 grantee_rows.setdefault(fn, []).append(entry)
-            else:
-                # Default first party = grantor
+            elif not grantor_rows.get(fn):
+                # First name encountered = grantor
                 grantor_rows.setdefault(fn, []).append(entry)
+            else:
+                # Second name = grantee
+                grantee_rows.setdefault(fn, []).append(entry)
 
     # ── Legal descriptions ────────────────────────────────────────────────────
     legal_rows = {}
@@ -361,7 +381,11 @@ def parse_rp_zip(zip_bytes: bytes, date_str: str) -> list:
                     instr.get("Doc Type") or "").strip()
         type_counts[raw_type] = type_counts.get(raw_type, 0) + 1
 
-        cat, cat_label = classify(raw_type)
+        # Pass grantors/grantees to help classify NOTICE type
+        tmp_grantees = grantee_rows.get(fn, [])
+        tmp_grantors = grantor_rows.get(fn, [])
+        tmp_grantee_name = " / ".join(g["name"] for g in tmp_grantees if g["name"])
+        cat, cat_label = classify(raw_type, grantor=tmp_grantors[0]["name"] if tmp_grantors else "", grantee=tmp_grantee_name)
         if not cat:
             continue
 
