@@ -193,12 +193,43 @@ class HCADLookup:
 
     def build(self):
         log.info("Building HCAD address lookup...")
+
+        # Try local file first (committed to repo — fastest, always works)
+        local_paths = [
+            Path("data/hcad_lookup.json.gz"),
+            Path("dashboard/hcad_lookup.json.gz"),
+            Path("hcad_lookup.json.gz"),
+        ]
+        for p in local_paths:
+            if p.exists():
+                try:
+                    log.info("  Loading local HCAD file: %s", p)
+                    with gzip.open(str(p), "rt", encoding="utf-8") as f:
+                        raw = json.load(f)
+                    # Expand compact keys back to full keys
+                    for name, v in raw.items():
+                        self._lookup[name] = {
+                            "mail_address": v.get("a",""),
+                            "mail_city":    v.get("c",""),
+                            "mail_state":   v.get("s","TX"),
+                            "mail_zip":     v.get("z",""),
+                            "prop_address": v.get("pa",""),
+                            "prop_city":    v.get("pc",""),
+                            "prop_state":   "TX",
+                            "prop_zip":     v.get("pz",""),
+                        }
+                    log.info("HCAD lookup ready: %d names (from %s)", len(self._lookup), p)
+                    self._build_prefix_index()
+                    return
+                except Exception as e:
+                    log.warning("  Failed to load %s: %s", p, e)
+
+        # Fallback: try downloading from pdata.hcad.org
         session = requests.Session()
         session.headers.update({"User-Agent": "Mozilla/5.0"})
-
         for url in HCAD_URLS:
             try:
-                log.info("  Trying: %s", url)
+                log.info("  Trying download: %s", url)
                 r = session.get(url, timeout=300, stream=True)
                 if r.status_code == 200:
                     data = r.content
@@ -209,7 +240,7 @@ class HCADLookup:
                         self._build_prefix_index()
                         return
             except Exception as e:
-                log.warning("  Failed: %s", e)
+                log.warning("  Download failed: %s", e)
 
         log.warning("HCAD data unavailable — no address enrichment")
 
