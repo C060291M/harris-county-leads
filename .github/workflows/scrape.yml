@@ -79,7 +79,7 @@ jobs:
           git stash || true
           git pull --rebase origin main || true
           git stash pop || true
-          git add dashboard/records.json data/records.json data/leads_ghl.csv || true
+          git add dashboard/records.json data/records.json data/leads_ghl.csv data/hcad_lookup.json.gz || true
           git diff --staged --quiet || git commit -m "chore: update leads [skip ci]"
           git push
         env:
