@@ -1,0 +1,3148 @@
+<!DOCTYPE html>
+
+
+
+<html lang="en">
+
+
+
+<head>
+
+
+
+<meta charset="UTF-8"/>
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+
+
+<title>LeadIQ | Harris County</title>
+
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+
+
+
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+
+
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+
+
+
+<style>
+
+
+
+  :root {
+
+
+
+    --bg:#FFFFFF; --surface:#F4F6F9; --surface2:#EDF0F5; --border:#DDE3EC;
+
+
+
+    --primary:#1F3A5F; --teal:#2EC4B6; --slate:#2D3748; --text:#1A2B40;
+
+
+
+    --text-sm:#2D3748; --danger:#E53E3E; --warn:#D97706;
+
+
+
+    --sans:'Inter',system-ui,sans-serif; --mono:'Space Mono',monospace;
+
+
+
+    --radius:8px; --shadow:0 1px 3px rgba(31,58,95,0.08),0 1px 2px rgba(31,58,95,0.04);
+
+
+
+    --shadow-md:0 4px 16px rgba(31,58,95,0.1);
+
+
+
+  }
+
+
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+
+
+  body{padding-right:268px;background:var(--surface);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden;font-size:14px;line-height:1.5}
+
+
+
+
+
+
+
+  /* HEADER */
+
+
+
+  header{background:var(--primary);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(31,58,95,0.2)}
+
+
+
+  .logo{display:flex;align-items:center;gap:.75rem}
+
+
+
+  .logo-badge{background:var(--teal);color:#fff;font-family:var(--mono);font-size:.65rem;font-weight:700;padding:.2rem .55rem;border-radius:4px;letter-spacing:.05em}
+
+
+
+  .logo-name{font-size:1rem;font-weight:700;color:#fff;letter-spacing:-.01em}
+
+
+
+  .logo-sub{font-size:.75rem;color:rgba(255,255,255,.55);margin-left:.25rem}
+
+
+
+  .header-right{display:flex;align-items:center;gap:1rem}
+
+
+
+  .header-meta{font-family:var(--mono);font-size:.65rem;color:rgba(255,255,255,.55);text-align:right;line-height:1.7}
+
+
+
+  .header-meta span{color:var(--teal)}
+
+
+
+  .header-btn{font-size:.7rem;font-weight:600;padding:.35rem .9rem;border-radius:6px;border:1.5px solid rgba(255,255,255,.25);color:rgba(255,255,255,.85);background:transparent;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:.35rem;white-space:nowrap}
+
+
+
+  .header-btn:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.4)}
+
+
+
+  .header-btn.teal{background:var(--teal);border-color:var(--teal);color:#fff}
+
+
+
+  .header-btn.teal:hover{background:#26a99d}
+
+
+
+
+
+
+
+  /* ALERT */
+
+
+
+  .alert-bar{background:#EFF8FF;border-bottom:1px solid #BEE3F8;padding:.6rem 2rem;font-size:.78rem;color:#2B6CB0;display:flex;align-items:center;gap:.6rem}
+
+
+
+  .alert-bar a{color:var(--teal);cursor:pointer;text-decoration:underline}
+
+
+
+
+
+
+
+  /* STATS */
+
+
+
+  .stats-bar{display:grid;grid-template-columns:repeat(6,1fr);background:var(--bg);border-bottom:1px solid var(--border)}
+
+
+
+  .stat-card{padding:1.1rem 1.5rem;border-right:1px solid var(--border)}
+
+
+
+  .stat-card:last-child{border-right:none}
+
+
+
+  .stat-label{font-size:.65rem;font-weight:600;color:var(--slate);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem}
+
+
+
+  .stat-value{font-size:1.75rem;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--primary)}
+
+
+
+
+
+
+
+  /* TABS */
+
+
+
+  .tab-nav{background:var(--bg);border-bottom:1px solid var(--border);padding:0 2rem;display:flex}
+
+
+
+  .tab-btn{font-size:.78rem;font-weight:500;padding:.85rem 1.2rem;background:none;border:none;border-bottom:2px solid transparent;color:var(--slate);cursor:pointer;transition:all .15s}
+
+
+
+  .tab-btn.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+
+
+
+  .tab-btn:hover:not(.active){color:var(--primary)}
+
+
+
+
+
+
+
+  /* TOOLBAR */
+
+
+
+  .toolbar{background:var(--bg);border-bottom:1px solid var(--border);padding:.75rem 2rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+
+
+
+  .search-wrap{position:relative}
+
+
+
+  .search-wrap svg{position:absolute;left:.65rem;top:50%;transform:translateY(-50%);color:var(--slate);pointer-events:none}
+
+
+
+  .toolbar input[type="text"]{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:.42rem .75rem .42rem 2.1rem;border-radius:var(--radius);font-size:.78rem;width:210px;outline:none;transition:border-color .15s}
+
+
+
+  .toolbar input[type="text"]:focus{border-color:var(--primary);background:var(--bg)}
+
+
+
+  .filter-btn{font-size:.72rem;font-weight:500;padding:.38rem .75rem;background:var(--surface);border:1px solid var(--border);color:var(--slate);border-radius:var(--radius);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:.3rem}
+
+
+
+  .filter-btn:hover{border-color:var(--primary);color:var(--primary);background:#EEF2F7}
+
+
+
+  .filter-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+
+
+
+  .filter-btn.active .fc{background:rgba(255,255,255,.2);color:#fff}
+
+
+
+  .fc{font-size:.62rem;background:var(--surface2);padding:.08rem .38rem;border-radius:20px;color:var(--slate)}
+
+
+
+  .score-wrap{display:flex;align-items:center;gap:.5rem}
+
+
+
+  .score-wrap label{font-size:.72rem;color:var(--slate);white-space:nowrap;font-weight:500}
+
+
+
+  .score-wrap input[type="range"]{width:88px;accent-color:var(--primary);cursor:pointer}
+
+
+
+  .score-val{font-size:.72rem;font-weight:700;color:var(--primary);min-width:24px}
+
+
+
+  .spacer{flex:1}
+
+
+
+  .sort-sel{font-size:.72rem;background:var(--surface);border:1px solid var(--border);color:var(--slate);padding:.42rem .65rem;border-radius:var(--radius);cursor:pointer;outline:none}
+
+
+
+  .export-btn{font-size:.72rem;font-weight:600;padding:.42rem 1rem;background:var(--primary);border:none;color:#fff;border-radius:var(--radius);cursor:pointer;transition:background .15s;display:flex;align-items:center;gap:.4rem}
+
+
+
+  .export-btn:hover{background:#162d4a}
+
+
+
+
+
+
+
+  /* VIEWS */
+
+
+
+  .view{display:none}.view.active{display:block}
+
+
+
+
+
+
+
+  /* MAP */
+
+
+
+  #map-container{padding:1.5rem 2rem}
+
+
+
+  #map{height:520px;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow)}
+
+
+
+  .map-legend{display:flex;gap:1.5rem;margin-top:.75rem;font-size:.72rem;color:var(--slate)}
+
+
+
+  .map-legend span{display:flex;align-items:center;gap:.4rem}
+
+
+
+  .leg-dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+
+
+
+  .leaflet-popup-content-wrapper{background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-md);color:var(--text)}
+
+
+
+  .leaflet-popup-tip{background:#fff}
+
+
+
+  .leaflet-popup-content{font-size:.78rem;line-height:1.6}
+
+
+
+
+
+
+
+  /* LEADS TABLE */
+
+
+
+  main{padding:1.5rem 2rem}
+
+
+
+  .col-headers{display:grid;grid-template-columns:64px 1fr 180px 140px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;overflow:hidden}
+
+
+
+  .col-h{padding:.55rem 1rem;font-size:.62rem;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.08em;border-right:1px solid var(--border)}
+
+
+
+  .col-h:last-child{border-right:none}
+
+
+
+
+
+
+
+  .lead-card{display:grid;grid-template-columns:64px 1fr 180px 140px;background:var(--bg);border:1px solid var(--border);border-top:none;transition:box-shadow .15s,background .15s;animation:fadeUp .25s ease both}
+
+
+
+  .lead-card:last-child{border-radius:0 0 var(--radius) var(--radius)}
+
+
+
+  .lead-card:hover{background:#F8FAFD;box-shadow:var(--shadow);z-index:1;position:relative}
+
+
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+
+
+  .lead-card.tier-hot{border-left:3px solid var(--primary)}
+
+
+
+  .lead-card.tier-warm{border-left:3px solid var(--teal)}
+
+
+
+  .lead-card.tier-cold{border-left:3px solid var(--border)}
+
+
+
+
+
+
+
+  /* Score */
+
+
+
+  .score-col{display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border);padding:.75rem 0}
+
+
+
+  .score-ring{width:48px;height:48px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--mono);font-size:.72rem;font-weight:800;flex-shrink:0;gap:0px}
+
+
+
+  .score-hot{background:transparent;border:none;box-shadow:none}
+
+
+
+  .score-warm{background:transparent;border:none;box-shadow:none}
+
+
+
+  .score-cold{background:transparent;border:none;box-shadow:none}
+
+
+
+
+
+
+
+  /* Body */
+
+
+
+  .card-body{padding:.85rem 1.1rem;display:flex;flex-direction:column;gap:.28rem;border-right:1px solid var(--border)}
+
+
+
+  .card-top{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+
+
+
+  .cat-badge{font-size:.6rem;font-weight:700;padding:.15rem .5rem;border-radius:4px;text-transform:uppercase;letter-spacing:.05em;flex-shrink:0}
+
+
+
+  .cat-LP,.cat-RELLP{background:#EFF6FF;color:#1D4ED8}
+
+
+
+  .cat-NOFC{background:#FEF2F2;color:#DC2626}
+
+
+
+  .cat-TAXDEED{background:#FFF7ED;color:#C2410C}
+
+
+
+  .cat-JUD,.cat-CCJ,.cat-DRJUD{background:#F0FDF4;color:#15803D}
+
+
+
+  .cat-LN,.cat-LNMECH,.cat-LNHOA,.cat-LNCORPTX,.cat-LNIRS,.cat-LNFED{background:#EFF6FF;color:#0369A1}
+
+
+
+  .cat-MEDLN{background:#FDF4FF;color:#7E22CE}
+
+
+
+  .cat-PRO{background:#F0FDF4;color:#166534}
+
+
+
+  .cat-NOC{background:#ECFDF5;color:#065F46}
+
+
+
+  .cat-OTHER,.cat-ASN{background:var(--surface2);color:var(--slate)}
+
+
+
+  .doc-num{font-family:var(--mono);font-size:.62rem;color:var(--slate)}
+
+
+
+  .owner-name{font-size:.9rem;font-weight:600;color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:480px}
+
+
+
+  .addr-row{display:flex;gap:1.5rem;flex-wrap:wrap}
+
+
+
+  .addr-block{display:flex;flex-direction:column}
+
+
+
+  .addr-label{font-size:.58rem;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:.07em}
+
+
+
+  .addr-value{font-size:.75rem;color:var(--text-sm)}
+
+
+
+  .addr-value.empty{color:#CBD5E1;font-style:italic}
+
+
+
+  .flags-row{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.1rem}
+
+
+
+  .flag{font-size:.6rem;padding:.1rem .45rem;border-radius:4px;font-weight:500}
+
+
+
+  .flag-hot{background:rgba(31,58,95,.08);color:var(--primary)}
+
+
+
+  .flag-teal{background:rgba(46,196,182,.1);color:#0D9488}
+
+
+
+  .flag-gray{background:var(--surface2);color:var(--slate)}
+
+
+
+  .flag-stacked{background:#7C3AED22;color:#7C3AED;font-weight:700}
+
+
+
+
+
+
+
+  /* Amount col */
+
+
+
+  .amount-col{padding:.85rem 1rem;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;gap:.25rem;border-right:1px solid var(--border)}
+
+
+
+  .amount-val{font-family:var(--mono);font-size:.8rem;font-weight:700;color:var(--primary)}
+
+
+
+  .filed-date{font-size:.65rem;color:var(--slate);font-family:var(--mono)}
+
+
+
+  .hcad-link{font-size:.62rem;font-weight:600;color:var(--teal);text-decoration:none;border:1px solid var(--teal);padding:.15rem .5rem;border-radius:4px;transition:all .15s;white-space:nowrap}
+
+
+
+  .hcad-link:hover{background:var(--teal);color:#fff}
+
+
+
+
+
+
+
+  /* Actions col */
+
+
+
+  .actions-col{padding:.75rem .85rem;display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:5px}
+
+
+
+  .view-btn{font-size:.68rem;font-weight:600;color:var(--primary);text-decoration:none;border:1.5px solid var(--primary);padding:.28rem .6rem;border-radius:var(--radius);transition:all .15s;white-space:nowrap;text-align:center;cursor:pointer;display:block}
+
+
+
+  .view-btn:hover{background:var(--primary);color:#fff}
+
+
+
+  .analyze-btn{font-size:.68rem;font-weight:600;color:#fff;text-decoration:none;border:none;padding:.28rem .6rem;border-radius:var(--radius);transition:all .15s;white-space:nowrap;text-align:center;cursor:pointer;display:block;background:#0F6E56}
+
+
+
+  .analyze-btn:hover{background:#0a5240}
+
+
+
+  .crm-btn{font-size:.68rem;font-weight:600;color:#534AB7;text-decoration:none;border:1.5px solid #534AB7;padding:.28rem .6rem;border-radius:var(--radius);transition:all .15s;white-space:nowrap;text-align:center;cursor:pointer;display:block;background:transparent}
+
+
+
+  .crm-btn:hover{background:#534AB7;color:#fff}
+
+
+
+
+
+
+
+  /* Import modal */
+
+
+
+  #import-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+
+
+
+  #import-modal.open{display:flex}
+
+
+
+  .modal-box{background:#fff;border-radius:12px;padding:28px;width:480px;max-width:95vw}
+
+
+
+  .modal-box h3{font-size:16px;font-weight:700;color:var(--primary);margin-bottom:8px}
+
+
+
+  .modal-box p{font-size:13px;color:var(--slate);margin-bottom:18px;line-height:1.6}
+
+
+
+  .drop-zone{border:2px dashed var(--border);border-radius:8px;padding:32px;text-align:center;cursor:pointer;transition:border-color .15s;margin-bottom:16px}
+
+
+
+  .drop-zone:hover,.drop-zone.drag{border-color:var(--teal);background:#F0FDFB}
+
+
+
+  .drop-zone p{font-size:13px;color:var(--slate);margin-top:8px}
+
+
+
+  .drop-zone strong{color:var(--teal)}
+
+
+
+  .modal-footer{display:flex;gap:8px;justify-content:flex-end}
+
+
+
+  .modal-cancel{padding:7px 18px;border:1px solid var(--border);border-radius:7px;background:transparent;font-size:13px;cursor:pointer;color:var(--text)}
+
+
+
+  .modal-confirm{padding:7px 18px;border:none;border-radius:7px;background:var(--primary);color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+
+
+
+
+
+
+
+  /* Empty / footer */
+
+
+
+  .empty-state{text-align:center;padding:5rem 2rem}
+
+
+
+  .empty-state h2{font-size:1.2rem;font-weight:700;color:var(--primary);margin-bottom:.5rem}
+
+
+
+  .empty-state p{color:var(--slate);font-size:.85rem}
+
+
+
+  footer{text-align:center;padding:1.5rem 2rem;font-size:.68rem;color:var(--slate);border-top:1px solid var(--border);background:var(--bg);margin-top:2rem}
+
+
+
+
+
+
+
+  /* Mobile */
+
+
+
+  @media(max-width:900px){
+
+
+
+    .stats-bar{grid-template-columns:repeat(3,1fr)}
+
+
+
+    .lead-card,.col-headers{grid-template-columns:52px 1fr}
+
+
+
+    .amount-col,.actions-col{display:none}
+
+
+
+    .col-h:nth-child(3),.col-h:nth-child(4){display:none}
+
+
+
+    main{padding:1rem}
+
+
+
+    .toolbar{padding:.6rem 1rem}
+
+
+
+    .header-btn{display:none}
+
+
+
+  }
+
+
+
+
+/* Scoring Panel */
+.score-panel{position:fixed;right:0;top:0;width:260px;height:100vh;background:#0f1f2e;border-left:1px solid #1e3448;overflow-y:auto;z-index:9999;padding:16px;padding-top:72px;box-sizing:border-box;font-family:inherit}
+.score-panel h3{color:#e2e8f0;font-size:13px;font-weight:600;margin:0 0 12px;letter-spacing:.04em;text-transform:uppercase}
+.score-band{border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.score-band.hot{background:rgba(229,62,62,.15);border:1px solid rgba(229,62,62,.3)}
+.score-band.warm{background:rgba(236,153,75,.15);border:1px solid rgba(236,153,75,.3)}
+.score-band.cold{background:rgba(74,107,138,.15);border:1px solid rgba(74,107,138,.3)}
+.band-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.band-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.band-dot.hot{background:#E53E3E}
+.band-dot.warm{background:#EC994B}
+.band-dot.cold{background:#4A6B8A}
+.band-label{font-size:13px;font-weight:600;color:#e2e8f0}
+.band-range{font-size:11px;color:#7a9bbf;margin-left:auto}
+.band-desc{font-size:11px;color:#7a9bbf;margin-bottom:6px}
+.score-table{width:100%;border-collapse:collapse;margin-top:12px}
+.score-table th{font-size:10px;color:#4A6A8A;text-transform:uppercase;letter-spacing:.04em;padding:4px 6px;text-align:left;border-bottom:1px solid #1e3448}
+.score-table td{font-size:11px;color:#a0b4c8;padding:5px 6px;border-bottom:1px solid #0d1a26}
+.score-table td:last-child{color:#48BB78;text-align:right;font-weight:600;white-space:nowrap}
+.score-table tr:hover td{background:rgba(255,255,255,.03)}
+.panel-section{margin-top:16px}
+.panel-section-title{font-size:10px;color:#4A6A8A;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+
+</style>
+
+
+
+</head>
+
+
+
+<body>
+
+
+
+
+
+
+
+<header>
+
+
+
+  <div class="logo">
+
+
+
+    <span class="logo-badge">IQ</span>
+
+
+
+    <span class="logo-name">LeadIQ</span>
+
+
+
+    <span class="logo-sub">Harris County</span>
+
+
+
+  </div>
+
+
+
+  <div class="header-right">
+
+
+
+    <button class="header-btn" onclick="openImportModal()">
+
+
+
+      <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+
+
+
+      Import Tax List
+
+
+
+    </button>
+
+
+
+    <button class="header-btn" onclick="exportSkipTrace()">
+
+
+
+      <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
+
+
+
+      Skip Trace CSV
+
+
+
+    </button>
+
+
+
+    <button class="header-btn teal" id="export-csv-hdr">
+
+
+
+      <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+
+
+
+      Export GHL CSV
+
+
+
+    </button>
+
+
+
+    <div class="header-meta">
+
+
+
+      <div id="hdr-fetch">Loading...</div>
+
+
+
+      <div><span id="hdr-range">-</span></div>
+
+
+
+    </div>
+
+
+
+  </div>
+
+
+
+</header>
+
+
+
+
+
+
+
+<div class="alert-bar" id="alert-bar" style="display:none">
+
+
+
+  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+
+
+
+  <span id="alert-msg"></span>
+
+
+
+  <a onclick="document.getElementById('alert-bar').style.display='none'">dismiss</a>
+
+
+
+</div>
+
+
+
+
+
+
+
+<div class="stats-bar">
+
+
+
+  <div class="stat-card"><div class="stat-label">Total Leads</div><div class="stat-value" id="stat-total">-</div></div>
+
+
+
+  <div class="stat-card"><div class="stat-label">With Address</div><div class="stat-value" style="color:var(--teal)" id="stat-addr">-</div></div>
+
+
+
+  <div class="stat-card"><div class="stat-label">High Score 70+</div><div class="stat-value" id="stat-high">-</div></div>
+
+
+
+  <div class="stat-card"><div class="stat-label">Avg Score</div><div class="stat-value" id="stat-avg">-</div></div>
+
+
+
+  <div class="stat-card" style="border-left:3px solid var(--primary)">
+
+
+
+    <div class="stat-label" style="color:var(--primary)">* Hot (70+)</div>
+
+
+
+    <div class="stat-value" id="stat-red">-</div>
+
+
+
+  </div>
+
+
+
+  <div class="stat-card" style="border-left:3px solid var(--teal)">
+
+
+
+    <div class="stat-label" style="color:var(--teal)">    Warm (40   69)</div>
+
+
+
+    <div class="stat-value" style="color:var(--teal)" id="stat-orange">-</div>
+
+
+
+  </div>
+
+
+
+</div>
+
+
+
+
+
+
+
+<div class="tab-nav">
+
+
+
+  <button class="tab-btn active" data-tab="leads">     Leads</button>
+
+
+
+  <button class="tab-btn" data-tab="map">     Map View</button>
+
+
+
+</div>
+
+
+
+
+
+
+
+<div class="toolbar">
+
+
+
+  <div class="search-wrap">
+
+
+
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+
+
+
+    <input type="text" id="search-input" placeholder="Search owner, doc #, address..."/>
+
+
+
+  </div>
+
+
+
+  <button class="filter-btn active" data-cat="">ALL <span class="fc" id="cnt-all">0</span></button>
+
+
+
+  <button class="filter-btn" data-cat="LP">LP <span class="fc" id="cnt-lp">0</span></button>
+
+
+
+  <button class="filter-btn" data-cat="NOFC">NOFC <span class="fc" id="cnt-nofc">0</span></button>
+
+
+
+  <button class="filter-btn" data-cat="TAXDEED">Tax Deed <span class="fc" id="cnt-tax">0</span></button>
+
+
+
+  <button class="filter-btn" data-cat="JUD">JUD <span class="fc" id="cnt-jud">0</span></button>
+
+
+
+  <button class="filter-btn" data-cat="LN">Liens <span class="fc" id="cnt-ln">0</span></button>
+
+
+
+  <button class="filter-btn" data-cat="PRO">Probate <span class="fc" id="cnt-pro">0</span></button>
+
+
+
+  <div class="score-wrap">
+
+
+
+    <label>Score    </label>
+
+
+
+    <input type="range" id="score-min" min="0" max="100" value="0" step="5"/>
+
+
+
+    <span class="score-val" id="score-val">0</span>
+
+
+
+  </div>
+
+
+
+  <div class="spacer"></div>
+
+
+
+  <select class="sort-sel" id="sort-sel">
+
+
+
+    <option value="score">Sort: Score    </option>
+
+
+
+    <option value="date">Sort: Date    </option>
+
+
+
+    <option value="amount">Sort: Amount    </option>
+
+
+
+  </select>
+
+
+
+  <button class="export-btn" id="export-csv">
+
+
+
+    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+
+
+
+    Export GHL CSV
+
+
+
+  </button>
+
+
+
+</div>
+
+
+
+
+
+
+
+<!-- Leads view -->
+
+
+
+<div class="view active" id="view-leads">
+
+
+
+  <main>
+
+
+
+    <div id="results-wrap"><div class="empty-state"><p>Loading leads...</p></div></div>
+
+
+
+  </main>
+
+
+
+</div>
+
+
+
+
+
+
+
+<!-- Map view -->
+
+
+
+<div class="view" id="view-map">
+
+
+
+  <div id="map-container">
+
+
+
+    <div id="map"></div>
+
+
+
+    <div class="map-legend">
+
+
+
+      <span><span class="leg-dot" style="background:#E53E3E"></span>Hot (70+)</span>
+
+
+
+      <span><span class="leg-dot" style="background:var(--teal)"></span>Warm (40   69)</span>
+
+
+
+      <span><span class="leg-dot" style="background:var(--slate)"></span>Cold (&lt;40)</span>
+
+
+
+      <span style="margin-left:auto" id="map-count"></span>
+
+
+
+    </div>
+
+
+
+  </div>
+
+
+
+</div>
+
+
+
+
+
+
+
+<!-- Import Tax List Modal -->
+
+
+
+<div id="import-modal">
+
+
+
+  <div class="modal-box">
+
+
+
+    <h3>     Import Tax List</h3>
+
+
+
+    <p>Upload a CSV from Harris County or any tax list provider. LeadIQ will merge it with existing records and score the new leads automatically.</p>
+
+
+
+    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+
+
+
+      <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#2EC4B6"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+
+
+
+      <p>Drop CSV here or <strong>click to browse</strong></p>
+
+
+
+      <p style="font-size:11px;margin-top:4px;color:#CBD5E1" id="file-name">No file selected</p>
+
+
+
+    </div>
+
+
+
+    <input type="file" id="file-input" accept=".csv" style="display:none" onchange="handleFileSelect(this)"/>
+
+
+
+    <div class="modal-footer">
+
+
+
+      <button class="modal-cancel" onclick="closeImportModal()">Cancel</button>
+
+
+
+      <button class="modal-confirm" onclick="processImport()">Import Leads</button>
+
+
+
+    </div>
+
+
+
+  </div>
+
+
+
+</div>
+
+
+
+
+
+
+
+<footer>LeadIQ . Harris County, TX . Data sourced from Harris County Clerk &amp; HCAD . Refreshed daily at 07:00 UTC</footer>
+
+
+
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+
+
+<script>
+
+
+
+let allRecords = [];
+
+
+
+let activeFilter = '';
+
+
+
+let mapInstance = null, mapMarkers = [];
+
+
+
+let stackedAddresses = new Set(); // addresses that appear 2+ times
+
+
+
+
+
+
+
+//        Boot                                                                                                                                                                   
+
+
+
+fetch('./records.json')
+
+
+
+  .then(r => r.json())
+
+
+
+  .then(data => {
+
+
+
+    allRecords = data.records || [];
+
+
+
+    const dr = data.date_range || {};
+
+
+
+    document.getElementById('hdr-fetch').textContent =
+
+
+
+      data.fetched_at ? 'Updated ' + new Date(data.fetched_at).toLocaleString() : '-';
+
+
+
+    document.getElementById('hdr-range').textContent =
+
+
+
+      (dr.start || '-') + ' -> ' + (dr.end || '-');
+
+
+
+
+
+
+
+    // Detect stacked properties
+
+
+
+    const addrCount = {};
+
+
+
+    allRecords.forEach(r => {
+
+
+
+      if (r.prop_address) {
+
+
+
+        const key = r.prop_address.toLowerCase().trim();
+
+
+
+        addrCount[key] = (addrCount[key] || 0) + 1;
+
+
+
+      }
+
+
+
+    });
+
+
+
+    Object.entries(addrCount).forEach(([addr, count]) => {
+
+
+
+      if (count >= 2) stackedAddresses.add(addr);
+
+
+
+    });
+
+
+
+
+
+
+
+    const total = allRecords.length;
+
+
+
+    const addr  = data.with_address ?? 0;
+
+
+
+    const hot   = allRecords.filter(r => (r.score||0) >= 70).length;
+
+
+
+    const warm  = allRecords.filter(r => (r.score||0) >= 40 && (r.score||0) < 70).length;
+
+
+
+    const avg   = total ? Math.round(allRecords.reduce((s,r)=>s+(r.score||0),0)/total) : 0;
+
+
+
+
+
+
+
+    document.getElementById('stat-total').textContent  = total;
+
+
+
+    document.getElementById('stat-addr').textContent   = addr;
+
+
+
+    document.getElementById('stat-high').textContent   = hot;
+
+
+
+    document.getElementById('stat-avg').textContent    = avg;
+
+
+
+    document.getElementById('stat-red').textContent    = hot;
+
+
+
+    document.getElementById('stat-orange').textContent = warm;
+
+
+
+
+
+
+
+    updateCounts(allRecords);
+
+
+
+
+
+
+
+    const prev = parseInt(localStorage.getItem('leadin_prev')||'0');
+
+
+
+    if (total > prev && prev > 0) showAlert(`${total - prev} new lead${total-prev>1?'s':''} since your last visit`);
+
+
+
+    localStorage.setItem('leadin_prev', total);
+
+
+
+
+
+
+
+    const hotNew = allRecords.filter(r=>(r.score||0)>=70&&(r.flags||[]).includes('New this week'));
+
+
+
+    if (hotNew.length > 0) showAlert(`${hotNew.length} new hot lead${hotNew.length>1?'s':''} this week (score 70+)`);
+
+
+
+
+
+
+
+    render();
+
+
+
+  })
+
+
+
+  .catch(() => {
+
+
+
+    document.getElementById('results-wrap').innerHTML =
+
+
+
+      '<div class="empty-state"><h2>No Data</h2><p>Run the scraper first to populate leads.</p></div>';
+
+
+
+  });
+
+
+
+
+
+
+
+function showAlert(msg) {
+
+
+
+  document.getElementById('alert-bar').style.display = 'flex';
+
+
+
+  document.getElementById('alert-msg').textContent = msg;
+
+
+
+}
+
+
+
+
+
+
+
+//        Counts                                                                                                                                                             
+
+
+
+function countFor(cat, recs) {
+
+
+
+  if (!cat) return recs.length;
+
+
+
+  if (cat === 'LN') return recs.filter(r=>['LN','LNMECH','LNHOA','LNCORPTX','LNIRS','LNFED','MEDLN'].includes(r.cat)).length;
+
+
+
+  return recs.filter(r => r.cat && r.cat.startsWith(cat)).length;
+
+
+
+}
+
+
+
+function updateCounts(recs) {
+
+
+
+  document.getElementById('cnt-all').textContent   = recs.length;
+
+
+
+  document.getElementById('cnt-lp').textContent    = countFor('LP', recs);
+
+
+
+  document.getElementById('cnt-nofc').textContent  = countFor('NOFC', recs);
+
+
+
+  document.getElementById('cnt-tax').textContent   = countFor('TAXDEED', recs);
+
+
+
+  document.getElementById('cnt-jud').textContent   = countFor('JUD', recs);
+
+
+
+  document.getElementById('cnt-ln').textContent    = countFor('LN', recs);
+
+
+
+  document.getElementById('cnt-pro').textContent   = countFor('PRO', recs);
+
+
+
+}
+
+
+
+
+
+
+
+//        Tabs                                                                                                                                                                   
+
+
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+
+
+
+  btn.addEventListener('click', () => {
+
+
+
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+
+
+
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+
+
+
+    btn.classList.add('active');
+
+
+
+    const tab = btn.dataset.tab;
+
+
+
+    document.getElementById('view-'+tab).classList.add('active');
+
+
+
+    if (tab === 'map') initMap();
+
+
+
+  });
+
+
+
+});
+
+
+
+
+
+
+
+//        Filters                                                                                                                                                          
+
+
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+
+
+
+  btn.addEventListener('click', () => {
+
+
+
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+
+
+
+    btn.classList.add('active');
+
+
+
+    activeFilter = btn.dataset.cat;
+
+
+
+    render();
+
+
+
+    if (mapInstance) renderMap(getFiltered());
+
+
+
+  });
+
+
+
+});
+
+
+
+document.getElementById('search-input').addEventListener('input', () => { render(); if(mapInstance) renderMap(getFiltered()); });
+
+
+
+document.getElementById('sort-sel').addEventListener('change', render);
+
+
+
+const slider = document.getElementById('score-min');
+
+
+
+slider.addEventListener('input', () => {
+
+
+
+  document.getElementById('score-val').textContent = slider.value;
+
+
+
+  render();
+
+
+
+  if(mapInstance) renderMap(getFiltered());
+
+
+
+});
+
+
+
+
+
+
+
+//        Filter logic                                                                                                                                           
+
+
+
+function getFiltered() {
+
+
+
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+
+
+
+  const min = parseInt(slider.value)||0;
+
+
+
+  return allRecords.filter(r => {
+
+
+
+    if ((r.score||0) < min) return false;
+
+
+
+    if (activeFilter) {
+
+
+
+      if (activeFilter === 'LN') {
+
+
+
+        if (!['LN','LNMECH','LNHOA','LNCORPTX','LNIRS','LNFED','MEDLN'].includes(r.cat)) return false;
+
+
+
+      } else if (!r.cat || !r.cat.startsWith(activeFilter)) return false;
+
+
+
+    }
+
+
+
+    if (q) {
+
+
+
+      const hay = [r.owner, r.doc_num, r.prop_address, r.mail_address, r.cat_label].join(' ').toLowerCase();
+
+
+
+      if (!hay.includes(q)) return false;
+
+
+
+    }
+
+
+
+    return true;
+
+
+
+  });
+
+
+
+}
+
+
+
+
+
+
+
+//        HCAD link builder                                                                                                                            
+
+
+
+function hcadUrl(r) {
+
+
+
+  if (!r.prop_address) return null;
+
+
+
+  const addr = encodeURIComponent(r.prop_address);
+
+
+
+  const zip  = encodeURIComponent(r.prop_zip || '');
+
+
+
+  const q = encodeURIComponent((r.prop_address||'') + ' ' + (r.prop_city||'Houston') + ' TX HCAD property appraisal'); return `https://www.google.com/search?q=${q}`;
+
+
+
+}
+
+
+
+
+
+
+
+//        Add to CRM                                                                                                                                                 
+
+
+
+function addToCRM(el) {
+
+
+
+  var btn = el;
+
+
+
+  var owner = btn.getAttribute("data-owner") || "";
+
+
+
+  var address = btn.getAttribute("data-address") || "";
+
+
+
+  var city = btn.getAttribute("data-city") || "Houston";
+
+
+
+  var zip = btn.getAttribute("data-zip") || "";
+
+
+
+  var score = parseInt(btn.getAttribute("data-score")) || 0;
+
+
+
+  var type = btn.getAttribute("data-type") || "Other";
+
+
+
+  var doc = btn.getAttribute("data-doc") || "";
+
+
+
+  btn.textContent = "Adding...";
+
+
+
+  btn.disabled = true;
+
+
+
+  var sqft = parseInt(btn.getAttribute("data-sqft")) || 0;
+  var beds = parseInt(btn.getAttribute("data-beds")) || 0;
+  var baths = parseInt(btn.getAttribute("data-baths")) || 0;
+  var yr_built = btn.getAttribute("data-yr_built") || "";
+  var mail_addr = btn.getAttribute("data-mail_address") || "";
+  var lead = {
+    id: Date.now().toString(),
+    owner: owner,
+    address: address ? (address + ", " + city + " TX " + zip).trim() : "",
+    mail_address: mail_addr,
+    phone: "", email: "",
+    score: score,
+    type: type,
+    stage: "New Lead",
+    sqft: sqft, beds: beds, baths: baths, yr_built: yr_built,
+    notes: "Doc: " + (doc || "-") + " - Added from LeadIQ",
+
+
+
+    log: [{icon: "fire", text: "Added from LeadIQ", date: new Date().toLocaleDateString()}],
+
+
+
+    contactMethods: [], lastContact: null,
+
+
+
+    source: "LeadIQ",
+
+
+
+    addedAt: new Date().toLocaleDateString()
+
+
+
+  };
+
+
+
+  fetch("http://localhost:8000/api/crm/add-lead", {
+
+
+
+    method: "POST",
+
+
+
+    headers: {"Content-Type": "application/json"},
+
+
+
+    body: JSON.stringify(lead)
+
+
+
+  }).then(function(r) {
+
+
+
+    return r.json();
+
+
+
+  }).then(function(data) {
+
+
+
+    if (data.success) {
+
+
+
+      btn.textContent = "Added!";
+
+
+
+      btn.style.background = "#0F6E56";
+
+
+
+      btn.style.color = "#fff";
+
+
+
+      btn.style.borderColor = "#0F6E56";
+
+
+
+      setTimeout(function() { btn.textContent = "+ CRM"; btn.style.background = ""; btn.style.color = ""; btn.style.borderColor = ""; btn.disabled = false; }, 2000);
+
+
+
+    } else if (data.duplicate) {
+
+
+
+      btn.textContent = "Already in CRM";
+
+
+
+      setTimeout(function() { btn.textContent = "+ CRM"; btn.disabled = false; }, 2000);
+
+
+
+    } else {
+
+
+
+      btn.textContent = "+ CRM"; btn.disabled = false;
+
+
+
+      alert("Error: " + (data.detail || "Failed"));
+
+
+
+    }
+
+
+
+  }).catch(function(e) {
+
+
+
+    btn.textContent = "+ CRM";
+
+
+
+    btn.disabled = false;
+
+
+
+    alert("FastAPI not reachable at localhost:8000");
+
+
+
+  });
+
+
+
+}
+
+
+
+
+
+
+
+//        Render leads                                                                                                                                           
+
+
+
+const HOT_FLAGS  = new Set(['Tax delinquency','Probate / estate','Lis pendens','Divorce / bankruptcy','Pre-foreclosure','Judgment lien']);
+
+
+
+const TEAL_FLAGS = new Set(['Code / HOA violation','Lien on record','New this week']);
+
+
+
+
+
+
+
+function flagClass(f) {
+
+
+
+  if (HOT_FLAGS.has(f))  return 'flag flag-hot';
+
+
+
+  if (TEAL_FLAGS.has(f)) return 'flag flag-teal';
+
+
+
+  return 'flag flag-gray';
+
+
+
+}
+
+
+
+
+
+
+
+function render() {
+
+
+
+  const sortBy = document.getElementById('sort-sel').value;
+
+
+
+  let filtered = [...getFiltered()].sort((a,b) => {
+
+
+
+    if (sortBy==='date')   return (b.filed||'').localeCompare(a.filed||'');
+
+
+
+    if (sortBy==='amount') return (b.amount||0)-(a.amount||0);
+
+
+
+    return (b.score||0)-(a.score||0);
+
+
+
+  });
+
+
+
+
+
+
+
+  updateCounts(getFiltered());
+
+
+
+
+
+
+
+  const wrap = document.getElementById('results-wrap');
+
+
+
+  if (!filtered.length) {
+
+
+
+    wrap.innerHTML = '<div class="empty-state"><h2>No Matches</h2><p>Try adjusting filters or score range.</p></div>';
+
+
+
+    return;
+
+
+
+  }
+
+
+
+
+
+
+
+  let html = `<div class="col-headers">
+
+
+
+    <div class="col-h" style="text-align:center">Score</div>
+
+
+
+    <div class="col-h">Owner / Document</div>
+
+
+
+    <div class="col-h" style="text-align:right">Amount / Filed</div>
+
+
+
+    <div class="col-h" style="text-align:right">Action</div>
+
+
+
+  </div>`;
+
+
+
+
+
+
+
+  filtered.forEach((r, i) => {
+
+
+
+    const score   = r.score || 0;
+
+
+
+    const ringCls = score>=70 ? 'score-hot' : score>=40 ? 'score-warm' : 'score-cold';
+    const strokeC = score>=70?'#C53030':score>=40?'#B45309':'#3A5A7A';
+
+
+
+    const tierCls = score>=70 ? 'tier-hot'  : score>=40 ? 'tier-warm'  : 'tier-cold';
+
+
+
+    const cat     = r.cat || 'OTHER';
+
+
+
+    const prop    = r.prop_address ? `${r.prop_address}, ${r.prop_city||''} ${r.prop_zip||''}`.trim() : null;
+
+
+
+    const mail    = r.mail_address ? `${r.mail_address}, ${r.mail_city||''} ${r.mail_state||''} ${r.mail_zip||''}`.trim() : null;
+
+
+
+    const amt     = r.amount ? '$'+Number(r.amount).toLocaleString(undefined,{minimumFractionDigits:0}) : '-';
+
+
+
+    const flags   = (r.flags||[]).map(f=>`<span class="${flagClass(f)}">${f}</span>`).join('');
+
+
+
+    
+
+
+
+
+
+
+
+    // Stacked detection
+
+
+
+    const isStacked = r.prop_address && stackedAddresses.has(r.prop_address.toLowerCase().trim());
+
+
+
+    const stackedBadge = isStacked ? '<span class="flag flag-stacked">    STACKED</span>' : '';
+
+
+
+
+
+
+
+    // HCAD link
+
+
+
+    const hcad = hcadUrl(r);
+
+
+
+    const hcadBtn = hcad
+
+
+
+      ? `<a class="hcad-link" href="${hcad}" target="_blank" rel="noopener">HCAD Property</a>`
+
+
+
+      : '';
+
+
+
+
+
+
+
+    // Clerk link
+
+
+
+    const clerkLink = r.clerk_url
+
+
+
+      ? `<a class="view-btn" href="https://www.google.com/search?q=${encodeURIComponent(r.doc_num + ' Harris County Clerk property record')}" target="_blank" rel="noopener">Clerk Record</a>`
+
+
+
+      : `<span style="font-size:.62rem;color:var(--slate)">No link</span>`;
+
+
+
+
+
+
+
+    // Analyze in FlipIQ
+
+
+
+    const flipBtn = r.prop_address
+
+
+
+      ? `<a class="analyze-btn" href="http://localhost:3000/dashboard?address=${encodeURIComponent(r.prop_address)}&city=${encodeURIComponent(r.prop_city||'Houston')}&state=TX&zip_code=${encodeURIComponent(r.prop_zip||'')}&purchase_price=0&arv=0&sqft=${r.sqft||0}&beds=${r.beds||0}&baths=${r.full_baths||0}&year_built=${r.yr_built||''}" target="_blank">Analyze in FlipIQ -></a>`
+
+
+
+      : '';
+
+
+
+
+
+
+
+    // Add to CRM
+
+
+
+    const crmBtn = r.prop_address ? `<button class="crm-btn" data-owner="${(r.owner||'').replace(/"/g,'&quot;')}" data-address="${(r.prop_address||'').replace(/"/g,'&quot;')}" data-city="${(r.prop_city||'Houston').replace(/"/g,'&quot;')}" data-zip="${(r.prop_zip||'').replace(/"/g,'&quot;')}" data-score="${score}" data-type="${(r.cat_label||'').replace(/"/g,'&quot;')}" data-doc="${(r.doc_num||'').replace(/"/g,'&quot;')}" data-sqft="${r.sqft||0}" data-beds="${r.beds||0}" data-baths="${r.full_baths||0}" data-yr_built="${r.yr_built||''}" data-mail_address="${(r.mail_address||'').replace(/"/g,'&quot;')}" onclick="addToCRM(this)">+ CRM</button>` : '';
+
+
+
+
+
+
+
+    html += `<div class="lead-card ${tierCls}" style="animation-delay:${Math.min(i,30)*18}ms">
+
+
+
+      <div class="score-col">
+
+
+
+        <div style="width:44px;height:44px;border-radius:50%;border:3px solid ${score>=70?'#CC0000':score>=40?'#D97706':'#1565C0'};display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900;color:#111;flex-shrink:0;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.12)">${score}</div>
+
+
+
+
+
+
+
+
+
+
+
+
+      </div>
+
+
+
+      <div class="card-body">
+
+
+
+        <div class="card-top">
+
+
+
+          <span class="cat-badge cat-${cat}">${r.cat_label||cat}</span>
+
+
+
+          <span class="doc-num">${r.doc_num||'-'}</span>
+
+
+
+        </div>
+
+
+
+       <div class="owner-name">${(()=>{const rawOwner=r.primary_owner&&r.owner_is_person?r.primary_owner+(r.owner&&r.owner.includes('/')?'/'+r.owner.split('/').slice(1).join('/'):'' ):r.owner||'';const parts=rawOwner.split('/').map(s=>s.trim()).filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i);if(!parts.length)return '<span style="color:var(--slate);font-style:italic">Unknown Owner</span>';const SKIP_NAMES=new Set(["LAKEVIEW LOAN SERVICING","NATIONSTAR","PENNYMAC","NEWREZ","CALIBER","FREEDOM MORTGAGE","SPECIALIZED LOAN","BARRETT DAFFIN","MCCARTHY HOLTHUS","SUBSTITUTE TRUSTEE","AUCTION.COM LLC","HARRIS COUNTY","MAIN KELLY","ZIENTZ MICHAEL","SERVICELINK","AVT TITLE SERVICES","TOTAL LENDER SOLUTIONS","MAIN KELLY","ZIENTZ MICHAEL","LEVA JEFF","SERVICELINK","AVT TITLE SERVICES","TOTAL LENDER SOLUTIONS","BARRETT DAFFIN","MCCARTHY HOLTHUS","SUBSTITUTE TRUSTEE","AUCTION.COM LLC","HARRIS COUNTY"]);
+const isEntity=n=>{const u=n.trim().toUpperCase();return SKIP_NAMES.has(u)||/LLC|INC|CORP|LTD|TRUST|AUCTION|HOLDINGS|PROPERTIES|GROUP|PARTNERS|VENTURES|COUNTY|BANK|FUND|TRUSTEE|SERVICING|MORTGAGE/i.test(n);};const persons=parts.filter(p=>!isEntity(p));const entities=parts.filter(p=>isEntity(p));return `${persons.length?`<span style="font-weight:700;color:var(--primary)">${persons.join(' · ')}</span>`:''}${entities.length?`<span style="font-size:.72rem;font-weight:400;color:#2D3748;margin-left:6px">${entities.join(' · ')}</span>`:''}`;})()} </div>
+
+
+
+        <div class="addr-row">
+
+
+
+          <div class="addr-block">
+
+
+
+            <span class="addr-label">Property</span>
+
+
+
+            <span class="addr-value ${prop?'':'empty'}">${prop||'No address matched'}</span>
+
+
+
+          </div>
+
+
+
+          <div class="addr-block">
+
+
+
+            <span class="addr-label">Mailing</span>
+
+
+
+            <span class="addr-value ${mail?'':'empty'}">${mail||'-'}</span>
+
+
+
+          </div>
+
+
+
+        </div>
+
+
+
+        <div class="flags-row">${stackedBadge}${flags}</div>
+
+        ${(r.sqft||r.beds||r.yr_built) ? `<div style="font-size:.68rem;color:#6B7C93;margin-top:4px;display:flex;gap:12px">
+
+          ${r.sqft ? `<span>&#128198; ${r.sqft.toLocaleString()} sqft</span>` : ""}
+
+          ${r.beds ? `<span>&#127968; ${r.beds}bd / ${r.full_baths||0}ba</span>` : ""}
+
+          ${r.yr_built ? `<span>&#128336; Built ${r.yr_built}</span>` : ""}
+
+        </div>` : ""}
+
+
+
+      </div>
+
+
+
+      <div class="amount-col">
+
+
+
+        <span class="amount-val">${amt}</span>
+
+
+
+        <span class="filed-date">${r.filed||'-'}</span>
+
+
+
+        <span class="filed-date" style="color:#CBD5E1">${r.doc_type||''}</span>
+
+
+
+        ${hcadBtn}
+
+
+
+      </div>
+
+
+
+      <div class="actions-col">
+
+
+
+        ${clerkLink}
+
+
+
+        ${flipBtn}
+
+
+
+        ${crmBtn}
+
+
+
+      </div>
+
+
+
+    </div>`;
+
+
+
+  });
+
+
+
+
+
+
+
+  wrap.innerHTML = html;
+
+
+
+}
+
+
+
+
+
+
+
+//        Import Modal                                                                                                                                           
+
+
+
+function openImportModal() {
+
+
+
+  document.getElementById('import-modal').classList.add('open');
+
+
+
+}
+
+
+
+function closeImportModal() {
+
+
+
+  document.getElementById('import-modal').classList.remove('open');
+
+
+
+  document.getElementById('file-name').textContent = 'No file selected';
+
+
+
+}
+
+
+
+function handleFileSelect(input) {
+
+
+
+  const file = input.files[0];
+
+
+
+  if (file) document.getElementById('file-name').textContent = file.name + ' . ' + (file.size/1024).toFixed(1) + ' KB';
+
+
+
+}
+
+
+
+function processImport() {
+
+
+
+  const file = document.getElementById('file-input').files[0];
+
+
+
+  if (!file) { alert('Please select a CSV file first.'); return; }
+
+
+
+  alert(`"${file.name}" received.\n\nFull CSV import processing requires the Python backend to be running.\n\nFor now your file is queued. Connect the import endpoint in Settings to process automatically.`);
+
+
+
+  closeImportModal();
+
+
+
+}
+
+
+
+
+
+
+
+// Drag and drop
+
+
+
+const dz = document.getElementById('drop-zone');
+
+
+
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+
+
+
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+
+
+
+dz.addEventListener('drop', e => {
+
+
+
+  e.preventDefault(); dz.classList.remove('drag');
+
+
+
+  const file = e.dataTransfer.files[0];
+
+
+
+  if (file) {
+
+
+
+    document.getElementById('file-name').textContent = file.name + ' . ' + (file.size/1024).toFixed(1) + ' KB';
+
+
+
+  }
+
+
+
+});
+
+
+
+
+
+
+
+//        Skip Trace CSV Export                                                                                                                
+
+
+
+function exportSkipTrace() {
+
+
+
+  const cols = ['First Name','Last Name','Property Address','Property City','Property State',
+
+
+
+    'Property Zip','Mailing Address','Mailing City','Mailing State','Mailing Zip',
+
+
+
+    'Lead Type','Score','Doc Number','Filed Date','Amount'];
+
+
+
+  const rows = getFiltered()
+
+
+
+    .filter(r => r.prop_address) // only leads with addresses
+
+
+
+    .map(r => {
+
+
+
+      const p = (r.owner||'').trim().split(/\s+/);
+
+
+
+      return [
+
+
+
+        p[0]||'', p.slice(1).join(' '),
+
+
+
+        r.prop_address||'', r.prop_city||'Houston', r.prop_state||'TX', r.prop_zip||'',
+
+
+
+        r.mail_address||'', r.mail_city||'', r.mail_state||'TX', r.mail_zip||'',
+
+
+
+        r.cat_label||'', r.score||0, r.doc_num||'', r.filed||'',
+
+
+
+        r.amount?'$'+Number(r.amount).toLocaleString():''
+
+
+
+      ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');
+
+
+
+    });
+
+
+
+  if (!rows.length) { alert('No leads with property addresses to export for skip tracing.'); return; }
+
+
+
+  const csv = [cols.map(c=>`"${c}"`).join(','),...rows].join('\n');
+
+
+
+  const a = Object.assign(document.createElement('a'), {
+
+
+
+    href: URL.createObjectURL(new Blob([csv],{type:'text/csv'})),
+
+
+
+    download: `skip_trace_${new Date().toISOString().slice(0,10)}.csv`
+
+
+
+  });
+
+
+
+  a.click();
+
+
+
+  showAlert(`Skip Trace CSV exported - ${rows.length} leads with addresses ready for BatchSkipTracing or similar service`);
+
+
+
+}
+
+
+
+
+
+
+
+//        GHL CSV Export                                                                                                                                     
+
+
+
+function exportGHL() {
+
+
+
+  const cols = ['First Name','Last Name','Mailing Address','Mailing City','Mailing State',
+
+
+
+    'Mailing Zip','Property Address','Property City','Property State','Property Zip',
+
+
+
+    'Lead Type','Document Type','Date Filed','Document Number','Amount/Debt Owed',
+
+
+
+    'Seller Score','Motivated Seller Flags','Source','Public Records URL'];
+
+
+
+  const rows = getFiltered().map(r => {
+
+
+
+    const p = (r.owner||'').trim().split(/\s+/);
+
+
+
+    const amt = r.amount;
+
+
+
+    return [
+
+
+
+      p[0]||'', p.slice(1).join(' '),
+
+
+
+      r.mail_address||'', r.mail_city||'', r.mail_state||'TX', r.mail_zip||'',
+
+
+
+      r.prop_address||'', r.prop_city||'', r.prop_state||'TX', r.prop_zip||'',
+
+
+
+      r.cat_label||'', r.doc_type||'', r.filed||'', r.doc_num||'',
+
+
+
+      amt?'$'+Number(amt).toLocaleString():'',
+
+
+
+      r.score||0, (r.flags||[]).join('; '),
+
+
+
+      'Harris County Clerk', r.clerk_url||''
+
+
+
+    ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');
+
+
+
+  });
+
+
+
+  const csv = [cols.map(c=>`"${c}"`).join(','),...rows].join('\n');
+
+
+
+  const a = Object.assign(document.createElement('a'), {
+
+
+
+    href: URL.createObjectURL(new Blob([csv],{type:'text/csv'})),
+
+
+
+    download: `leadin_hc_${new Date().toISOString().slice(0,10)}.csv`
+
+
+
+  });
+
+
+
+  a.click();
+
+
+
+}
+
+
+
+document.getElementById('export-csv').addEventListener('click', exportGHL);
+
+
+
+document.getElementById('export-csv-hdr').addEventListener('click', exportGHL);
+
+
+
+
+
+
+
+//        Map                                                                                                                                                                      
+
+
+
+const ZIP_COORDS = {
+
+
+
+  '77001':[29.750,-95.357],'77002':[29.756,-95.366],'77003':[29.744,-95.348],'77004':[29.727,-95.368],
+
+
+
+  '77005':[29.715,-95.418],'77006':[29.739,-95.397],'77007':[29.759,-95.403],'77008':[29.776,-95.418],
+
+
+
+  '77009':[29.779,-95.373],'77010':[29.751,-95.360],'77011':[29.737,-95.330],'77012':[29.717,-95.323],
+
+
+
+  '77013':[29.754,-95.265],'77014':[29.897,-95.444],'77015':[29.754,-95.228],'77016':[29.826,-95.328],
+
+
+
+  '77017':[29.700,-95.277],'77018':[29.828,-95.429],'77019':[29.753,-95.415],'77020':[29.763,-95.329],
+
+
+
+  '77021':[29.694,-95.361],'77022':[29.810,-95.385],'77023':[29.718,-95.340],'77024':[29.766,-95.506],
+
+
+
+  '77025':[29.693,-95.436],'77026':[29.793,-95.346],'77027':[29.738,-95.442],'77028':[29.830,-95.299],
+
+
+
+  '77029':[29.762,-95.280],'77030':[29.706,-95.402],'77031':[29.668,-95.540],'77032':[29.927,-95.337],
+
+
+
+  '77033':[29.680,-95.323],'77034':[29.637,-95.218],'77035':[29.648,-95.486],'77036':[29.695,-95.530],
+
+
+
+  '77037':[29.880,-95.395],'77038':[29.893,-95.424],'77039':[29.867,-95.320],'77040':[29.867,-95.541],
+
+
+
+  '77041':[29.849,-95.589],'77042':[29.730,-95.559],'77043':[29.792,-95.562],'77044':[29.825,-95.180],
+
+
+
+  '77045':[29.647,-95.427],'77046':[29.737,-95.440],'77047':[29.641,-95.368],'77048':[29.620,-95.332],
+
+
+
+  '77049':[29.811,-95.157],'77050':[29.888,-95.261],'77051':[29.643,-95.395],'77053':[29.614,-95.428],
+
+
+
+  '77054':[29.685,-95.394],'77055':[29.797,-95.494],'77056':[29.750,-95.462],'77057':[29.745,-95.481],
+
+
+
+  '77058':[29.563,-95.098],'77059':[29.588,-95.139],'77060':[29.926,-95.384],'77061':[29.668,-95.275],
+
+
+
+  '77062':[29.577,-95.123],'77063':[29.724,-95.527],'77064':[29.908,-95.533],'77065':[29.921,-95.574],
+
+
+
+  '77066':[29.948,-95.479],'77067':[29.946,-95.451],'77068':[29.965,-95.464],'77069':[29.983,-95.486],
+
+
+
+  '77070':[29.958,-95.555],'77071':[29.659,-95.509],'77072':[29.700,-95.577],'77073':[29.970,-95.395],
+
+
+
+  '77074':[29.681,-95.529],'77075':[29.631,-95.270],'77076':[29.852,-95.379],'77077':[29.745,-95.591],
+
+
+
+  '77078':[29.819,-95.246],'77079':[29.762,-95.565],'77080':[29.809,-95.511],'77081':[29.706,-95.481],
+
+
+
+  '77082':[29.713,-95.604],'77083':[29.699,-95.614],'77084':[29.840,-95.648],'77085':[29.642,-95.462],
+
+
+
+  '77086':[29.916,-95.454],'77087':[29.690,-95.306],'77088':[29.901,-95.451],'77089':[29.612,-95.199],
+
+
+
+  '77090':[29.984,-95.439],'77091':[29.858,-95.417],'77092':[29.836,-95.474],'77093':[29.863,-95.351],
+
+
+
+  '77094':[29.767,-95.644],'77095':[29.878,-95.629],'77096':[29.663,-95.467],'77098':[29.731,-95.416],
+
+
+
+  '77099':[29.701,-95.598],'77449':[29.846,-95.703],'77450':[29.762,-95.695],'77477':[29.600,-95.546],
+
+
+
+  '77478':[29.613,-95.470],'77479':[29.597,-95.512],'77489':[29.609,-95.434],'77494':[29.730,-95.743],
+
+
+
+  '77498':[29.706,-95.650],'77502':[29.707,-95.186],'77503':[29.694,-95.155],'77504':[29.677,-95.178],
+
+
+
+  '77505':[29.672,-95.131],'77506':[29.726,-95.198],'77520':[29.751,-94.993],'77521':[29.783,-95.015],
+
+
+
+  '77530':[29.749,-95.084],'77536':[29.685,-95.055],'77546':[29.568,-95.219],'77571':[29.671,-95.044],
+
+
+
+  '77573':[29.570,-95.165],'77578':[29.530,-95.405],'77581':[29.552,-95.312],'77584':[29.544,-95.431],
+
+
+
+};
+
+
+
+
+
+
+
+function initMap() {
+
+
+
+  if (mapInstance) { renderMap(getFiltered()); return; }
+
+
+
+  mapInstance = L.map('map').setView([29.7604,-95.3698], 10);
+
+
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
+
+
+    attribution:'   OpenStreetMap', maxZoom:18
+
+
+
+  }).addTo(mapInstance);
+
+
+
+  renderMap(getFiltered());
+
+
+
+}
+
+
+
+
+
+
+
+function renderMap(records) {
+
+
+
+  mapMarkers.forEach(m => mapInstance.removeLayer(m));
+
+
+
+  mapMarkers = [];
+
+
+
+  let shown = 0;
+
+
+
+  records.forEach(r => {
+
+
+
+    const zip = (r.prop_zip||r.mail_zip||'').replace(/\D/g,'').slice(0,5);
+
+
+
+    const coords = ZIP_COORDS[zip];
+
+
+
+    if (!coords) return;
+
+
+
+    shown++;
+
+
+
+    const score = r.score||0;
+
+
+
+    const color = score>=70 ? '#E53E3E' : score>=40 ? '#2EC4B6' : '#6B7C93';
+
+
+
+    const size  = score>=70 ? 14 : score>=40 ? 11 : 8;
+
+
+
+    const jitter = () => (Math.random()-0.5)*0.012;
+
+
+
+    const icon = L.divIcon({
+
+
+
+      className:'',
+
+
+
+      html:`<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2px solid rgba(255,255,255,0.8);box-shadow:0 1px 4px rgba(0,0,0,0.2)"></div>`,
+
+
+
+      iconSize:[size,size], iconAnchor:[size/2,size/2]
+
+
+
+    });
+
+
+
+    const hcad = hcadUrl(r);
+
+
+
+    const popup = `<strong style="color:#1F3A5F">${r.owner||'Unknown'}</strong><br/>
+
+
+
+      <span style="color:#6B7C93">${r.cat_label}</span> . Score: <strong style="color:${color}">${score}</strong><br/>
+
+
+
+      ${r.prop_address||'No address'}<br/>
+
+
+
+      Filed: ${r.filed||'-'} . Doc: ${r.doc_num||'-'}<br/>
+
+
+
+      ${r.clerk_url?`<a href="${r.clerk_url}" target="_blank" style="color:#2EC4B6">Clerk -></a>`:''}
+
+
+
+      ${hcad?` &nbsp; <a href="${hcad}" target="_blank" style="color:#1D4ED8">HCAD Property</a>`:''}`;
+
+
+
+    const marker = L.marker([coords[0]+jitter(),coords[1]+jitter()],{icon}).bindPopup(popup);
+
+
+
+    marker.addTo(mapInstance);
+
+
+
+    mapMarkers.push(marker);
+
+
+
+  });
+
+
+
+  document.getElementById('map-count').textContent = `${shown} of ${records.length} leads plotted`;
+
+
+
+}
+
+
+
+</script>
+
+
+
+
+<div class="score-panel">
+  <h3>Scoring Guide</h3>
+  <div class="score-band hot">
+    <div class="band-header"><span class="band-dot hot"></span><span class="band-label">Hot</span><span class="band-range">70–100</span></div>
+    <div class="band-desc">Multiple distress signals — act now</div>
+  </div>
+  <div class="score-band warm">
+    <div class="band-header"><span class="band-dot warm"></span><span class="band-label">Warm</span><span class="band-range">40–69</span></div>
+    <div class="band-desc">Motivated — worth outreach</div>
+  </div>
+  <div class="score-band cold">
+    <div class="band-header"><span class="band-dot cold"></span><span class="band-label">Cold</span><span class="band-range">10–39</span></div>
+    <div class="band-desc">Single signal — low urgency</div>
+  </div>
+  <div class="panel-section">
+    <div class="panel-section-title">Signal Breakdown</div>
+    <table class="score-table">
+      <thead><tr><th>Signal</th><th>Pts</th></tr></thead>
+      <tbody>
+        <tr><td>Tax Deed / IRS / Corp Lien</td><td>+30</td></tr>
+        <tr><td>HOA / Mechanic Lien</td><td>+25</td></tr>
+        <tr><td>Probate / Estate</td><td>+20</td></tr>
+        <tr><td>Lien on record</td><td>+15</td></tr>
+        <tr><td>Absentee owner (out of state)</td><td>+15</td></tr>
+        <tr><td>Address + Lien combo</td><td>+10</td></tr>
+        <tr><td>Divorce / Bankruptcy</td><td>+10</td></tr>
+        <tr><td>3+ distress signals</td><td>+10</td></tr>
+        <tr><td>Lis Pendens / Pre-foreclosure</td><td>+10</td></tr>
+        <tr><td>Judgment Lien</td><td>+10</td></tr>
+        <tr><td>Amount &gt; $100k</td><td>+15</td></tr>
+        <tr><td>Amount &gt; $50k</td><td>+10</td></tr>
+        <tr><td>New this week</td><td>+5</td></tr>
+        <tr><td>Has address</td><td>+5</td></tr>
+        <tr><td>Per flag bonus</td><td>+2 ea</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</body>
+
+
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
