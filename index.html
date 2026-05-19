@@ -1814,6 +1814,7 @@ function sendToTraceIQ(btn) {
   const pending = JSON.parse(sessionStorage.getItem('traceiq_pending') || '[]');
   if (!pending.find(l => l.doc_num === lead.doc_num)) pending.push(lead);
   sessionStorage.setItem('traceiq_pending', JSON.stringify(pending));
+  localStorage.setItem('traceiq_incoming', JSON.stringify(lead));
   const url = 'http://localhost:5500/apps/underwriteiq/dashboard.html?page=traceiq&doc=' + encodeURIComponent(lead.doc_num);
   window.open(url, '_blank');
 }
@@ -2272,7 +2273,7 @@ function render() {
 
     const crmBtn = r.prop_address ? `<button class="crm-btn" data-owner="${(r.owner||'').replace(/"/g,'&quot;')}" data-address="${(r.prop_address||'').replace(/"/g,'&quot;')}" data-city="${(r.prop_city||'Houston').replace(/"/g,'&quot;')}" data-zip="${(r.prop_zip||'').replace(/"/g,'&quot;')}" data-score="${score}" data-type="${(r.cat_label||'').replace(/"/g,'&quot;')}" data-doc="${(r.doc_num||'').replace(/"/g,'&quot;')}" data-sqft="${r.sqft||0}" data-beds="${r.beds||0}" data-baths="${r.full_baths||0}" data-yr_built="${r.yr_built||''}" data-mail_address="${(r.mail_address||'').replace(/"/g,'&quot;')}" onclick="addToCRM(this)">+ CRM</button>` : '';
     // TraceIQ button — person-owned leads only
-    const traceBtn = (r.prop_address && r.owner_is_person) ? `<button class="trace-btn" data-doc="${r.doc_num||''}" data-owner="${(r.primary_owner||r.owner||'').replace(/"/g,'')}" data-addr="${(r.prop_address||'').replace(/"/g,'')}" data-city="${(r.prop_city||'Houston').replace(/"/g,'')}" data-mail="${(r.mail_address||'').replace(/"/g,'')}" data-score="${score}" onclick="sendToTraceIQ(this)">+ TraceIQ</button>` : '';
+    const traceBtn = (r.owner_is_person) ? `<button class="trace-btn" data-doc="${r.doc_num||''}" data-owner="${(r.primary_owner||r.owner||'').replace(/"/g,'')}" data-addr="${(r.prop_address||'').replace(/"/g,'')}" data-city="${(r.prop_city||'Houston').replace(/"/g,'')}" data-mail="${(r.mail_address||'').replace(/"/g,'')}" data-score="${score}" onclick="sendToTraceIQ(this)">+ TraceIQ</button>` : '';
 
 
 
