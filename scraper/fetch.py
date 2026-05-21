@@ -1,4 +1,4 @@
-"""
+﻿"""
 Harris County Clerk SFTP Scraper v10 - Production with HCAD Address Enrichment
 SFTP: sftp.cclerk.hctx.net  Folder: /users/<user>/Index_RP/
 HCAD: downloads Real_acct_owner.zip from pdata.hcad.org at runtime
@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO,
     handlers=[logging.StreamHandler(sys.stdout)])
 log = logging.getLogger(__name__)
 
-OUTPUT_DIRS   = [Path("dashboard"), Path("data")]
+OUTPUT_DIRS   = [Path("."), Path("dashboard"), Path("data")]
 LOOKBACK_DAYS = int(os.environ.get("LOOKBACK_DAYS", "7"))
 FTP_HOST = os.environ.get("FTP_HOST", "")
 FTP_USER = os.environ.get("FTP_USER", "")
@@ -197,12 +197,12 @@ def compute_score(record: dict, cutoff: datetime) -> tuple:
         elif amt > 50000: s += 10
     if record.get("prop_address") or record.get("mail_address"):
         s += 5
-    # Absentee owner bonus — mail state differs from TX property
+    # Absentee owner bonus â€” mail state differs from TX property
     mail_state = (record.get("mail_state") or "").upper().strip()
     prop_state = (record.get("prop_state") or "TX").upper().strip()
     if mail_state and mail_state != "TX":
         flags.append("Absentee owner (out of state)"); s += 15
-    # Address + lien combo — highly motivated
+    # Address + lien combo â€” highly motivated
     has_address = bool(record.get("prop_address") or record.get("mail_address"))
     has_lien = any("Lien" in f or "Tax" in f for f in flags)
     if has_address and has_lien:
@@ -225,7 +225,7 @@ def blank_rec(fn, dtype, cat, cat_label, filed, owner,
     }
 
 
-# ── HCAD Address Lookup ───────────────────────────────────────────────────────
+# â”€â”€ HCAD Address Lookup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class HCADLookup:
     def __init__(self):
@@ -235,7 +235,7 @@ class HCADLookup:
     def build(self):
         log.info("Building HCAD address lookup...")
 
-        # Try local file first (committed to repo — fastest, always works)
+        # Try local file first (committed to repo â€” fastest, always works)
         # Support split files (_1/_2) and single file
         local_paths = [
             ["data/hcad_lookup_1.json.gz", "data/hcad_lookup_2.json.gz"],
@@ -285,7 +285,7 @@ class HCADLookup:
             except Exception as e:
                 log.warning("  Download failed: %s", e)
 
-        log.warning("HCAD data unavailable — no address enrichment")
+        log.warning("HCAD data unavailable â€” no address enrichment")
 
     def _parse_zip(self, data: bytes):
         try:
@@ -366,7 +366,7 @@ class HCADLookup:
                     return self._lookup[candidate]
 
         # 3. Last name only match for individuals (not LLCs/Corps)
-        # e.g. "SMITH JOHN A" → try "SMITH JOHN" prefix
+        # e.g. "SMITH JOHN A" â†’ try "SMITH JOHN" prefix
         is_business = any(w in name for w in
             ["LLC","INC","CORP","LTD","TRUST","BANK","NA","LP","LLP",
              "FOUNDATION","ASSOCIATION","CHURCH","SCHOOL","COUNTY",
@@ -382,7 +382,7 @@ class HCADLookup:
                         if candidate.startswith(short):
                             return self._lookup[candidate]
 
-        # 4. For LLCs — try without common suffixes
+        # 4. For LLCs â€” try without common suffixes
         if is_business:
             for suffix in [" LLC", " INC", " CORP", " LTD", " LP"]:
                 if name.endswith(suffix):
@@ -395,7 +395,7 @@ class HCADLookup:
         return None
 
 
-# ── SFTP Client ───────────────────────────────────────────────────────────────
+# â”€â”€ SFTP Client â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class SFTPClient:
     def __init__(self, host, user, password):
@@ -441,7 +441,7 @@ class SFTPClient:
     def get_asn(self, d):  return self.download("Index_ASN",  f"{d}_ASNSubscriber.zip")
 
 
-# ── ZIP Parsers ───────────────────────────────────────────────────────────────
+# â”€â”€ ZIP Parsers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def parse_rp_zip(zip_bytes: bytes, date_str: str) -> list:
     records = []
@@ -655,7 +655,7 @@ def parse_asn_zip(zip_bytes: bytes, date_str: str) -> list:
     return records
 
 
-# ── Portal fallback ───────────────────────────────────────────────────────────
+# â”€â”€ Portal fallback â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def portal_fallback(start: str, end: str) -> list:
     log.info("Portal fallback mode (FTP not configured)")
@@ -725,7 +725,7 @@ def portal_fallback(start: str, end: str) -> list:
     return records
 
 
-# ── GHL CSV Export ────────────────────────────────────────────────────────────
+# â”€â”€ GHL CSV Export â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def export_csv(records: list, path: Path):
     cols = ["First Name","Last Name","Mailing Address","Mailing City","Mailing State",
@@ -759,10 +759,10 @@ def export_csv(records: list, path: Path):
                 "Source":           "Harris County Clerk",
                 "Public Records URL": r.get("clerk_url",""),
             })
-    log.info("GHL CSV → %s", path)
+    log.info("GHL CSV â†’ %s", path)
 
 
-# ── Option B: Scrape addresses from clerk document pages ──────────────────────
+# â”€â”€ Option B: Scrape addresses from clerk document pages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def scrape_clerk_address(url: str, session: requests.Session) -> Optional[dict]:
     """
@@ -815,7 +815,7 @@ def scrape_clerk_address(url: str, session: requests.Session) -> Optional[dict]:
                 cell_text = [c.get_text(" ", strip=True) for c in cells]
                 joined = " ".join(cell_text).upper()
 
-                # Grantor row — contains the owner's mailing address
+                # Grantor row â€” contains the owner's mailing address
                 if any(k in joined for k in ["GRANTOR", "OBLIGOR", "DEBTOR"]):
                     # Next rows often have address components
                     for j in range(i+1, min(i+5, len(rows))):
@@ -905,7 +905,7 @@ def enrich_from_clerk(records: list, max_requests: int = 300) -> int:
     return enriched
 
 
-# ── Main ──────────────────────────────────────────────────────────────────────
+# â”€â”€ Main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def main():
     now    = datetime.now()
@@ -1045,7 +1045,7 @@ def main():
     for d in OUTPUT_DIRS:
         d.mkdir(parents=True, exist_ok=True)
         (d/"records.json").write_text(json.dumps(payload, indent=2, default=str))
-        log.info("Saved → %s/records.json", d)
+        log.info("Saved â†’ %s/records.json", d)
 
     # Write lightweight stats snapshot for dashboards (no CORS needed)
     warm_count = sum(1 for r in deduped if 40 <= r.get("score", 0) < 70)
@@ -1069,3 +1069,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
