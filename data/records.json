@@ -1,9 +1,9 @@
 {
-  "fetched_at": "2026-05-23T09:00:14.954144",
+  "fetched_at": "2026-05-24T09:17:43.925593",
   "source": "Harris County Clerk FTP + HCAD",
   "date_range": {
-    "start": "2026-05-09",
-    "end": "2026-05-23"
+    "start": "2026-05-10",
+    "end": "2026-05-24"
   },
   "total": 13099,
   "with_address": 10119,
