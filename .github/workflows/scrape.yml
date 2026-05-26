@@ -71,7 +71,7 @@ jobs:
           name: debug-html
           path: debug/
           retention-days: 3
-- name: Push leads to PostgreSQL
+      - name: Push leads to PostgreSQL
         run: |
           python3 - << 'PYEOF'
           import json, requests
