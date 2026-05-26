@@ -71,7 +71,22 @@ jobs:
           name: debug-html
           path: debug/
           retention-days: 3
-
+- name: Push leads to PostgreSQL
+        run: |
+          python3 - << 'PYEOF'
+          import json, requests
+          try:
+            with open("dashboard/records.json") as f:
+              payload = json.load(f)
+            r = requests.post(
+              "https://api.stackiq.org/leads/bulk-import",
+              json=payload,
+              timeout=120
+            )
+            print(f"API response: {r.status_code} {r.text[:200]}")
+          except Exception as e:
+            print(f"Push to API failed (non-fatal): {e}")
+          PYEOF
       - name: Commit results
         run: |
           git config user.name "github-actions[bot]"
