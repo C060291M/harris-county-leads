@@ -1,16 +1,14 @@
 ﻿name: Deploy to GitHub Pages
-
 on:
   push:
     branches: [main]
     paths:
       - 'dashboard/**'
-
+      - 'index.html'
 permissions:
   contents: read
   pages: write
   id-token: write
-
 jobs:
   deploy:
     runs-on: ubuntu-22.04
