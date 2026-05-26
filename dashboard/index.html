@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 
 
@@ -586,7 +586,9 @@
 
 
 
-  .crm-btn{font-size:.68rem;font-weight:600;color:#534AB7;text-decoration:none;border:1.5px solid #534AB7;padding:.28rem .6rem;border-radius:var(--radius);transition:all .15s;white-space:nowrap;text-align:center;cursor:pointer;display:block;background:transparent}
+  .trace-btn{font-size:.68rem;font-weight:600;color:#fff;background:#7C3AED;border:none;border-radius:6px;padding:5px 10px;cursor:pointer;transition:background .15s}
+.trace-btn:hover{background:#6D28D9}
+.crm-btn{font-size:.68rem;font-weight:600;color:#534AB7;text-decoration:none;border:1.5px solid #534AB7;padding:.28rem .6rem;border-radius:var(--radius);transition:all .15s;white-space:nowrap;text-align:center;cursor:pointer;display:block;background:transparent}
 
 
 
@@ -1438,7 +1440,7 @@ fetch('./records.json')
 
 
 
-    const hotNew = allRecords.filter(r=>(r.score||0)>=70&&(r.flags||[]).includes('New this week'));
+    const hotNew = allRecords.filter(r=>(r.score||0)>=55&&(r.flags||[]).includes('New this week'));
 
 
 
@@ -1798,6 +1800,25 @@ function hcadUrl(r) {
 
 
 
+function sendToTraceIQ(btn) {
+  const lead = {
+    doc_num: btn.dataset.doc,
+    owner: btn.dataset.owner,
+    primary_owner: btn.dataset.owner,
+    prop_address: btn.dataset.addr,
+    prop_city: btn.dataset.city,
+    prop_state: 'TX',
+    mail_address: btn.dataset.mail,
+    score: parseInt(btn.dataset.score)||0
+  };
+  const pending = JSON.parse(sessionStorage.getItem('traceiq_pending') || '[]');
+  if (!pending.find(l => l.doc_num === lead.doc_num)) pending.push(lead);
+  sessionStorage.setItem('traceiq_pending', JSON.stringify(pending));
+  localStorage.setItem('traceiq_incoming', JSON.stringify(lead));
+  const url = 'https://stackiq.org/apps/underwriteiq/dashboard.html?page=traceiq&doc=' + encodeURIComponent(lead.doc_num);
+  window.open(url, '_blank');
+}
+
 function addToCRM(el) {
 
 
@@ -1881,7 +1902,7 @@ function addToCRM(el) {
 
 
 
-  fetch("http://localhost:8000/api/crm/add-lead", {
+  fetch("https://api.stackiq.org/api/crm/add-lead", {
 
 
 
@@ -1973,7 +1994,7 @@ function addToCRM(el) {
 
 
 
-    alert("FastAPI not reachable at localhost:8000");
+    alert("CRM API not reachable");
 
 
 
@@ -2234,7 +2255,7 @@ function render() {
 
 
 
-      ? `<a class="analyze-btn" href="http://localhost:3000/dashboard?address=${encodeURIComponent(r.prop_address)}&city=${encodeURIComponent(r.prop_city||'Houston')}&state=TX&zip_code=${encodeURIComponent(r.prop_zip||'')}&purchase_price=0&arv=0&sqft=${r.sqft||0}&beds=${r.beds||0}&baths=${r.full_baths||0}&year_built=${r.yr_built||''}" target="_blank">Analyze in FlipIQ -></a>`
+      ? `<a class="analyze-btn" href="https://flipiq.stackiq.org/dashboard?address=${encodeURIComponent(r.prop_address)}&city=${encodeURIComponent(r.prop_city||'Houston')}&state=TX&zip_code=${encodeURIComponent(r.prop_zip||'')}&purchase_price=0&arv=0&sqft=${r.sqft||0}&beds=${r.beds||0}&baths=${r.full_baths||0}&year_built=${r.yr_built||''}" target="_blank">Analyze in FlipIQ -></a>`
 
 
 
@@ -2251,6 +2272,8 @@ function render() {
 
 
     const crmBtn = r.prop_address ? `<button class="crm-btn" data-owner="${(r.owner||'').replace(/"/g,'&quot;')}" data-address="${(r.prop_address||'').replace(/"/g,'&quot;')}" data-city="${(r.prop_city||'Houston').replace(/"/g,'&quot;')}" data-zip="${(r.prop_zip||'').replace(/"/g,'&quot;')}" data-score="${score}" data-type="${(r.cat_label||'').replace(/"/g,'&quot;')}" data-doc="${(r.doc_num||'').replace(/"/g,'&quot;')}" data-sqft="${r.sqft||0}" data-beds="${r.beds||0}" data-baths="${r.full_baths||0}" data-yr_built="${r.yr_built||''}" data-mail_address="${(r.mail_address||'').replace(/"/g,'&quot;')}" onclick="addToCRM(this)">+ CRM</button>` : '';
+    // TraceIQ button â€” person-owned leads only
+    const traceBtn = (r.owner_is_person) ? `<button class="trace-btn" data-doc="${r.doc_num||''}" data-owner="${(r.primary_owner||r.owner||'').replace(/"/g,'')}" data-addr="${(r.prop_address||'').replace(/"/g,'')}" data-city="${(r.prop_city||'Houston').replace(/"/g,'')}" data-mail="${(r.mail_address||'').replace(/"/g,'')}" data-score="${score}" onclick="sendToTraceIQ(this)">+ TraceIQ</button>` : '';
 
 
 
@@ -2304,7 +2327,7 @@ function render() {
 
 
        <div class="owner-name">${(()=>{const rawOwner=r.primary_owner&&r.owner_is_person?r.primary_owner+(r.owner&&r.owner.includes('/')?'/'+r.owner.split('/').slice(1).join('/'):'' ):r.owner||'';const parts=rawOwner.split('/').map(s=>s.trim()).filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i);if(!parts.length)return '<span style="color:var(--slate);font-style:italic">Unknown Owner</span>';const SKIP_NAMES=new Set(["LAKEVIEW LOAN SERVICING","NATIONSTAR","PENNYMAC","NEWREZ","CALIBER","FREEDOM MORTGAGE","SPECIALIZED LOAN","BARRETT DAFFIN","MCCARTHY HOLTHUS","SUBSTITUTE TRUSTEE","AUCTION.COM LLC","HARRIS COUNTY","MAIN KELLY","ZIENTZ MICHAEL","SERVICELINK","AVT TITLE SERVICES","TOTAL LENDER SOLUTIONS","MAIN KELLY","ZIENTZ MICHAEL","LEVA JEFF","SERVICELINK","AVT TITLE SERVICES","TOTAL LENDER SOLUTIONS","BARRETT DAFFIN","MCCARTHY HOLTHUS","SUBSTITUTE TRUSTEE","AUCTION.COM LLC","HARRIS COUNTY"]);
-const isEntity=n=>{const u=n.trim().toUpperCase();return SKIP_NAMES.has(u)||/LLC|INC|CORP|LTD|TRUST|AUCTION|HOLDINGS|PROPERTIES|GROUP|PARTNERS|VENTURES|COUNTY|BANK|FUND|TRUSTEE|SERVICING|MORTGAGE/i.test(n);};const persons=parts.filter(p=>!isEntity(p));const entities=parts.filter(p=>isEntity(p));return `${persons.length?`<span style="font-weight:700;color:var(--primary)">${persons.join(' · ')}</span>`:''}${entities.length?`<span style="font-size:.72rem;font-weight:400;color:#2D3748;margin-left:6px">${entities.join(' · ')}</span>`:''}`;})()} </div>
+const isEntity=n=>{const u=n.trim().toUpperCase();return SKIP_NAMES.has(u)||/LLC|INC|CORP|LTD|TRUST|AUCTION|HOLDINGS|PROPERTIES|GROUP|PARTNERS|VENTURES|COUNTY|BANK|FUND|TRUSTEE|SERVICING|MORTGAGE/i.test(n);};const persons=parts.filter(p=>!isEntity(p));const entities=parts.filter(p=>isEntity(p));return `${persons.length?`<span style="font-weight:700;color:var(--primary)">${persons.join(' Â· ')}</span>`:''}${entities.length?`<span style="font-size:.72rem;font-weight:400;color:#2D3748;margin-left:6px">${entities.join(' Â· ')}</span>`:''}`;})()} </div>
 
 
 
@@ -2403,6 +2426,7 @@ const isEntity=n=>{const u=n.trim().toUpperCase();return SKIP_NAMES.has(u)||/LLC
 
 
         ${crmBtn}
+        ${traceBtn}
 
 
 
@@ -3086,16 +3110,16 @@ function renderMap(records) {
 <div class="score-panel">
   <h3>Scoring Guide</h3>
   <div class="score-band hot">
-    <div class="band-header"><span class="band-dot hot"></span><span class="band-label">Hot</span><span class="band-range">70–100</span></div>
-    <div class="band-desc">Multiple distress signals — act now</div>
+    <div class="band-header"><span class="band-dot hot"></span><span class="band-label">Hot</span><span class="band-range">70â€“100</span></div>
+    <div class="band-desc">Multiple distress signals â€” act now</div>
   </div>
   <div class="score-band warm">
-    <div class="band-header"><span class="band-dot warm"></span><span class="band-label">Warm</span><span class="band-range">40–69</span></div>
-    <div class="band-desc">Motivated — worth outreach</div>
+    <div class="band-header"><span class="band-dot warm"></span><span class="band-label">Warm</span><span class="band-range">40â€“69</span></div>
+    <div class="band-desc">Motivated â€” worth outreach</div>
   </div>
   <div class="score-band cold">
-    <div class="band-header"><span class="band-dot cold"></span><span class="band-label">Cold</span><span class="band-range">10–39</span></div>
-    <div class="band-desc">Single signal — low urgency</div>
+    <div class="band-header"><span class="band-dot cold"></span><span class="band-label">Cold</span><span class="band-range">10â€“39</span></div>
+    <div class="band-desc">Single signal â€” low urgency</div>
   </div>
   <div class="panel-section">
     <div class="panel-section-title">Signal Breakdown</div>
@@ -3127,6 +3151,7 @@ function renderMap(records) {
 
 
 </html>
+
 
 
 
