@@ -282,13 +282,15 @@ async def main_async():
     log.info("=== StackIQ Multi-County Scraper ===")
     log.info("Date range: %s to %s", cutoff.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d"))
 
+    # Run all counties in parallel
+    tasks = [scrape_county(name, host, cutoff, now) for name, host in COUNTIES.items()]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
     all_records = []
-    for name, host in COUNTIES.items():
-        try:
-            recs = await scrape_county(name, host, cutoff, now)
-            all_records.extend(recs)
-        except Exception as e:
-            log.error("%s failed: %s", name, e)
+    for name, result in zip(COUNTIES.keys(), results):
+        if isinstance(result, Exception):
+            log.error("%s failed: %s", name, result)
+        else:
+            all_records.extend(result)
 
     seen, deduped = set(), []
     for r in all_records:

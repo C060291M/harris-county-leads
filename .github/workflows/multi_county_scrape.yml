@@ -11,7 +11,7 @@ permissions:
 jobs:
   scrape:
     runs-on: ubuntu-22.04
-    timeout-minutes: 45
+    timeout-minutes: 360
 
     steps:
       - name: Checkout repository
@@ -47,3 +47,4 @@ jobs:
           git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
