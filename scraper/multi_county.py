@@ -143,7 +143,15 @@ def parse_results(records, county, doc_type, cat, cat_label, base, api_responses
                     records.append(blank_rec(county, fn, doc_type, cat, cat_label, filed, owner, amount=amt, url=link))
 
 async def scrape_county(name, host, start_dt, end_dt):
-    log.info("%s - scraping %s to %s", name, start_dt.strftime("%m/%d/%Y"), end_dt.strftime("%m/%d/%Y"))
+    log.info("%s - scraping %s to %s", name, start_dt.strftime("%Y-%m-%d"), end_dt.strftime("%Y-%m-%d"))
+    all_records = []
+    for slice_start, slice_end in date_slices(start_dt, end_dt, days=1):
+        day_records = await _scrape_day(name, host, slice_start, slice_end)
+        all_records.extend(day_records)
+        log.info("%s %s: %d records", name, slice_start.strftime("%m/%d"), len(day_records))
+    return all_records
+
+async def _scrape_day(name, host, start_dt, end_dt):
     records = []
     base = f"https://{host}"
     start_str = start_dt.strftime("%m/%d/%Y")
@@ -266,7 +274,6 @@ async def scrape_county(name, host, start_dt, end_dt):
 
         await browser.close()
 
-    log.info("%s slice %s-%s: %d records", name, start_str, end_str, len(records))
     return records
 
 async def main_async():
