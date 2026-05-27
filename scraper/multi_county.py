@@ -149,161 +149,112 @@ async def scrape_county(name, host, start_dt, end_dt):
         )
         page = await context.new_page()
 
-        # Single search by date range — get all records, filter by type client-side
-        api_responses = []
+        for doc_type, cat, cat_label in DOC_TYPES:
+            api_responses = []
 
-        async def on_response(resp):
-            if resp.status == 200 and any(x in resp.url for x in ["/search","/results","/instruments","/api"]):
+            async def on_response(resp):
+                if resp.status == 200 and any(x in resp.url for x in ["/search","/results","/instruments","/api"]):
+                    try:
+                        ct = resp.headers.get("content-type","")
+                        if "json" in ct:
+                            body = await resp.json()
+                            api_responses.append({"url": resp.url, "body": body})
+                    except: pass
+
+            page.on("response", on_response)
+
+            try:
+                # Load advanced search page fresh each time
+                await page.goto(f"{base}/search/advanced", wait_until="networkidle", timeout=60000)
+                await page.wait_for_timeout(2000)
+
+                # Step 1: Select department via JS evaluation
                 try:
-                    ct = resp.headers.get("content-type","")
-                    if "json" in ct:
-                        body = await resp.json()
-                        api_responses.append({"url": resp.url, "body": body})
+                    await page.click("#department", timeout=5000)
+                    await page.wait_for_timeout(1000)
+                    # Use JS to click first visible dropdown option
+                    await page.evaluate("""
+                        () => {
+                            const opts = document.querySelectorAll('[class*="option"], [class*="menu-item"], li[role="option"]');
+                            for (const o of opts) {
+                                const t = o.textContent.trim();
+                                if (t.includes("Property") || t.includes("Real") || t.includes("Record")) {
+                                    o.click(); return;
+                                }
+                            }
+                            if (opts.length > 0) opts[0].click();
+                        }
+                    """)
+                    await page.wait_for_timeout(1000)
                 except: pass
 
-        page.on("response", on_response)
+                # Step 2: Fill recorded date range using exact IDs
+                await page.fill("#recordedDateRange-start", start_str)
+                await page.wait_for_timeout(300)
+                await page.fill("#recordedDateRange-end", end_str)
+                await page.wait_for_timeout(300)
 
-        try:
-            await page.goto(f"{base}/search/advanced", wait_until="networkidle", timeout=60000)
-            await page.wait_for_timeout(2000)
+                # Step 3: Type document type into docTypes input
+                await page.click("#docTypes-input")
+                await page.wait_for_timeout(300)
+                await page.type("#docTypes-input", doc_type, delay=50)
+                await page.wait_for_timeout(1500)
 
-            # Select department
-            try:
-                await page.click("#department", timeout=5000)
-                await page.wait_for_timeout(1000)
-                await page.evaluate("""
-                    () => {
-                        const opts = document.querySelectorAll('[class*="option"], [class*="menu-item"], li[role="option"]');
-                        for (const o of opts) {
-                            const t = o.textContent.trim();
-                            if (t.includes("Property") || t.includes("Real") || t.includes("Record")) {
-                                o.click(); return;
-                            }
-                        }
-                        if (opts.length > 0) opts[0].click();
-                    }
-                """)
-                await page.wait_for_timeout(1000)
-            except: pass
-
-            # Fill date range only — no doc type filter
-            await page.fill("#recordedDateRange-start", start_str)
-            await page.wait_for_timeout(300)
-            await page.fill("#recordedDateRange-end", end_str)
-            await page.wait_for_timeout(300)
-
-            # Click Search
-            await page.click("button:has-text('Search')", timeout=5000)
-            await page.wait_for_timeout(4000)
-
-            # Paginate through ALL results
-            page_num = 1
-            all_raw = []
-            while True:
-                page_content = await page.content()
-
-                # Collect from API responses
-                for resp in api_responses:
-                    body = resp.get("body", {})
-                    items = (body.get("results") or body.get("instruments") or
-                             body.get("hits",{}).get("hits") or body.get("data") or [])
-                    if isinstance(items, dict): items = items.get("hits",[])
-                    for item in items:
-                        if "_source" in item: item = item["_source"]
-                        all_raw.append(item)
-
-                # HTML fallback
-                if not api_responses:
-                    from bs4 import BeautifulSoup
-                    soup = BeautifulSoup(page_content, "lxml")
-                    for table in soup.find_all("table"):
-                        rows = table.find_all("tr")
-                        if len(rows) < 2: continue
-                        hdrs = [td.get_text(" ",strip=True).lower() for td in rows[0].find_all(["th","td"])]
-                        if not any(k in " ".join(hdrs) for k in ["instrument","grantor","document"]): continue
-                        for row in rows[1:]:
-                            cells = row.find_all("td")
-                            if not cells: continue
-                            d = {hdrs[i]:cells[i].get_text(" ",strip=True) for i in range(min(len(hdrs),len(cells)))}
-                            def f(*keys):
-                                for k in keys:
-                                    for h in hdrs:
-                                        if k in h:
-                                            v = d.get(h,"").strip()
-                                            if v: return v
-                                return ""
-                            raw_type = f("type","instrument type","doc type","document type")
-                            fn = f("number","instrument","document","file")
-                            filed = norm_date(f("date","recorded","filed"))
-                            owner = f("grantor","owner","name")
-                            amt = parse_amount(f("amount","consideration"))
-                            link = next((a["href"] if a["href"].startswith("http") else base+a["href"]
-                                        for cell in cells for a in cell.find_all("a",href=True) if a.get("href")),"")
-                            all_raw.append({"instrumentNumber":fn,"recordedDate":filed,
-                                           "grantor":owner,"docType":raw_type,
-                                           "amount":amt,"url":link})
-
-                log.info("%s page %d: %d raw items so far", name, page_num, len(all_raw))
-
-                # Next page
+                # Click the first matching option in dropdown
                 try:
-                    next_btn = await page.query_selector(
-                        "button:has-text('Next'), a:has-text('Next '), "
-                        "[aria-label='Next page'], [title='Next page'], "
-                        "button[class*='next'], a[class*='next']"
+                    option = await page.wait_for_selector(
+                        ".react-tokenized-select__option, [class*='option'], [role='option']",
+                        timeout=3000
                     )
-                    if next_btn:
-                        is_disabled = await next_btn.get_attribute("disabled")
-                        aria_disabled = await next_btn.get_attribute("aria-disabled")
-                        if is_disabled is not None or aria_disabled == "true":
+                    if option:
+                        await option.click()
+                        await page.wait_for_timeout(500)
+                except: pass
+
+                # Step 4: Click Search button
+                await page.click("button:has-text('Search')", timeout=5000)
+                await page.wait_for_timeout(4000)
+
+                # Paginate through all results
+                page_num = 1
+                while True:
+                    page_content = await page.content()
+                    before = len(records)
+                    parse_results(records, name, doc_type, cat, cat_label, base, api_responses, page_content)
+                    after = len(records)
+                    new_on_page = after - before
+                    log.info("%s %s page %d: %d new records", name, doc_type, page_num, new_on_page)
+
+                    # Try to click Next page button
+                    try:
+                        next_btn = await page.query_selector(
+                            "button:has-text('Next'), a:has-text('Next'), "
+                            "[aria-label='Next page'], [class*='next']:not([disabled]), "
+                            "button[class*='pagination']:not([disabled])"
+                        )
+                        if next_btn:
+                            is_disabled = await next_btn.get_attribute("disabled")
+                            if is_disabled is not None:
+                                break
+                            await next_btn.click()
+                            await page.wait_for_timeout(3000)
+                            api_responses.clear()
+                            page_num += 1
+                            if page_num > 20:  # Safety cap
+                                break
+                        else:
                             break
-                        await next_btn.click()
-                        await page.wait_for_timeout(3000)
-                        api_responses.clear()
-                        page_num += 1
-                        if page_num > 50: break
-                    else:
+                    except:
                         break
-                except: break
 
-            # Now filter all_raw by motivated doc types
-            log.info("%s: %d total raw items, filtering by doc type...", name, len(all_raw))
-            for item in all_raw:
-                raw_type = str(item.get("docType", item.get("instrumentType",
-                               item.get("type", item.get("doc_type", ""))))).upper().strip()
-                cat, cat_label = None, None
-                for key, (c2, l2) in {
-                    "LIS PENDENS":("LP","Lis Pendens"), "TAX DEED":("TAXDEED","Tax Deed"),
-                    "ABSTRACT OF JUDGMENT":("JUD","Abstract of Judgment"),
-                    "MECHANIC":("LNMECH","Mechanic Lien"), "HOA LIEN":("LNHOA","HOA Lien"),
-                    "FEDERAL TAX":("LNFED","Federal Tax Lien"), "STATE TAX":("LNSTATE","State Tax Lien"),
-                    "IRS":("LNIRS","IRS Lien"), "FORECLOSURE":("NOFC","Notice of Foreclosure"),
-                    "PROBATE":("PRO","Probate"), "DIVORCE":("DIV","Divorce"),
-                    "BANKRUPTCY":("BK","Bankruptcy"), "JUDGMENT":("JUD","Judgment"),
-                }.items():
-                    if key in raw_type:
-                        cat, cat_label = c2, l2
-                        break
-                if not cat: continue
+                log.info("%s %s: %d total new records", name, doc_type, after - before)
 
-                fn      = str(item.get("instrumentNumber", item.get("docNumber", item.get("id","")))).strip()
-                filed   = norm_date(str(item.get("recordedDate", item.get("fileDate", item.get("date","")))))
-                owner   = str(item.get("grantor", item.get("grantorName", item.get("owner","")))).strip()
-                grantee = str(item.get("grantee", item.get("granteeName",""))).strip()
-                amt     = parse_amount(item.get("amount", item.get("consideration","")))
-                legal   = str(item.get("legalDescription", item.get("legal",""))).strip()
-                url     = item.get("url", f"{base}/doc/{fn}") if fn else ""
-                rec = blank_rec(name, fn, raw_type, cat, cat_label, filed, owner, grantee, amt, legal, url)
-                for k in ["mailAddress","mailingAddress","grantorAddress"]:
-                    if item.get(k): rec["mail_address"] = str(item[k]).strip(); break
-                records.append(rec)
+            except Exception as e:
+                log.warning("%s %s error: %s", name, doc_type, e)
+            finally:
+                page.remove_listener("response", on_response)
 
-            log.info("%s: %d motivated records found", name, len(records))
-
-        except Exception as e:
-            log.error("%s search error: %s", name, e)
-        finally:
-            page.remove_listener("response", on_response)
+            await page.wait_for_timeout(1000)
 
         await browser.close()
 
