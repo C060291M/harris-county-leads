@@ -171,22 +171,27 @@ async def scrape_county(name, host, start_dt, end_dt):
                 # Step 1: Select department via JS evaluation
                 try:
                     await page.click("#department", timeout=5000)
-                    await page.wait_for_timeout(1000)
-                    # Use JS to click first visible dropdown option
-                    await page.evaluate("""
+                    await page.wait_for_timeout(1500)
+                    opts_text = await page.evaluate("""
+                        () => Array.from(document.querySelectorAll('[class*="option"], li[role="option"], [class*="item"]')).map(o => o.textContent.trim()).filter(t => t.length > 0)
+                    """)
+                    log.info("%s dept options: %s", name, opts_text[:6])
+                    clicked = await page.evaluate("""
                         () => {
-                            const opts = document.querySelectorAll('[class*="option"], [class*="menu-item"], li[role="option"]');
-                            for (const o of opts) {
-                                const t = o.textContent.trim();
-                                if (t.includes("Property") || t.includes("Real") || t.includes("Record")) {
-                                    o.click(); return;
+                            const opts = document.querySelectorAll('[class*="option"], li[role="option"], [class*="item"]');
+                            for (const kw of ["Real Property","Property Records","Official Records","Property","Real"]) {
+                                for (const o of opts) {
+                                    if (o.textContent.trim().includes(kw)) { o.click(); return o.textContent.trim(); }
                                 }
                             }
-                            if (opts.length > 0) opts[0].click();
+                            if (opts.length > 0) { opts[0].click(); return opts[0].textContent.trim(); }
+                            return "none";
                         }
                     """)
+                    log.info("%s dept clicked: %s", name, clicked)
                     await page.wait_for_timeout(1000)
-                except: pass
+                except Exception as e:
+                    log.warning("%s dept error: %s", name, e)
 
                 # Step 2: Fill recorded date range using exact IDs
                 await page.fill("#recordedDateRange-start", start_str)
