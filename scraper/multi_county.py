@@ -17,7 +17,6 @@ COUNTIES = {
     "Dallas":  "dallas.tx.publicsearch.us",
     "Tarrant": "tarrant.tx.publicsearch.us",
     "Bexar":   "bexar.tx.publicsearch.us",
-    "Travis":  "travis.tx.publicsearch.us",
     "Collin":  "collin.tx.publicsearch.us",
 }
 
@@ -169,16 +168,23 @@ async def scrape_county(name, host, start_dt, end_dt):
                 await page.goto(f"{base}/search/advanced", wait_until="networkidle", timeout=60000)
                 await page.wait_for_timeout(2000)
 
-                # Step 1: Select department (varies by county)
+                # Step 1: Select department via JS evaluation
                 try:
                     await page.click("#department", timeout=5000)
-                    await page.wait_for_timeout(800)
-                    # Try all known department labels across counties
-                    for label in ["Property Records", "Real Property", "Official Records", "Land Records"]:
-                        try:
-                            await page.click(f"text={label}", timeout=1500)
-                            break
-                        except: pass
+                    await page.wait_for_timeout(1000)
+                    # Use JS to click first visible dropdown option
+                    await page.evaluate("""
+                        () => {
+                            const opts = document.querySelectorAll('[class*="option"], [class*="menu-item"], li[role="option"]');
+                            for (const o of opts) {
+                                const t = o.textContent.trim();
+                                if (t.includes("Property") || t.includes("Real") || t.includes("Record")) {
+                                    o.click(); return;
+                                }
+                            }
+                            if (opts.length > 0) opts[0].click();
+                        }
+                    """)
                     await page.wait_for_timeout(1000)
                 except: pass
 
