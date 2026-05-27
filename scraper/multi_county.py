@@ -178,13 +178,19 @@ async def scrape_county(name, host, start_dt, end_dt):
                     log.info("%s dept options: %s", name, opts_text[:6])
                     clicked = await page.evaluate("""
                         () => {
-                            const opts = document.querySelectorAll('[class*="option"], li[role="option"], [class*="item"]');
-                            for (const kw of ["Real Property","Property Records","Official Records","Property","Real"]) {
-                                for (const o of opts) {
-                                    if (o.textContent.trim().includes(kw)) { o.click(); return o.textContent.trim(); }
+                            const opts = Array.from(document.querySelectorAll('[class*="option"], li[role="option"], [class*="item"]'));
+                            // Skip container divs — find options with short text (single department name)
+                            const clean = opts.filter(o => {
+                                const t = o.textContent.trim();
+                                return t.length > 0 && t.length < 40;
+                            });
+                            for (const kw of ["Real Property","Property Records","Land Records","Official Records"]) {
+                                for (const o of clean) {
+                                    if (o.textContent.trim() === kw) { o.click(); return o.textContent.trim(); }
                                 }
                             }
-                            if (opts.length > 0) { opts[0].click(); return opts[0].textContent.trim(); }
+                            // Fallback: click first short option
+                            if (clean.length > 0) { clean[0].click(); return clean[0].textContent.trim(); }
                             return "none";
                         }
                     """)
