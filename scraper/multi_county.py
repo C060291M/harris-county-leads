@@ -169,14 +169,14 @@ async def scrape_county(name, host, start_dt, end_dt):
                 await page.goto(f"{base}/search/advanced", wait_until="networkidle", timeout=60000)
                 await page.wait_for_timeout(2000)
 
-                # Step 1: Select "Property Records" department
+                # Step 1: Select department (varies by county)
                 try:
                     await page.click("#department", timeout=5000)
                     await page.wait_for_timeout(800)
-                    # Try multiple ways to select Property Records
-                    for selector in ["text=Property Records", "[class*='option']:has-text('Property Records')", "li:has-text('Property Records')"]:
+                    # Try all known department labels across counties
+                    for label in ["Property Records", "Real Property", "Official Records", "Land Records"]:
                         try:
-                            await page.click(selector, timeout=2000)
+                            await page.click(f"text={label}", timeout=1500)
                             break
                         except: pass
                     await page.wait_for_timeout(1000)
