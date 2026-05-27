@@ -171,33 +171,22 @@ async def scrape_county(name, host, start_dt, end_dt):
                 # Step 1: Select department via JS evaluation
                 try:
                     await page.click("#department", timeout=5000)
-                    await page.wait_for_timeout(1500)
-                    opts_text = await page.evaluate("""
-                        () => Array.from(document.querySelectorAll('[class*="option"], li[role="option"], [class*="item"]')).map(o => o.textContent.trim()).filter(t => t.length > 0)
-                    """)
-                    log.info("%s dept options: %s", name, opts_text[:6])
-                    clicked = await page.evaluate("""
+                    await page.wait_for_timeout(1000)
+                    # Use JS to click first visible dropdown option
+                    await page.evaluate("""
                         () => {
-                            const opts = Array.from(document.querySelectorAll('[class*="option"], li[role="option"], [class*="item"]'));
-                            // Skip container divs — find options with short text (single department name)
-                            const clean = opts.filter(o => {
+                            const opts = document.querySelectorAll('[class*="option"], [class*="menu-item"], li[role="option"]');
+                            for (const o of opts) {
                                 const t = o.textContent.trim();
-                                return t.length > 0 && t.length < 40;
-                            });
-                            for (const kw of ["Real Property","Property Records","Land Records","Official Records"]) {
-                                for (const o of clean) {
-                                    if (o.textContent.trim() === kw) { o.click(); return o.textContent.trim(); }
+                                if (t.includes("Property") || t.includes("Real") || t.includes("Record")) {
+                                    o.click(); return;
                                 }
                             }
-                            // Fallback: click first short option
-                            if (clean.length > 0) { clean[0].click(); return clean[0].textContent.trim(); }
-                            return "none";
+                            if (opts.length > 0) opts[0].click();
                         }
                     """)
-                    log.info("%s dept clicked: %s", name, clicked)
                     await page.wait_for_timeout(1000)
-                except Exception as e:
-                    log.warning("%s dept error: %s", name, e)
+                except: pass
 
                 # Step 2: Fill recorded date range using exact IDs
                 await page.fill("#recordedDateRange-start", start_str)
@@ -226,44 +215,39 @@ async def scrape_county(name, host, start_dt, end_dt):
                 await page.click("button:has-text('Search')", timeout=5000)
                 await page.wait_for_timeout(4000)
 
-                # Change results per page to 200
-                try:
-                    await page.click("[aria-label*='Results Per Page']", timeout=3000)
-                    await page.wait_for_timeout(500)
-                    await page.click("text=200", timeout=2000)
-                    await page.wait_for_timeout(3000)
-                except: pass
-
-                # Paginate using exact aria-label
+                # Paginate through all results
                 page_num = 1
                 while True:
                     page_content = await page.content()
                     before = len(records)
                     parse_results(records, name, doc_type, cat, cat_label, base, api_responses, page_content)
                     after = len(records)
-                    log.info("%s %s page %d: %d new records", name, doc_type, page_num, after - before)
+                    new_on_page = after - before
+                    log.info("%s %s page %d: %d new records", name, doc_type, page_num, new_on_page)
 
-                    # Click next page using exact aria-label found in debug
+                    # Try to click Next page button
                     try:
-                        next_btn = await page.query_selector("[aria-label='next page']")
-                        if not next_btn:
-                            break
-                        is_disabled = await next_btn.get_attribute("disabled")
-                        if is_disabled is not None:
-                            break
-                        # Check if it looks disabled by class
-                        cls = await next_btn.get_attribute("class") or ""
-                        # On last page the prev/next use disabled class
-                        await next_btn.click()
-                        await page.wait_for_timeout(3000)
-                        api_responses.clear()
-                        page_num += 1
-                        if page_num > 20:
+                        next_btn = await page.query_selector(
+                            "button:has-text('Next'), a:has-text('Next'), "
+                            "[aria-label='Next page'], [class*='next']:not([disabled]), "
+                            "button[class*='pagination']:not([disabled])"
+                        )
+                        if next_btn:
+                            is_disabled = await next_btn.get_attribute("disabled")
+                            if is_disabled is not None:
+                                break
+                            await next_btn.click()
+                            await page.wait_for_timeout(3000)
+                            api_responses.clear()
+                            page_num += 1
+                            if page_num > 20:  # Safety cap
+                                break
+                        else:
                             break
                     except:
                         break
 
-                log.info("%s %s: %d total records", name, doc_type, after - before)
+                log.info("%s %s: %d total new records", name, doc_type, after - before)
 
             except Exception as e:
                 log.warning("%s %s error: %s", name, doc_type, e)
