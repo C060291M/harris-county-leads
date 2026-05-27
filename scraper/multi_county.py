@@ -215,39 +215,44 @@ async def scrape_county(name, host, start_dt, end_dt):
                 await page.click("button:has-text('Search')", timeout=5000)
                 await page.wait_for_timeout(4000)
 
-                # Paginate through all results
+                # Change results per page to 200
+                try:
+                    await page.click("[aria-label*='Results Per Page']", timeout=3000)
+                    await page.wait_for_timeout(500)
+                    await page.click("text=200", timeout=2000)
+                    await page.wait_for_timeout(3000)
+                except: pass
+
+                # Paginate using exact aria-label
                 page_num = 1
                 while True:
                     page_content = await page.content()
                     before = len(records)
                     parse_results(records, name, doc_type, cat, cat_label, base, api_responses, page_content)
                     after = len(records)
-                    new_on_page = after - before
-                    log.info("%s %s page %d: %d new records", name, doc_type, page_num, new_on_page)
+                    log.info("%s %s page %d: %d new records", name, doc_type, page_num, after - before)
 
-                    # Try to click Next page button
+                    # Click next page using exact aria-label found in debug
                     try:
-                        next_btn = await page.query_selector(
-                            "button:has-text('Next'), a:has-text('Next'), "
-                            "[aria-label='Next page'], [class*='next']:not([disabled]), "
-                            "button[class*='pagination']:not([disabled])"
-                        )
-                        if next_btn:
-                            is_disabled = await next_btn.get_attribute("disabled")
-                            if is_disabled is not None:
-                                break
-                            await next_btn.click()
-                            await page.wait_for_timeout(3000)
-                            api_responses.clear()
-                            page_num += 1
-                            if page_num > 20:  # Safety cap
-                                break
-                        else:
+                        next_btn = await page.query_selector("[aria-label='next page']")
+                        if not next_btn:
+                            break
+                        is_disabled = await next_btn.get_attribute("disabled")
+                        if is_disabled is not None:
+                            break
+                        # Check if it looks disabled by class
+                        cls = await next_btn.get_attribute("class") or ""
+                        # On last page the prev/next use disabled class
+                        await next_btn.click()
+                        await page.wait_for_timeout(3000)
+                        api_responses.clear()
+                        page_num += 1
+                        if page_num > 20:
                             break
                     except:
                         break
 
-                log.info("%s %s: %d total new records", name, doc_type, after - before)
+                log.info("%s %s: %d total records", name, doc_type, after - before)
 
             except Exception as e:
                 log.warning("%s %s error: %s", name, doc_type, e)
