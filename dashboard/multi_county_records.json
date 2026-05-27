@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-05-27T18:03:19.542011",
+  "fetched_at": "2026-05-27T18:43:03.345736",
   "source": "Multi-County TX Clerk Portals (Playwright)",
   "date_range": {
     "start": "2026-05-13",
@@ -8,15 +8,171 @@
   "total": 229,
   "counties": [
     "Bexar",
-    "Dallas",
-    "Collin"
+    "Collin",
+    "Dallas"
   ],
   "records": [
     {
-      "doc_num": "202600101570",
+      "doc_num": "2026000064641",
       "doc_type": "Tax Deed",
       "cat": "TAXDEED",
       "cat_label": "Tax Deed",
+      "filed": "2026-05-14",
+      "owner": "PURCHASING FUND 2025-1 LLC",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 35,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026000064311",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-14",
+      "owner": "LENNAR HOMES OF TEXAS LAND & CONSTRUCTION LTD",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 35,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026000064637",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-14",
+      "owner": "WIESE MAXWELL",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 35,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026000064633",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-14",
+      "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC NOMINEE",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 35,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026000064444",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-14",
+      "owner": "TEXAS STATE OF",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 35,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026000064618",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-14",
+      "owner": "TICKEY CREEK MUNICIPAL UTILITY DISTRICT OF COLLIN COUNTY BOARD OF DIRECTORS",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 35,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "202600101570",
+      "doc_type": "Federal Tax Lien",
+      "cat": "LNFED",
+      "cat_label": "Federal Tax Lien",
       "filed": "2026-05-13",
       "owner": "PYATT KENNETH N",
       "grantee": "",
@@ -39,9 +195,9 @@
     },
     {
       "doc_num": "202600101516",
-      "doc_type": "Tax Deed",
-      "cat": "TAXDEED",
-      "cat_label": "Tax Deed",
+      "doc_type": "Federal Tax Lien",
+      "cat": "LNFED",
+      "cat_label": "Federal Tax Lien",
       "filed": "2026-05-13",
       "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC",
       "grantee": "",
@@ -64,9 +220,9 @@
     },
     {
       "doc_num": "202600101724",
-      "doc_type": "Tax Deed",
-      "cat": "TAXDEED",
-      "cat_label": "Tax Deed",
+      "doc_type": "Federal Tax Lien",
+      "cat": "LNFED",
+      "cat_label": "Federal Tax Lien",
       "filed": "2026-05-13",
       "owner": "OWEN MICHAEL JAMES",
       "grantee": "",
@@ -89,9 +245,9 @@
     },
     {
       "doc_num": "202600101498",
-      "doc_type": "Tax Deed",
-      "cat": "TAXDEED",
-      "cat_label": "Tax Deed",
+      "doc_type": "Federal Tax Lien",
+      "cat": "LNFED",
+      "cat_label": "Federal Tax Lien",
       "filed": "2026-05-13",
       "owner": "WILLEMS DAN",
       "grantee": "",
@@ -113,10 +269,485 @@
       ]
     },
     {
+      "doc_num": "2026000063557",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "FALCI KAROL",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063556",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "HORTON D R TEXAS LTD",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063579",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC NOMINEE",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063608",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "MEGATEL VENETIAN LLC",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063573",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "TAYLOR ROBERT W",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063560",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "EXPOSED DESIGN GROUP",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063569",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "FRALEY JEFFREY THOMAS",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063566",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "WINCHESTER CROSSING PUBLIC IMPROVEMENT DISTRICT #3",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063554",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "J & J LAND CO LLC",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063515",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "KUSI-MENSAH CHRISTIAN",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063362",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "HAMAAMEEN MOHAMMED",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063384",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "SCOTT TAYLOR",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063376",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "OTAKE KESAO",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063379",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "ROSEBUD ECONOMIC DEVELOPMENT CORP",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063377",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "ALFORD TIMOTHY P",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063915",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "CARTUS FINANCIAL CORP",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063943",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "INDEPENDENT BANK",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063891",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "STADHEIM AMY K",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
+      "doc_num": "2026000063853",
+      "doc_type": "Tax Deed",
+      "cat": "TAXDEED",
+      "cat_label": "Tax Deed",
+      "filed": "2026-05-13",
+      "owner": "BARRETT DAFFIN FRAPPIER TURNER & ENGEL LLP",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 30,
+      "flags": [
+        "Tax Deed / IRS / Corp Lien"
+      ]
+    },
+    {
       "doc_num": "20260091667",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "N/A",
       "grantee": "",
@@ -132,17 +763,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091112",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "WESTFAHL GEORGE L",
       "grantee": "",
@@ -158,17 +789,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091115",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "GOLDLINE INVESTMENTS LLC",
       "grantee": "",
@@ -184,17 +815,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091117",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "GONZALES VICENTE",
       "grantee": "",
@@ -210,17 +841,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091279",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "MENDENHALL BRYAN",
       "grantee": "",
@@ -236,17 +867,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091426",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "PEG ENTERPRISES PEG ENERGY LLC",
       "grantee": "",
@@ -262,17 +893,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091369",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "ARBOR CS SFR FUNDING LLC",
       "grantee": "",
@@ -288,17 +919,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091340",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC",
       "grantee": "",
@@ -314,17 +945,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091261",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "MARTINEZ VIOLET T",
       "grantee": "",
@@ -340,17 +971,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091439",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "JESUCITAS CAFE LLC",
       "grantee": "",
@@ -366,17 +997,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091318",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "VALENZUELA RUBEN",
       "grantee": "",
@@ -392,17 +1023,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091303",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC",
       "grantee": "",
@@ -418,17 +1049,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091312",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "RANDOLPH-BROOKS FEDERAL CREDIT UNION",
       "grantee": "",
@@ -444,17 +1075,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091186",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "BUENO RAY",
       "grantee": "",
@@ -470,17 +1101,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091201",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "LENNAR HOMES OF TEXAS LAND AND CONSTRUCTION LTD",
       "grantee": "",
@@ -496,17 +1127,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091291",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "ROA HOMERO",
       "grantee": "",
@@ -522,17 +1153,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091207",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "GUAJARDO FIDEL III",
       "grantee": "",
@@ -548,17 +1179,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091308",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "HINTON LINDA LEA",
       "grantee": "",
@@ -574,17 +1205,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091295",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "ZUNIGA JUANA GENOVEVA",
       "grantee": "",
@@ -600,17 +1231,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091328",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "ESPARZA KRISTIN D",
       "grantee": "",
@@ -626,17 +1257,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091232",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "HERNANDEZ MARTIN",
       "grantee": "",
@@ -652,17 +1283,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091299",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "MCDONALD EDWARD",
       "grantee": "",
@@ -678,17 +1309,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091351",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "ALEMAN VICTOR",
       "grantee": "",
@@ -704,17 +1335,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091349",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "MJF LAND DEVELOPMENT LLC",
       "grantee": "",
@@ -730,17 +1361,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091358",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "WALLS PATTIE J",
       "grantee": "",
@@ -756,17 +1387,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091363",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "ALVAREZ HORTENCIA ZAPATA",
       "grantee": "",
@@ -782,17 +1413,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091353",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "VAN BRANDT ROBERT",
       "grantee": "",
@@ -808,17 +1439,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091254",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "RODRIGUEZ JESUS SAMUEL JR",
       "grantee": "",
@@ -834,17 +1465,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091219",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "SMITH GARY TALBERT",
       "grantee": "",
@@ -860,17 +1491,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091190",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "FRIAS PETER",
       "grantee": "",
@@ -886,17 +1517,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091244",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "MANGUM MATTHEW",
       "grantee": "",
@@ -912,17 +1543,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091196",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "LENNAR HOMES OF TEXAS LAND AND CONSTRUCTION LTD",
       "grantee": "",
@@ -938,17 +1569,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091252",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "GOODIN CHELSEY",
       "grantee": "",
@@ -964,17 +1595,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091264",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "FUENTES MICHELLE",
       "grantee": "",
@@ -990,17 +1621,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091245",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "MANGUM MATTHEW",
       "grantee": "",
@@ -1016,17 +1647,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091247",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "SPENCE PATRICIA A",
       "grantee": "",
@@ -1042,17 +1673,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091242",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "GRANDVIEW PARTNERS LTD",
       "grantee": "",
@@ -1068,17 +1699,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091552",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "MIDFIRST BANK",
       "grantee": "",
@@ -1094,17 +1725,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091560",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "WU EMILY",
       "grantee": "",
@@ -1120,17 +1751,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091573",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "PRICE CLIFTON A",
       "grantee": "",
@@ -1146,17 +1777,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091576",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "CIELO SKY SOLUTIONS COMPANY",
       "grantee": "",
@@ -1172,17 +1803,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091545",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "SCF JAKE LP",
       "grantee": "",
@@ -1198,17 +1829,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091551",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "CRUZ MARICELA GARZA",
       "grantee": "",
@@ -1224,17 +1855,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091621",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "WELTY LLOYD",
       "grantee": "",
@@ -1250,17 +1881,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091609",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "VMONEY MAYELA CADENAS",
       "grantee": "",
@@ -1276,17 +1907,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091605",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "HOPPER JACLYN L",
       "grantee": "",
@@ -1302,17 +1933,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091622",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "SANDERS EMMY",
       "grantee": "",
@@ -1328,17 +1959,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091619",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "WONG DEBBIE",
       "grantee": "",
@@ -1354,17 +1985,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091615",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "SALAZAR BEATRICE G ESTATE",
       "grantee": "",
@@ -1380,17 +2011,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "20260091600",
-      "doc_type": "State Tax Lien",
-      "cat": "LNSTATE",
-      "cat_label": "State Tax Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "ALVA EZEQUIEL V",
       "grantee": "",
@@ -1406,17 +2037,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "2026000064249",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "CHEVREFILS PAUL E",
       "grantee": "",
@@ -1432,17 +2063,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "2026000064400",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "MATTAMY TEXAS LLC",
       "grantee": "",
@@ -1458,17 +2089,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "2026000064386",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "WILLIAMSON MICHAEL KEVIN",
       "grantee": "",
@@ -1484,17 +2115,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "2026000064384",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "COLLIN COUNTY MUNICIPAL UTILITY DISTRICT #5",
       "grantee": "",
@@ -1510,17 +2141,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "2026000064360",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "TOMESCU MARIAN",
       "grantee": "",
@@ -1536,17 +2167,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "2026000064307",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "HORTON D R TEXAS LTD",
       "grantee": "",
@@ -1562,17 +2193,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "2026000064267",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "VILLASENOR INOCENCIO",
       "grantee": "",
@@ -1588,17 +2219,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "2026000064253",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "WELLS FARGO BANK NA",
       "grantee": "",
@@ -1614,17 +2245,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "2026000064258",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC NOMINEE",
       "grantee": "",
@@ -1640,17 +2271,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "2026000064268",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "WELLS FARGO BANK NA",
       "grantee": "",
@@ -1666,17 +2297,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "2026000064264",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "CHRISTENSEN BRENT HOWELL",
       "grantee": "",
@@ -1692,17 +2323,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "2026000064321",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC NOMINEE",
       "grantee": "",
@@ -1718,17 +2349,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "2026000064207",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC NOMINEE",
       "grantee": "",
@@ -1744,17 +2375,17 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "2026000064209",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC NOMINEE",
       "grantee": "",
@@ -1770,383 +2401,19 @@
       "mail_city": "",
       "mail_state": "TX",
       "mail_zip": "",
-      "score": 20,
+      "score": 15,
       "flags": [
-        "Lien on record",
+        "Lis Pendens / Pre-foreclosure",
         "New this week"
       ]
     },
     {
       "doc_num": "2026000064218",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
-      "filed": "2026-05-14",
-      "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC NOMINEE",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 20,
-      "flags": [
-        "Lien on record",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026000064539",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
-      "filed": "2026-05-14",
-      "owner": "STARLIGHT HOMES TEXAS LLC",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 20,
-      "flags": [
-        "Lien on record",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026000064525",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
-      "filed": "2026-05-14",
-      "owner": "TRIO REI INC",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 20,
-      "flags": [
-        "Lien on record",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026000064560",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
-      "filed": "2026-05-14",
-      "owner": "RUNYAN RICHARD JR",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 20,
-      "flags": [
-        "Lien on record",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026000064564",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
-      "filed": "2026-05-14",
-      "owner": "KIZHACKEL SOFIA",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 20,
-      "flags": [
-        "Lien on record",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026000064575",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-14",
-      "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 15,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026000064641",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-14",
-      "owner": "PURCHASING FUND 2025-1 LLC",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 15,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026000064311",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-14",
-      "owner": "LENNAR HOMES OF TEXAS LAND & CONSTRUCTION LTD",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 15,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026000064637",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-14",
-      "owner": "WIESE MAXWELL",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 15,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026000064633",
       "doc_type": "Lis Pendens",
       "cat": "LP",
       "cat_label": "Lis Pendens",
       "filed": "2026-05-14",
       "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC NOMINEE",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 15,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026000064567",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-14",
-      "owner": "IBNET CO LTD",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 15,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026000064444",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-14",
-      "owner": "TEXAS STATE OF",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 15,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026000064460",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-14",
-      "owner": "TEXAS STATE OF",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 15,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026000064618",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-14",
-      "owner": "TICKEY CREEK MUNICIPAL UTILITY DISTRICT OF COLLIN COUNTY BOARD OF DIRECTORS",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 15,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026000064604",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-14",
-      "owner": "PNC BANK NA",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -2219,12 +2486,12 @@
       ]
     },
     {
-      "doc_num": "2026000063947",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
-      "filed": "2026-05-13",
-      "owner": "LOOPER JOHNNY",
+      "doc_num": "2026000064539",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
+      "filed": "2026-05-14",
+      "owner": "STARLIGHT HOMES TEXAS LLC",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -2240,16 +2507,17 @@
       "mail_zip": "",
       "score": 15,
       "flags": [
-        "Lien on record"
+        "Lis Pendens / Pre-foreclosure",
+        "New this week"
       ]
     },
     {
-      "doc_num": "2026000063885",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
-      "filed": "2026-05-13",
-      "owner": "MENON VIVEK SETHUMADHAVAN",
+      "doc_num": "2026000064525",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
+      "filed": "2026-05-14",
+      "owner": "TRIO REI INC",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -2265,16 +2533,17 @@
       "mail_zip": "",
       "score": 15,
       "flags": [
-        "Lien on record"
+        "Lis Pendens / Pre-foreclosure",
+        "New this week"
       ]
     },
     {
-      "doc_num": "2026000063750",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
-      "filed": "2026-05-13",
-      "owner": "JONES DIANE IRENE",
+      "doc_num": "2026000064560",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
+      "filed": "2026-05-14",
+      "owner": "RUNYAN RICHARD JR",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -2290,16 +2559,17 @@
       "mail_zip": "",
       "score": 15,
       "flags": [
-        "Lien on record"
+        "Lis Pendens / Pre-foreclosure",
+        "New this week"
       ]
     },
     {
-      "doc_num": "2026000063674",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
-      "filed": "2026-05-13",
-      "owner": "MM PRINCETON 854 LLC",
+      "doc_num": "2026000064567",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
+      "filed": "2026-05-14",
+      "owner": "IBNET CO LTD",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -2315,16 +2585,17 @@
       "mail_zip": "",
       "score": 15,
       "flags": [
-        "Lien on record"
+        "Lis Pendens / Pre-foreclosure",
+        "New this week"
       ]
     },
     {
-      "doc_num": "2026000063649",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
-      "filed": "2026-05-13",
-      "owner": "ANDERTON DAVID",
+      "doc_num": "2026000064564",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
+      "filed": "2026-05-14",
+      "owner": "KIZHACKEL SOFIA",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -2340,16 +2611,17 @@
       "mail_zip": "",
       "score": 15,
       "flags": [
-        "Lien on record"
+        "Lis Pendens / Pre-foreclosure",
+        "New this week"
       ]
     },
     {
-      "doc_num": "2026000064043",
-      "doc_type": "Mechanic Lien",
-      "cat": "LNMECH",
-      "cat_label": "Mechanic Lien",
-      "filed": "2026-05-13",
-      "owner": "VPI TX THREE LLC",
+      "doc_num": "2026000064575",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
+      "filed": "2026-05-14",
+      "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -2365,7 +2637,60 @@
       "mail_zip": "",
       "score": 15,
       "flags": [
-        "Lien on record"
+        "Lis Pendens / Pre-foreclosure",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026000064460",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
+      "filed": "2026-05-14",
+      "owner": "TEXAS STATE OF",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 15,
+      "flags": [
+        "Lis Pendens / Pre-foreclosure",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026000064604",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
+      "filed": "2026-05-14",
+      "owner": "PNC BANK NA",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 15,
+      "flags": [
+        "Lis Pendens / Pre-foreclosure",
+        "New this week"
       ]
     },
     {
@@ -3620,9 +3945,9 @@
     },
     {
       "doc_num": "20260090269",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC",
       "grantee": "",
@@ -3640,14 +3965,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090273",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "SECRETARY OF HOUSING AND URBAN DEVELOPMENT",
       "grantee": "",
@@ -3665,14 +3990,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090317",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "RASHID AHMAD",
       "grantee": "",
@@ -3690,14 +4015,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090327",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "GONZALES VIRGINIA",
       "grantee": "",
@@ -3715,14 +4040,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090328",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "KELLER GENEVIEVE",
       "grantee": "",
@@ -3740,14 +4065,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090367",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "RODRIGUEZ ELIZABETH",
       "grantee": "",
@@ -3765,14 +4090,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090315",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "QUISENBERRY KATHLEEN B",
       "grantee": "",
@@ -3790,14 +4115,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090330",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "MORALES BETTY A",
       "grantee": "",
@@ -3815,14 +4140,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090074",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "DISCOVERY VILLAGE STONE OAK",
       "grantee": "",
@@ -3840,14 +4165,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090111",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "PKST SAN ANTONIO MIDDLEX LLC",
       "grantee": "",
@@ -3865,14 +4190,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090085",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "GERBER REAL ESTATE LLC",
       "grantee": "",
@@ -3890,14 +4215,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090112",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "FREEDOM MORTGAGE CORPORATION",
       "grantee": "",
@@ -3915,14 +4240,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090066",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "CAMPA DAVID",
       "grantee": "",
@@ -3940,14 +4265,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090109",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "UPWARD AMERICA CENTRAL PROPERTY OWNER LP",
       "grantee": "",
@@ -3965,14 +4290,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090076",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "MCCULLOUGH BRYANT K SR",
       "grantee": "",
@@ -3990,14 +4315,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090106",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "EMANUEL TERRY L",
       "grantee": "",
@@ -4015,14 +4340,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090090",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "WESTOVER ELMS HOMEOWNERS ASSOCIATION INC",
       "grantee": "",
@@ -4040,14 +4365,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090137",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "SIP TAX DEED FUND 1 LLC",
       "grantee": "",
@@ -4065,14 +4390,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090178",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "GONZALEZ LEOPOLDO P",
       "grantee": "",
@@ -4090,14 +4415,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090208",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "REYNA JAY RYAN",
       "grantee": "",
@@ -4115,14 +4440,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090202",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "LEWIS SUSAN K",
       "grantee": "",
@@ -4140,14 +4465,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090215",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "CLARK GREGORY S",
       "grantee": "",
@@ -4165,14 +4490,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090197",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "KNOWLAND OLLIE",
       "grantee": "",
@@ -4190,14 +4515,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090174",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC",
       "grantee": "",
@@ -4215,14 +4540,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090161",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC",
       "grantee": "",
@@ -4240,14 +4565,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090170",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "FREEDOM MORTGAGE CORPORATION",
       "grantee": "",
@@ -4265,14 +4590,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090206",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC",
       "grantee": "",
@@ -4290,14 +4615,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090182",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC",
       "grantee": "",
@@ -4315,14 +4640,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090201",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "STATE OF TEXAS",
       "grantee": "",
@@ -4340,14 +4665,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090253",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "RICHARDSON OLIVIA",
       "grantee": "",
@@ -4365,14 +4690,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090250",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "GONZALES JENNA",
       "grantee": "",
@@ -4390,14 +4715,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090255",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "DISSANAYAKE VINURI DANILKA",
       "grantee": "",
@@ -4415,14 +4740,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090252",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "CLARK KIMBERLY",
       "grantee": "",
@@ -4440,14 +4765,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090248",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "BAKHISHOVA AYSEL",
       "grantee": "",
@@ -4465,14 +4790,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090267",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "WARREN GRACE",
       "grantee": "",
@@ -4490,14 +4815,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090339",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "WAL-MART REAL ESTATE BUSINESS TRUST",
       "grantee": "",
@@ -4515,14 +4840,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090278",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "SLIFER ALYSSA LYNN",
       "grantee": "",
@@ -4540,14 +4865,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090289",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC",
       "grantee": "",
@@ -4565,14 +4890,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090334",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "ZURITA DAVID",
       "grantee": "",
@@ -4590,14 +4915,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090291",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "ANDRADE DAVID A",
       "grantee": "",
@@ -4615,14 +4940,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090290",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "AGUILAR OLIVIA MINOR",
       "grantee": "",
@@ -4640,14 +4965,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090299",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "CHAVEZ RICHARD T JR",
       "grantee": "",
@@ -4665,14 +4990,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090295",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "ASHFAQ ADINA",
       "grantee": "",
@@ -4690,14 +5015,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090292",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "ANGELES MARTA",
       "grantee": "",
@@ -4715,14 +5040,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090293",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "ARAGON JESUS",
       "grantee": "",
@@ -4740,14 +5065,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090392",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "DUDDEN CANDACE LOUISE",
       "grantee": "",
@@ -4765,14 +5090,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090407",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "OLANREWAJU BABAJIDE O",
       "grantee": "",
@@ -4790,14 +5115,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090381",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "SAN ANTONIO HOUSING TRUST PUBLIC FACILITY CORPORATION",
       "grantee": "",
@@ -4815,14 +5140,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090388",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "BALL CHRISTOPHER",
       "grantee": "",
@@ -4840,14 +5165,14 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
       "doc_num": "20260090391",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
+      "doc_type": "Abstract of Judgment",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
       "filed": "2026-05-13",
       "owner": "DAVIES TIMOTHY J JR",
       "grantee": "",
@@ -4865,16 +5190,16 @@
       "mail_zip": "",
       "score": 10,
       "flags": [
-        "Lis Pendens / Pre-foreclosure"
+        "Judgment Lien"
       ]
     },
     {
-      "doc_num": "2026000063494",
+      "doc_num": "2026000063414",
       "doc_type": "Lis Pendens",
       "cat": "LP",
       "cat_label": "Lis Pendens",
       "filed": "2026-05-13",
-      "owner": "JONES GREGORY",
+      "owner": "DIGITAL FEDERAL CREDIT UNION",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -4894,12 +5219,12 @@
       ]
     },
     {
-      "doc_num": "2026000063557",
+      "doc_num": "2026000063401",
       "doc_type": "Lis Pendens",
       "cat": "LP",
       "cat_label": "Lis Pendens",
       "filed": "2026-05-13",
-      "owner": "FALCI KAROL",
+      "owner": "U S A INTERNAL REVENUE SERVICE",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -4919,12 +5244,12 @@
       ]
     },
     {
-      "doc_num": "2026000063556",
+      "doc_num": "2026000063415",
       "doc_type": "Lis Pendens",
       "cat": "LP",
       "cat_label": "Lis Pendens",
       "filed": "2026-05-13",
-      "owner": "HORTON D R TEXAS LTD",
+      "owner": "KIAVI FUNDING INC",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -4944,7 +5269,32 @@
       ]
     },
     {
-      "doc_num": "2026000063579",
+      "doc_num": "2026000063434",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
+      "filed": "2026-05-13",
+      "owner": "BOWLING GILBERT SCOTT",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 10,
+      "flags": [
+        "Lis Pendens / Pre-foreclosure"
+      ]
+    },
+    {
+      "doc_num": "2026000063480",
       "doc_type": "Lis Pendens",
       "cat": "LP",
       "cat_label": "Lis Pendens",
@@ -4969,12 +5319,12 @@
       ]
     },
     {
-      "doc_num": "2026000063608",
+      "doc_num": "2026000063495",
       "doc_type": "Lis Pendens",
       "cat": "LP",
       "cat_label": "Lis Pendens",
       "filed": "2026-05-13",
-      "owner": "MEGATEL VENETIAN LLC",
+      "owner": "JONES GREGORY",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -4994,137 +5344,12 @@
       ]
     },
     {
-      "doc_num": "2026000063573",
+      "doc_num": "2026000063494",
       "doc_type": "Lis Pendens",
       "cat": "LP",
       "cat_label": "Lis Pendens",
       "filed": "2026-05-13",
-      "owner": "TAYLOR ROBERT W",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 10,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure"
-      ]
-    },
-    {
-      "doc_num": "2026000063560",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-13",
-      "owner": "EXPOSED DESIGN GROUP",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 10,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure"
-      ]
-    },
-    {
-      "doc_num": "2026000063569",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-13",
-      "owner": "FRALEY JEFFREY THOMAS",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 10,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure"
-      ]
-    },
-    {
-      "doc_num": "2026000063566",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-13",
-      "owner": "WINCHESTER CROSSING PUBLIC IMPROVEMENT DISTRICT #3",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 10,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure"
-      ]
-    },
-    {
-      "doc_num": "2026000063554",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-13",
-      "owner": "J & J LAND CO LLC",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 10,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure"
-      ]
-    },
-    {
-      "doc_num": "2026000063515",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-13",
-      "owner": "KUSI-MENSAH CHRISTIAN",
+      "owner": "JONES GREGORY",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -5219,156 +5444,6 @@
       ]
     },
     {
-      "doc_num": "2026000063414",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-13",
-      "owner": "DIGITAL FEDERAL CREDIT UNION",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 10,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure"
-      ]
-    },
-    {
-      "doc_num": "2026000063401",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-13",
-      "owner": "U S A INTERNAL REVENUE SERVICE",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 10,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure"
-      ]
-    },
-    {
-      "doc_num": "2026000063415",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-13",
-      "owner": "KIAVI FUNDING INC",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 10,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure"
-      ]
-    },
-    {
-      "doc_num": "2026000063436",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-13",
-      "owner": "HUDSON HUNTER SAMUEL",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 10,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure"
-      ]
-    },
-    {
-      "doc_num": "2026000063480",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-13",
-      "owner": "MORTGAGE ELECTRONIC REGISTRATION SYSTEMS INC NOMINEE",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 10,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure"
-      ]
-    },
-    {
-      "doc_num": "2026000063495",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-13",
-      "owner": "JONES GREGORY",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 10,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure"
-      ]
-    },
-    {
       "doc_num": "2026000063458",
       "doc_type": "Lis Pendens",
       "cat": "LP",
@@ -5444,12 +5519,12 @@
       ]
     },
     {
-      "doc_num": "2026000063362",
+      "doc_num": "2026000063436",
       "doc_type": "Lis Pendens",
       "cat": "LP",
       "cat_label": "Lis Pendens",
       "filed": "2026-05-13",
-      "owner": "HAMAAMEEN MOHAMMED",
+      "owner": "HUDSON HUNTER SAMUEL",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -5469,12 +5544,12 @@
       ]
     },
     {
-      "doc_num": "2026000063384",
+      "doc_num": "2026000063947",
       "doc_type": "Lis Pendens",
       "cat": "LP",
       "cat_label": "Lis Pendens",
       "filed": "2026-05-13",
-      "owner": "SCOTT TAYLOR",
+      "owner": "LOOPER JOHNNY",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -5494,12 +5569,12 @@
       ]
     },
     {
-      "doc_num": "2026000063376",
+      "doc_num": "2026000063885",
       "doc_type": "Lis Pendens",
       "cat": "LP",
       "cat_label": "Lis Pendens",
       "filed": "2026-05-13",
-      "owner": "OTAKE KESAO",
+      "owner": "MENON VIVEK SETHUMADHAVAN",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -5519,12 +5594,12 @@
       ]
     },
     {
-      "doc_num": "2026000063379",
+      "doc_num": "2026000063750",
       "doc_type": "Lis Pendens",
       "cat": "LP",
       "cat_label": "Lis Pendens",
       "filed": "2026-05-13",
-      "owner": "ROSEBUD ECONOMIC DEVELOPMENT CORP",
+      "owner": "JONES DIANE IRENE",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -5544,12 +5619,12 @@
       ]
     },
     {
-      "doc_num": "2026000063377",
+      "doc_num": "2026000063674",
       "doc_type": "Lis Pendens",
       "cat": "LP",
       "cat_label": "Lis Pendens",
       "filed": "2026-05-13",
-      "owner": "ALFORD TIMOTHY P",
+      "owner": "MM PRINCETON 854 LLC",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -5569,112 +5644,12 @@
       ]
     },
     {
-      "doc_num": "2026000063434",
+      "doc_num": "2026000063649",
       "doc_type": "Lis Pendens",
       "cat": "LP",
       "cat_label": "Lis Pendens",
       "filed": "2026-05-13",
-      "owner": "BOWLING GILBERT SCOTT",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 10,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure"
-      ]
-    },
-    {
-      "doc_num": "2026000063915",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-13",
-      "owner": "CARTUS FINANCIAL CORP",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 10,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure"
-      ]
-    },
-    {
-      "doc_num": "2026000063943",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-13",
-      "owner": "INDEPENDENT BANK",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 10,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure"
-      ]
-    },
-    {
-      "doc_num": "2026000063891",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-13",
-      "owner": "STADHEIM AMY K",
-      "grantee": "",
-      "amount": null,
-      "legal": "",
-      "clerk_url": "",
-      "county": "Collin",
-      "prop_address": "",
-      "prop_city": "",
-      "prop_state": "TX",
-      "prop_zip": "",
-      "mail_address": "",
-      "mail_city": "",
-      "mail_state": "TX",
-      "mail_zip": "",
-      "score": 10,
-      "flags": [
-        "Lis Pendens / Pre-foreclosure"
-      ]
-    },
-    {
-      "doc_num": "2026000063853",
-      "doc_type": "Lis Pendens",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-05-13",
-      "owner": "BARRETT DAFFIN FRAPPIER TURNER & ENGEL LLP",
+      "owner": "ANDERTON DAVID",
       "grantee": "",
       "amount": null,
       "legal": "",
@@ -5800,6 +5775,31 @@
       "cat_label": "Lis Pendens",
       "filed": "2026-05-13",
       "owner": "FOWLER ROBERT",
+      "grantee": "",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "",
+      "county": "Collin",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 10,
+      "flags": [
+        "Lis Pendens / Pre-foreclosure"
+      ]
+    },
+    {
+      "doc_num": "2026000064043",
+      "doc_type": "Lis Pendens",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
+      "filed": "2026-05-13",
+      "owner": "VPI TX THREE LLC",
       "grantee": "",
       "amount": null,
       "legal": "",
