@@ -20,6 +20,14 @@ COUNTIES = {
     "Collin":  "collin.tx.publicsearch.us",
 }
 
+def date_slices(start, end, days=1):
+    from datetime import timedelta
+    cur = start
+    while cur < end:
+        nxt = min(cur + timedelta(days=days), end)
+        yield cur, nxt
+        cur = nxt
+
 DOC_TYPES = [
     ("Lis Pendens",           "LP",      "Lis Pendens"),
     ("Tax Deed",              "TAXDEED", "Tax Deed"),
@@ -258,7 +266,7 @@ async def scrape_county(name, host, start_dt, end_dt):
 
         await browser.close()
 
-    log.info("%s total: %d records", name, len(records))
+    log.info("%s slice %s-%s: %d records", name, start_str, end_str, len(records))
     return records
 
 async def main_async():
