@@ -1,7 +1,6 @@
 ﻿"""
-StackIQ Multi-County Texas Scraper — Playwright Edition
-Uses real browser to scrape publicsearch.us for clean, accurate data.
-Counties: Dallas, Tarrant, Bexar, Travis, Collin
+StackIQ Multi-County Texas Scraper — Playwright (Fixed)
+Uses exact field IDs found via debug run.
 """
 import json, logging, re, os, asyncio
 from datetime import datetime, timedelta
@@ -23,36 +22,22 @@ COUNTIES = {
 }
 
 DOC_TYPES = [
-    "Lis Pendens",
-    "Tax Deed",
-    "Abstract of Judgment",
-    "Mechanic Lien",
-    "Federal Tax Lien",
-    "State Tax Lien",
-    "HOA Lien",
-    "Notice of Foreclosure",
-    "IRS Lien",
-    "Probate",
-    "Divorce Decree",
+    ("Lis Pendens",           "LP",      "Lis Pendens"),
+    ("Tax Deed",              "TAXDEED", "Tax Deed"),
+    ("Abstract of Judgment",  "JUD",     "Abstract of Judgment"),
+    ("Mechanic Lien",         "LNMECH",  "Mechanic Lien"),
+    ("Federal Tax Lien",      "LNFED",   "Federal Tax Lien"),
+    ("State Tax Lien",        "LNSTATE", "State Tax Lien"),
+    ("HOA Lien",              "LNHOA",   "HOA Lien"),
+    ("Notice of Foreclosure", "NOFC",    "Notice of Foreclosure"),
+    ("IRS Lien",              "LNIRS",   "IRS Lien"),
+    ("Probate",               "PRO",     "Probate"),
+    ("Divorce Decree",        "DIV",     "Divorce"),
 ]
-
-CAT_MAP = {
-    "Lis Pendens":           ("LP",      "Lis Pendens"),
-    "Tax Deed":              ("TAXDEED", "Tax Deed"),
-    "Abstract of Judgment":  ("JUD",     "Abstract of Judgment"),
-    "Mechanic Lien":         ("LNMECH",  "Mechanic Lien"),
-    "Federal Tax Lien":      ("LNFED",   "Federal Tax Lien"),
-    "State Tax Lien":        ("LNSTATE", "State Tax Lien"),
-    "HOA Lien":              ("LNHOA",   "HOA Lien"),
-    "Notice of Foreclosure": ("NOFC",    "Notice of Foreclosure"),
-    "IRS Lien":              ("LNIRS",   "IRS Lien"),
-    "Probate":               ("PRO",     "Probate"),
-    "Divorce Decree":        ("DIV",     "Divorce"),
-}
 
 def norm_date(raw):
     if not raw: return ""
-    for fmt in ("%m/%d/%Y","%Y-%m-%d","%Y/%m/%d","%d/%m/%Y"):
+    for fmt in ("%m/%d/%Y","%Y-%m-%d","%m-%d-%Y"):
         try: return datetime.strptime(str(raw).strip(), fmt).strftime("%Y-%m-%d")
         except: pass
     return str(raw).strip()
@@ -100,124 +85,140 @@ def blank_rec(county, doc_num, doc_type, cat, cat_label, filed, owner,
         "score": 0, "flags": [],
     }
 
-async def scrape_county_playwright(name, host, start_dt, end_dt):
-    log.info("%s - browser scraping %s to %s", name, start_dt.strftime("%m/%d/%Y"), end_dt.strftime("%m/%d/%Y"))
+def parse_results(records, county, doc_type, cat, cat_label, base, api_responses, page_content):
+    # Parse from intercepted API responses
+    for resp in api_responses:
+        body = resp.get("body", {})
+        items = (body.get("results") or body.get("instruments") or
+                 body.get("hits",{}).get("hits") or body.get("data") or [])
+        if isinstance(items, dict): items = items.get("hits",[])
+        for item in items:
+            if "_source" in item: item = item["_source"]
+            fn      = str(item.get("instrumentNumber", item.get("docNumber", item.get("id",""))))
+            filed   = norm_date(item.get("recordedDate", item.get("fileDate","")))
+            owner   = str(item.get("grantor", item.get("grantorName", item.get("owner","")))).strip()
+            grantee = str(item.get("grantee", item.get("granteeName",""))).strip()
+            amt     = parse_amount(item.get("amount", item.get("consideration","")))
+            legal   = str(item.get("legalDescription", item.get("legal",""))).strip()
+            url     = f"{base}/doc/{fn}" if fn else ""
+            rec = blank_rec(county, fn, doc_type, cat, cat_label, filed, owner, grantee, amt, legal, url)
+            for k in ["mailAddress","mailingAddress","grantorAddress"]:
+                if item.get(k): rec["mail_address"] = str(item[k]).strip(); break
+            records.append(rec)
+
+    # HTML table fallback
+    if not api_responses and page_content:
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(page_content, "lxml")
+        for table in soup.find_all("table"):
+            rows = table.find_all("tr")
+            if len(rows) < 2: continue
+            hdrs = [td.get_text(" ",strip=True).lower() for td in rows[0].find_all(["th","td"])]
+            if not any(k in " ".join(hdrs) for k in ["instrument","grantor","document","name"]): continue
+            for row in rows[1:]:
+                cells = row.find_all("td")
+                if not cells: continue
+                d = {hdrs[i]:cells[i].get_text(" ",strip=True) for i in range(min(len(hdrs),len(cells)))}
+                def f(*keys):
+                    for k in keys:
+                        for h in hdrs:
+                            if k in h:
+                                v = d.get(h,"").strip()
+                                if v: return v
+                    return ""
+                fn    = f("instrument","number","document","file")
+                filed = norm_date(f("date","recorded","filed"))
+                owner = f("grantor","owner","name")
+                amt   = parse_amount(f("amount","consideration"))
+                link  = next((a["href"] for cell in cells for a in cell.find_all("a",href=True) if a.get("href")),"")
+                if link and not link.startswith("http"): link = base + link
+                if fn or owner:
+                    records.append(blank_rec(county, fn, doc_type, cat, cat_label, filed, owner, amount=amt, url=link))
+
+async def scrape_county(name, host, start_dt, end_dt):
+    log.info("%s - scraping %s to %s", name, start_dt.strftime("%m/%d/%Y"), end_dt.strftime("%m/%d/%Y"))
     records = []
     base = f"https://{host}"
     start_str = start_dt.strftime("%m/%d/%Y")
     end_str   = end_dt.strftime("%m/%d/%Y")
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await p.chromium.launch(headless=True, args=["--no-sandbox","--disable-dev-shm-usage"])
         context = await browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122.0.0.0 Safari/537.36"
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122.0.0.0 Safari/537.36",
+            viewport={"width": 1280, "height": 900}
         )
         page = await context.new_page()
 
-        # Intercept API responses
-        api_responses = []
-        async def handle_response(response):
-            url = response.url
-            if "api" in url and response.status == 200:
-                try:
-                    ct = response.headers.get("content-type","")
-                    if "json" in ct:
-                        body = await response.json()
-                        api_responses.append({"url": url, "body": body})
-                except: pass
-        page.on("response", handle_response)
+        for doc_type, cat, cat_label in DOC_TYPES:
+            api_responses = []
 
-        for doc_type in DOC_TYPES:
-            cat, cat_label = CAT_MAP.get(doc_type, (None, None))
-            if not cat: continue
+            async def on_response(resp):
+                if resp.status == 200 and any(x in resp.url for x in ["/search","/results","/instruments","/api"]):
+                    try:
+                        ct = resp.headers.get("content-type","")
+                        if "json" in ct:
+                            body = await resp.json()
+                            api_responses.append({"url": resp.url, "body": body})
+                    except: pass
+
+            page.on("response", on_response)
+
             try:
-                api_responses.clear()
-                # Go to advanced search
+                # Load advanced search page fresh each time
                 await page.goto(f"{base}/search/advanced", wait_until="networkidle", timeout=30000)
                 await page.wait_for_timeout(2000)
 
-                # Select document type
+                # Step 1: Select "Property Records" department
                 try:
-                    # Try dropdown/select
-                    await page.select_option("select[name*='docType'], select[id*='docType'], select[placeholder*='type']", label=doc_type, timeout=3000)
-                except:
-                    try:
-                        # Try typing in search box
-                        dt_input = await page.query_selector("input[placeholder*='type'], input[placeholder*='Type'], input[name*='docType']")
-                        if dt_input:
-                            await dt_input.click()
-                            await dt_input.fill(doc_type)
-                            await page.wait_for_timeout(1000)
-                            # Click first dropdown option
-                            option = await page.query_selector(".dropdown-item, .suggestion, li[role='option']")
-                            if option: await option.click()
-                    except: pass
-
-                # Fill date range
-                try:
-                    date_inputs = await page.query_selector_all("input[type='date'], input[placeholder*='date'], input[placeholder*='Date'], input[name*='date'], input[name*='Date']")
-                    if len(date_inputs) >= 2:
-                        await date_inputs[0].fill(start_dt.strftime("%Y-%m-%d"))
-                        await date_inputs[1].fill(end_dt.strftime("%Y-%m-%d"))
-                    elif len(date_inputs) == 1:
-                        await date_inputs[0].fill(start_dt.strftime("%Y-%m-%d"))
+                    await page.click("#department", timeout=3000)
+                    await page.wait_for_timeout(500)
+                    await page.click("text=Property Records", timeout=3000)
+                    await page.wait_for_timeout(1000)
                 except: pass
 
-                # Click search
-                try:
-                    await page.click("button[type='submit'], button:has-text('Search'), input[type='submit']", timeout=3000)
-                    await page.wait_for_timeout(3000)
-                except: pass
+                # Step 2: Fill recorded date range using exact IDs
+                await page.fill("#recordedDateRange-start", start_str)
+                await page.wait_for_timeout(300)
+                await page.fill("#recordedDateRange-end", end_str)
+                await page.wait_for_timeout(300)
 
-                # Parse API responses captured
-                for resp in api_responses:
-                    body = resp["body"]
-                    items = (body.get("results") or body.get("instruments") or
-                             body.get("hits",{}).get("hits") or body.get("data") or [])
-                    if isinstance(items, dict): items = items.get("hits",[])
-                    for item in items:
-                        if "_source" in item: item = item["_source"]
-                        fn      = str(item.get("instrumentNumber", item.get("docNumber", item.get("id",""))))
-                        filed   = norm_date(item.get("recordedDate", item.get("fileDate", item.get("date",""))))
-                        owner   = str(item.get("grantor", item.get("grantorName", item.get("owner","")))).strip()
-                        grantee = str(item.get("grantee", item.get("granteeName",""))).strip()
-                        amt     = parse_amount(item.get("amount", item.get("consideration","")))
-                        legal   = str(item.get("legalDescription", item.get("legal",""))).strip()
-                        url     = f"{base}/doc/{fn}" if fn else ""
-                        rec = blank_rec(name, fn, doc_type, cat, cat_label, filed, owner, grantee, amt, legal, url)
-                        for k in ["mailAddress","mailingAddress","grantorAddress","address"]:
-                            if item.get(k): rec["mail_address"] = str(item[k]).strip(); break
-                        records.append(rec)
-
-                # Also parse HTML table results as fallback
-                if not api_responses:
-                    await page.wait_for_timeout(2000)
-                    rows = await page.query_selector_all("table tbody tr, .result-row, .search-result")
-                    for row in rows:
-                        try:
-                            cells = await row.query_selector_all("td, .cell")
-                            texts = [await c.inner_text() for c in cells]
-                            if len(texts) < 3: continue
-                            links = await row.query_selector_all("a")
-                            link_href = ""
-                            if links:
-                                link_href = await links[0].get_attribute("href") or ""
-                                if link_href and not link_href.startswith("http"):
-                                    link_href = base + link_href
-                            # Best-guess column mapping
-                            fn    = texts[0].strip() if texts else ""
-                            filed = norm_date(texts[1].strip()) if len(texts) > 1 else ""
-                            owner = texts[2].strip() if len(texts) > 2 else ""
-                            amt   = parse_amount(texts[4]) if len(texts) > 4 else None
-                            if fn or owner:
-                                records.append(blank_rec(name, fn, doc_type, cat, cat_label, filed, owner, amount=amt, url=link_href))
-                        except: pass
-
-                log.info("%s %s: %d records so far", name, doc_type, len(records))
+                # Step 3: Type document type into docTypes input
+                await page.click("#docTypes-input")
+                await page.wait_for_timeout(300)
+                await page.type("#docTypes-input", doc_type, delay=50)
                 await page.wait_for_timeout(1500)
+
+                # Click the first matching option in dropdown
+                try:
+                    option = await page.wait_for_selector(
+                        ".react-tokenized-select__option, [class*='option'], [role='option']",
+                        timeout=3000
+                    )
+                    if option:
+                        await option.click()
+                        await page.wait_for_timeout(500)
+                except: pass
+
+                # Step 4: Click Search button
+                await page.click("button:has-text('Search')", timeout=5000)
+                await page.wait_for_timeout(4000)
+
+                # Get page HTML for fallback parsing
+                page_content = await page.content()
+
+                # Parse results
+                before = len(records)
+                parse_results(records, name, doc_type, cat, cat_label, base, api_responses, page_content)
+                after = len(records)
+                log.info("%s %s: %d new records", name, doc_type, after - before)
 
             except Exception as e:
                 log.warning("%s %s error: %s", name, doc_type, e)
+            finally:
+                page.remove_listener("response", on_response)
+
+            await page.wait_for_timeout(1000)
 
         await browser.close()
 
@@ -227,17 +228,16 @@ async def scrape_county_playwright(name, host, start_dt, end_dt):
 async def main_async():
     now    = datetime.now()
     cutoff = now - timedelta(days=LOOKBACK_DAYS)
-    log.info("=== StackIQ Multi-County Scraper (Playwright) ===")
+    log.info("=== StackIQ Multi-County Scraper ===")
     log.info("Date range: %s to %s", cutoff.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d"))
 
     all_records = []
     for name, host in COUNTIES.items():
         try:
-            recs = await scrape_county_playwright(name, host, cutoff, now)
+            recs = await scrape_county(name, host, cutoff, now)
             all_records.extend(recs)
-            log.info("+ %s: %d records", name, len(recs))
         except Exception as e:
-            log.error("x %s failed: %s", name, e)
+            log.error("%s failed: %s", name, e)
 
     seen, deduped = set(), []
     for r in all_records:
