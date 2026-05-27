@@ -45,8 +45,8 @@ async def main():
         page.on("request", on_request)
         page.on("response", on_response)
 
-        log.info("Loading Dallas advanced search...")
-        await page.goto("https://dallas.tx.publicsearch.us/search/advanced", wait_until="networkidle", timeout=30000)
+        log.info("Loading Travis advanced search...")
+        await page.goto("https://travis.tx.publicsearch.us/search/advanced", wait_until="networkidle", timeout=30000)
         await page.wait_for_timeout(3000)
 
         log.info("Page title: %s", await page.title())
