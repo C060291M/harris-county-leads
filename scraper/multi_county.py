@@ -243,11 +243,7 @@ async def _scrape_day(name, host, start_dt, end_dt):
 
                     # Try to click Next page button
                     try:
-                        next_btn = await page.query_selector(
-                            "button:has-text('Next'), a:has-text('Next'), "
-                            "[aria-label='Next page'], [class*='next']:not([disabled]), "
-                            "button[class*='pagination']:not([disabled])"
-                        )
+                        next_btn = await page.query_selector("[aria-label='next page']")
                         if next_btn:
                             is_disabled = await next_btn.get_attribute("disabled")
                             if is_disabled is not None:
