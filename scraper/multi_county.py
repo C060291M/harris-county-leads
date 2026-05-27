@@ -215,14 +215,39 @@ async def scrape_county(name, host, start_dt, end_dt):
                 await page.click("button:has-text('Search')", timeout=5000)
                 await page.wait_for_timeout(4000)
 
-                # Get page HTML for fallback parsing
-                page_content = await page.content()
+                # Paginate through all results
+                page_num = 1
+                while True:
+                    page_content = await page.content()
+                    before = len(records)
+                    parse_results(records, name, doc_type, cat, cat_label, base, api_responses, page_content)
+                    after = len(records)
+                    new_on_page = after - before
+                    log.info("%s %s page %d: %d new records", name, doc_type, page_num, new_on_page)
 
-                # Parse results
-                before = len(records)
-                parse_results(records, name, doc_type, cat, cat_label, base, api_responses, page_content)
-                after = len(records)
-                log.info("%s %s: %d new records", name, doc_type, after - before)
+                    # Try to click Next page button
+                    try:
+                        next_btn = await page.query_selector(
+                            "button:has-text('Next'), a:has-text('Next'), "
+                            "[aria-label='Next page'], [class*='next']:not([disabled]), "
+                            "button[class*='pagination']:not([disabled])"
+                        )
+                        if next_btn:
+                            is_disabled = await next_btn.get_attribute("disabled")
+                            if is_disabled is not None:
+                                break
+                            await next_btn.click()
+                            await page.wait_for_timeout(3000)
+                            api_responses.clear()
+                            page_num += 1
+                            if page_num > 20:  # Safety cap
+                                break
+                        else:
+                            break
+                    except:
+                        break
+
+                log.info("%s %s: %d total new records", name, doc_type, after - before)
 
             except Exception as e:
                 log.warning("%s %s error: %s", name, doc_type, e)
