@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r scraper/requirements.txt
 
+      - name: Install Playwright browsers
+        run: python -m playwright install --with-deps chromium
+
       - name: Run multi-county scraper
         run: python scraper/multi_county.py
         env:
