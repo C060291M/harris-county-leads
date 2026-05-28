@@ -44,7 +44,8 @@ jobs:
           git checkout main
           git add dashboard/multi_county_records.json data/multi_county_records.json
           git diff --staged --quiet || git commit -m "chore: update multi-county leads [skip ci]"
-          git push origin main
+          git push origin main || (git pull origin main --rebase && git push origin main)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
