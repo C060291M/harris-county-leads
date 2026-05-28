@@ -33,7 +33,7 @@ jobs:
       - name: Run multi-county scraper 3
         run: python scraper/multi_county_3.py
         env:
-          LOOKBACK_DAYS: "14"
+          LOOKBACK_DAYS: "7"
           API_URL: "https://api.stackiq.org/leads/bulk-import"
 
       - name: Commit results
@@ -47,4 +47,5 @@ jobs:
           git push origin main || (git pull origin main --rebase && git push origin main)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
