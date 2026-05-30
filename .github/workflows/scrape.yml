@@ -1,4 +1,4 @@
-name: Scrape Harris County Leads
+name: StackIQ Multi-County Scraper
 
 on:
   schedule:
@@ -11,38 +11,29 @@ permissions:
   id-token: write
 
 jobs:
-  scrape:
+  # ── Harris County (SFTP) ────────────────────────────────────────────────────
+  harris:
     runs-on: ubuntu-22.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     outputs:
       hot_leads: ${{ steps.count.outputs.hot_leads }}
       total:     ${{ steps.count.outputs.total }}
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: scraper/requirements.txt
-
-      - name: Install dependencies
-        run: pip install -r scraper/requirements.txt
-
-      - name: Install Playwright
-        run: python -m playwright install --with-deps chromium
-
-      - name: Run scraper
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Harris scraper
         run: python scraper/fetch.py
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASS: ${{ secrets.FTP_PASS }}
-          LOOKBACK_DAYS: "14" 
-
+          LOOKBACK_DAYS: "3"
       - name: Count hot leads
         id: count
         run: |
@@ -63,29 +54,17 @@ jobs:
             with open(os.environ["GITHUB_OUTPUT"], "a") as out:
               out.write("hot_leads=0\ntotal=0\n")
           PYEOF
-
-      - name: Upload debug HTML
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: debug-html
-          path: debug/
-          retention-days: 3
-      - name: Push leads to PostgreSQL
+      - name: Push Harris to DB
         run: |
           python3 - << 'PYEOF'
           import json, requests
           try:
             with open("dashboard/records.json") as f:
               payload = json.load(f)
-            r = requests.post(
-              "https://api.stackiq.org/leads/bulk-import",
-              json=payload,
-              timeout=120
-            )
-            print(f"API response: {r.status_code} {r.text[:200]}")
+            r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=120)
+            print(f"Harris API: {r.status_code} {r.text[:200]}")
           except Exception as e:
-            print(f"Push to API failed (non-fatal): {e}")
+            print(f"Push failed: {e}")
           PYEOF
       - name: Commit results
         run: |
@@ -94,17 +73,202 @@ jobs:
           git fetch origin main
           git checkout main
           git add dashboard/records.json data/records.json data/leads_ghl.csv dashboard/leadiq_stats.json data/leadiq_stats.json
-          git diff --staged --quiet || git commit -m "chore: update leads [skip ci]"
+          git diff --staged --quiet || git commit -m "chore: update harris leads [skip ci]"
           git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: debug-html
+          path: debug/
+          retention-days: 3
 
-  # ── Email alert for hot leads ──────────────────────────────────────────────
-  email-alert:
-    needs: scrape
+  # ── Dallas / Tarrant / Bexar ────────────────────────────────────────────────
+  dallas-tarrant-bexar:
     runs-on: ubuntu-22.04
-    if: ${{ needs.scrape.outputs.hot_leads > 0 }}
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Dallas/Tarrant/Bexar scraper
+        run: python scraper/multi_county.py
+        env:
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: |
+          python3 - << 'PYEOF'
+          import json, requests, glob
+          for f in glob.glob("dashboard/multi_county_records.json"):
+            try:
+              payload = json.load(open(f))
+              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
+              print(f"{f}: {r.status_code} {r.text[:100]}")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF
 
+  # ── Collin ──────────────────────────────────────────────────────────────────
+  collin:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Collin scraper
+        run: python scraper/multi_county_1b.py
+        env:
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: |
+          python3 - << 'PYEOF'
+          import json, requests, glob
+          for f in glob.glob("dashboard/multi_county_1b_records.json"):
+            try:
+              payload = json.load(open(f))
+              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
+              print(f"{f}: {r.status_code} {r.text[:100]}")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF
+
+  # ── Denton / Fort Bend / Montgomery / Williamson ────────────────────────────
+  denton-group:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Denton group scraper
+        run: python scraper/multi_county_2.py
+        env:
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: |
+          python3 - << 'PYEOF'
+          import json, requests, glob
+          for f in glob.glob("dashboard/multi_county_2_records.json"):
+            try:
+              payload = json.load(open(f))
+              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
+              print(f"{f}: {r.status_code} {r.text[:100]}")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF
+
+  # ── Hidalgo / El Paso / Nueces / Jefferson ──────────────────────────────────
+  south-texas:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run South Texas scraper
+        run: python scraper/multi_county_3.py
+        env:
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: |
+          python3 - << 'PYEOF'
+          import json, requests, glob
+          for f in glob.glob("dashboard/multi_county_3_records.json"):
+            try:
+              payload = json.load(open(f))
+              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
+              print(f"{f}: {r.status_code} {r.text[:100]}")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF
+
+  # ── Brazoria / Galveston / Brazos / Smith ───────────────────────────────────
+  gulf-coast:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Gulf Coast scraper
+        run: python scraper/multi_county_4.py
+        env:
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: |
+          python3 - << 'PYEOF'
+          import json, requests, glob
+          for f in glob.glob("dashboard/multi_county_4_records.json"):
+            try:
+              payload = json.load(open(f))
+              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
+              print(f"{f}: {r.status_code} {r.text[:100]}")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF
+
+  # ── Travis / Lubbock / McLennan / Bell ─────────────────────────────────────
+  central-texas:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Central Texas scraper
+        run: python scraper/multi_county_5.py
+        env:
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: |
+          python3 - << 'PYEOF'
+          import json, requests, glob
+          for f in glob.glob("dashboard/multi_county_5_records.json"):
+            try:
+              payload = json.load(open(f))
+              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
+              print(f"{f}: {r.status_code} {r.text[:100]}")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF
+
+  # ── Email alert ─────────────────────────────────────────────────────────────
+  email-alert:
+    needs: harris
+    runs-on: ubuntu-22.04
+    if: ${{ needs.harris.outputs.hot_leads > 0 }}
     steps:
       - name: Send email alert
         uses: dawidd6/action-send-mail@v3
@@ -115,26 +279,17 @@ jobs:
           username: ${{ secrets.ALERT_EMAIL_USER }}
           password: ${{ secrets.ALERT_EMAIL_PASS }}
           to: ${{ secrets.ALERT_EMAIL_TO }}
-          from: Harris County Leads <${{ secrets.ALERT_EMAIL_USER }}>
-          subject: "🔥 ${{ needs.scrape.outputs.hot_leads }} New Hot Lead(s) — Harris County"
+          from: StackIQ Leads <${{ secrets.ALERT_EMAIL_USER }}>
+          subject: "New Hot Leads - StackIQ Daily Report"
           body: |
-            Your daily Harris County lead scraper has found new high-score leads.
+            Your daily StackIQ scraper has found new high-score leads.
+            Hot leads (score 70+): ${{ needs.harris.outputs.hot_leads }}
+            Total leads: ${{ needs.harris.outputs.total }}
+            View dashboard: https://c060291m.github.io/harris-county-leads
 
-            Hot leads (score 70+) today: ${{ needs.scrape.outputs.hot_leads }}
-            Total leads in dashboard:    ${{ needs.scrape.outputs.total }}
-
-            View your dashboard:
-            https://c060291m.github.io/harris-county-leads
-
-            Leads are sorted by score — highest distress signals at the top.
-
-            ───────────────────────────────────
-            Harris County Motivated Seller Leads
-            Refreshed daily at 07:00 UTC
-
-  # ── Deploy dashboard to GitHub Pages ──────────────────────────────────────
+  # ── Deploy dashboard to GitHub Pages ────────────────────────────────────────
   deploy-pages:
-    needs: scrape
+    needs: harris
     runs-on: ubuntu-22.04
     environment:
       name: github-pages
