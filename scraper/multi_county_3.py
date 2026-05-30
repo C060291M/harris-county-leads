@@ -61,24 +61,47 @@ def parse_amount(raw):
 def compute_score(r, cutoff):
     s, flags = 0, []
     cat = r.get("cat","")
-    if cat in ("TAXDEED","TAXLIEN","LNIRS","LNFED"): flags.append("Tax Deed / IRS / Corp Lien"); s += 30
-    if cat in ("LNHOA",): flags.append("HOA / Mechanic Lien"); s += 25
-    if cat in ("PRO",): flags.append("Probate / Estate"); s += 20
-    if cat in ("LN","LNMECH","LNSTATE"): flags.append("Lien on record"); s += 15
-    if cat in ("LP","NOFC","NOFD"): flags.append("Lis Pendens / Pre-foreclosure"); s += 10
-    if cat in ("JUD",): flags.append("Judgment Lien"); s += 10
-    if cat in ("DIV","BK"): flags.append("Divorce / Bankruptcy"); s += 10
+    # Base score by category
+    if cat in ("TAXDEED","TAXLIEN"): flags.append("Tax Deed / IRS / Corp Lien"); s += 50
+    elif cat in ("LNIRS","LNFED"): flags.append("Tax Deed / IRS / Corp Lien"); s += 45
+    elif cat in ("JUD",): flags.append("Judgment Lien"); s += 35
+    elif cat in ("LNHOA","LNMECH"): flags.append("HOA / Mechanic Lien"); s += 30
+    elif cat in ("PRO",): flags.append("Probate / Estate"); s += 25
+    elif cat in ("LP","NOFC","NOFD"): flags.append("Lis Pendens / Pre-foreclosure"); s += 20
+    elif cat in ("LN","LNSTATE"): flags.append("Lien on record"); s += 20
+    elif cat in ("DIV","BK"): flags.append("Divorce / Bankruptcy"); s += 15
+    else: flags.append("Distress signal"); s += 10
+    # Amount bonus
     amt = r.get("amount")
     if amt and amt > 100000: flags.append("Amount > $100k"); s += 15
     elif amt and amt > 50000: flags.append("Amount > $50k"); s += 10
+    # Recency bonus
     filed_str = r.get("filed","")
     if filed_str:
         try:
-            if datetime.strptime(filed_str,"%Y-%m-%d") >= cutoff: flags.append("New this week"); s += 5
+            filed_dt = datetime.strptime(filed_str,"%Y-%m-%d")
+            days_ago = (datetime.now() - filed_dt).days
+            if days_ago <= 7: flags.append("New this week"); s += 10
+            elif days_ago <= 30: flags.append("Filed this month"); s += 5
         except: pass
-    if (r.get("mail_state") or "").upper().strip() not in ("","TX"):
+    # Absentee owner
+    mail_state = (r.get("mail_state") or "").upper().strip()
+    if mail_state and mail_state != "TX":
         flags.append("Absentee owner (out of state)"); s += 15
-    if len(flags) >= 3: s += 10
+    # LLC / corp owner
+    owner = (r.get("owner") or r.get("primary_owner") or "").upper()
+    if any(k in owner for k in ["LLC","INC","CORP","TRUST","LTD","HOLDINGS","PROPERTIES","INVESTMENTS","BANK"]):
+        flags.append("LLC / corp owner"); s += 10
+    # Has address
+    if r.get("prop_address","").strip():
+        flags.append("Has address"); s += 5
+    # Address + lien combo
+    if r.get("prop_address","").strip() and len(flags) >= 2:
+        flags.append("Address + Lien combo"); s += 10
+    # Multi-flag bonus
+    if len(flags) >= 3:
+        s += (len(flags) - 2) * 3
+        flags.append("3+ distress signals")
     return min(s, 100), flags
 
 def blank_rec(county, doc_num, doc_type, cat, cat_label, filed, owner,
