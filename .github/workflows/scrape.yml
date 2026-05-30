@@ -4,6 +4,17 @@ on:
   schedule:
     - cron: "0 7 * * *"
   workflow_dispatch:
+    inputs:
+      lookback_days:
+        description: "Days to look back (3 = daily, 30 = monthly backfill, 365 = full backfill)"
+        required: false
+        default: "3"
+        type: string
+      max_pages:
+        description: "Max pages per doc type (50 = daily, 500 = backfill)"
+        required: false
+        default: "50"
+        type: string
 
 permissions:
   contents: write
@@ -100,7 +111,8 @@ jobs:
       - name: Run Dallas/Tarrant/Bexar scraper
         run: python scraper/multi_county.py
         env:
-          LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '50' }}
       - name: Push to DB
         run: |
           python3 - << 'PYEOF'
@@ -130,7 +142,8 @@ jobs:
       - name: Run Collin scraper
         run: python scraper/multi_county_1b.py
         env:
-          LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '50' }}
       - name: Push to DB
         run: |
           python3 - << 'PYEOF'
@@ -160,7 +173,8 @@ jobs:
       - name: Run Denton group scraper
         run: python scraper/multi_county_2.py
         env:
-          LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '50' }}
       - name: Push to DB
         run: |
           python3 - << 'PYEOF'
@@ -190,7 +204,8 @@ jobs:
       - name: Run South Texas scraper
         run: python scraper/multi_county_3.py
         env:
-          LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '50' }}
       - name: Push to DB
         run: |
           python3 - << 'PYEOF'
@@ -220,7 +235,8 @@ jobs:
       - name: Run Gulf Coast scraper
         run: python scraper/multi_county_4.py
         env:
-          LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '50' }}
       - name: Push to DB
         run: |
           python3 - << 'PYEOF'
@@ -250,7 +266,8 @@ jobs:
       - name: Run Central Texas scraper
         run: python scraper/multi_county_5.py
         env:
-          LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '50' }}
       - name: Push to DB
         run: |
           python3 - << 'PYEOF'

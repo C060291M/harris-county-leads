@@ -252,7 +252,7 @@ async def _scrape_day(name, host, start_dt, end_dt):
                             await page.wait_for_timeout(3000)
                             api_responses.clear()
                             page_num += 1
-                            if page_num > 200:  # Safety cap
+                            if page_num > MAX_PAGES:  # Configurable via MAX_PAGES env var
                                 break
                         else:
                             break
@@ -337,3 +337,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -11,6 +11,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 log = logging.getLogger("multi_county")
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "14"))
+MAX_PAGES     = int(os.getenv("MAX_PAGES", "50"))
 API_URL = os.getenv("API_URL", "https://api.stackiq.org/leads/bulk-import")
 
 COUNTIES = {
@@ -249,7 +250,7 @@ async def _scrape_day(name, host, start_dt, end_dt):
                             await page.wait_for_timeout(3000)
                             api_responses.clear()
                             page_num += 1
-                            if page_num > 200:  # Safety cap
+                            if page_num > MAX_PAGES:
                                 break
                         else:
                             break
