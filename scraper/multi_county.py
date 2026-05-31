@@ -251,7 +251,13 @@ async def _scrape_day(name, host, start_dt, end_dt):
                         box = await sc.bounding_box()
                         if box:
                             await page.mouse.click(box['x'] + box['width']/2, box['y'] + box['height']/2)
-                            await page.wait_for_timeout(1500)
+                            # Wait for date field to appear after accordion expands
+                            try:
+                                await page.wait_for_selector("#recordedDateRange-start", timeout=5000, state="visible")
+                            except:
+                                # Try clicking again if first click didn't work
+                                await page.mouse.click(box['x'] + box['width']/2, box['y'] + box['height']/2)
+                                await page.wait_for_timeout(2000)
                 except: pass
                 # Step 1: Select department via JS evaluation
                 try:
