@@ -72,7 +72,16 @@ jobs:
           try:
             with open("dashboard/records.json") as f:
               payload = json.load(f)
-            r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=120)
+            # Ensure all Harris records have county set
+            records = payload.get("records", payload) if isinstance(payload, dict) else payload
+            for r in records:
+                if not r.get("county"):
+                    r["county"] = "Harris"
+            if isinstance(payload, dict):
+                payload["records"] = records
+            else:
+                payload = records
+            r = requests.post("https://api.stackiq.org/leads/bulk-import", json={"records": records} if isinstance(payload, list) else payload, timeout=120)
             print(f"Harris API: {r.status_code} {r.text[:200]}")
           except Exception as e:
             print(f"Push failed: {e}")
