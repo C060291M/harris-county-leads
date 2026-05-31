@@ -186,11 +186,39 @@ async def _scrape_day(name, host, start_dt, end_dt):
     end_str   = end_dt.strftime("%m/%d/%Y")
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True, args=["--no-sandbox","--disable-dev-shm-usage"])
+        browser = await p.chromium.launch(headless=True, args=[
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-blink-features=AutomationControlled",
+            "--disable-infobars",
+            "--window-size=1280,900",
+        ])
         context = await browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122.0.0.0 Safari/537.36",
-            viewport={"width": 1280, "height": 900}
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            viewport={"width": 1280, "height": 900},
+            java_script_enabled=True,
         )
+        # Stealth mode — hide automation signals (required for Tarrant/Neumo portals)
+        await context.add_init_script("""
+            Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+            Object.defineProperty(navigator, 'plugins', {get: () => [1,2,3]});
+            Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
+            window.chrome = {runtime: {}, loadTimes: () => {}, csi: () => {}, app: {}};
+        """)
+        # Stealth mode — hide automation signals (required for Tarrant/Neumo portals)
+        await context.add_init_script("""
+            Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+            Object.defineProperty(navigator, 'plugins', {get: () => [1,2,3]});
+            Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
+            window.chrome = {runtime: {}, loadTimes: () => {}, csi: () => {}, app: {}};
+        """)
+        # Stealth mode — hide automation signals (required for Tarrant/Neumo portals)
+        await context.add_init_script("""
+            Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+            Object.defineProperty(navigator, 'plugins', {get: () => [1,2,3]});
+            Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
+            window.chrome = {runtime: {}, loadTimes: () => {}, csi: () => {}, app: {}};
+        """)
         page = await context.new_page()
 
         for doc_type, cat, cat_label in DOC_TYPES:
@@ -212,6 +240,33 @@ async def _scrape_day(name, host, start_dt, end_dt):
                 await page.goto(f"{base}/search/advanced", wait_until="networkidle", timeout=60000)
                 await page.wait_for_timeout(2000)
 
+                # Expand Search Criteria accordion (Tarrant/Neumo portals need mouse click)
+                try:
+                    sc = await page.query_selector("button:has-text('Search Criteria')")
+                    if sc:
+                        box = await sc.bounding_box()
+                        if box:
+                            await page.mouse.click(box['x'] + box['width']/2, box['y'] + box['height']/2)
+                            await page.wait_for_timeout(1500)
+                except: pass
+                # Expand Search Criteria accordion (Tarrant/Neumo portals need mouse click)
+                try:
+                    sc = await page.query_selector("button:has-text('Search Criteria')")
+                    if sc:
+                        box = await sc.bounding_box()
+                        if box:
+                            await page.mouse.click(box['x'] + box['width']/2, box['y'] + box['height']/2)
+                            await page.wait_for_timeout(1500)
+                except: pass
+                # Expand Search Criteria accordion (Tarrant/Neumo portals need mouse click)
+                try:
+                    sc = await page.query_selector("button:has-text('Search Criteria')")
+                    if sc:
+                        box = await sc.bounding_box()
+                        if box:
+                            await page.mouse.click(box['x'] + box['width']/2, box['y'] + box['height']/2)
+                            await page.wait_for_timeout(1500)
+                except: pass
                 # Step 1: Select department via JS evaluation
                 try:
                     await page.click("#department", timeout=5000)
