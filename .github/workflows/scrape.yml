@@ -290,6 +290,22 @@ jobs:
               print(f"Push failed: {e}")
           PYEOF
 
+  # ── CAD Enrichment (esearch for counties without bulk data) ─────────────────
+  enrich-esearch:
+    needs: [harris, dallas-tarrant-bexar, collin, denton-group, south-texas, gulf-coast, central-texas]
+    runs-on: ubuntu-22.04
+    if: always()
+    steps:
+      - name: Run bulk CAD enrichment (bulk tables)
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-cad"             -H "Content-Type: application/json"             --max-time 300             -w "\nHTTP %{http_code}" || echo "Enrich-CAD failed"
+      - name: Run esearch enrichment (50 leads per county)
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-esearch?limit=50"             -H "Content-Type: application/json"             --max-time 600             -w "\nHTTP %{http_code}" || echo "Enrich-esearch failed"
+      - name: Rescore all leads
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/admin/rescore"             -H "Content-Type: application/json"             --max-time 300             -w "\nHTTP %{http_code}" || echo "Rescore failed"
+
   # ── Email alert ─────────────────────────────────────────────────────────────
   email-alert:
     needs: [harris, dallas-tarrant-bexar, collin, denton-group, south-texas, gulf-coast, central-texas]
