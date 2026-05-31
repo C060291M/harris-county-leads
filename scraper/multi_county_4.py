@@ -160,11 +160,16 @@ def parse_results(records, county, doc_type, cat, cat_label, base, api_responses
                 fn    = f("instrument","number","document","file")
                 filed = norm_date(f("date","recorded","filed"))
                 owner = f("grantor","owner","name")
+                grantee = f("grantee","")
                 amt   = parse_amount(f("amount","consideration"))
+                town  = f("town","city","municipality","")
+                legal = f("legal","description","")
                 link  = next((a["href"] for cell in cells for a in cell.find_all("a",href=True) if a.get("href")),"")
                 if link and not link.startswith("http"): link = base + link
                 if fn or owner:
-                    records.append(blank_rec(county, fn, doc_type, cat, cat_label, filed, owner, amount=amt, url=link))
+                    rec = blank_rec(county, fn, doc_type, cat, cat_label, filed, owner, grantee=grantee, amount=amt, legal=legal, url=link)
+                    if town: rec["prop_city"] = town.strip()
+                    records.append(rec)
 
 async def scrape_county(name, host, start_dt, end_dt):
     log.info("%s - scraping %s to %s", name, start_dt.strftime("%Y-%m-%d"), end_dt.strftime("%Y-%m-%d"))
