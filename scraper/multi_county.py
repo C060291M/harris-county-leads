@@ -171,10 +171,10 @@ def parse_results(records, county, doc_type, cat, cat_label, base, api_responses
                     records.append(rec)
 
 async def scrape_county(name, host, start_dt, end_dt):
-    # Tarrant certified data lags ~10 days — use 30-day lookback to always catch data
+    # Tarrant certified data lags ~10 days — use 14-day lookback to always catch data
     if name == "Tarrant":
         from datetime import timedelta as _td
-        start_dt = min(start_dt, end_dt - _td(days=30))
+        start_dt = min(start_dt, end_dt - _td(days=14))
     log.info("%s - scraping %s to %s", name, start_dt.strftime("%Y-%m-%d"), end_dt.strftime("%Y-%m-%d"))
     all_records = []
     for slice_start, slice_end in date_slices(start_dt, end_dt, days=1):
