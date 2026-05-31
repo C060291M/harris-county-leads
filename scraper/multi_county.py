@@ -205,20 +205,6 @@ async def _scrape_day(name, host, start_dt, end_dt):
             Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
             window.chrome = {runtime: {}, loadTimes: () => {}, csi: () => {}, app: {}};
         """)
-        # Stealth mode — hide automation signals (required for Tarrant/Neumo portals)
-        await context.add_init_script("""
-            Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
-            Object.defineProperty(navigator, 'plugins', {get: () => [1,2,3]});
-            Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
-            window.chrome = {runtime: {}, loadTimes: () => {}, csi: () => {}, app: {}};
-        """)
-        # Stealth mode — hide automation signals (required for Tarrant/Neumo portals)
-        await context.add_init_script("""
-            Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
-            Object.defineProperty(navigator, 'plugins', {get: () => [1,2,3]});
-            Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
-            window.chrome = {runtime: {}, loadTimes: () => {}, csi: () => {}, app: {}};
-        """)
         page = await context.new_page()
 
         for doc_type, cat, cat_label in DOC_TYPES:
