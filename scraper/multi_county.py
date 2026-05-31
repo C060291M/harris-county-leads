@@ -171,6 +171,10 @@ def parse_results(records, county, doc_type, cat, cat_label, base, api_responses
                     records.append(rec)
 
 async def scrape_county(name, host, start_dt, end_dt):
+    # Tarrant certified data lags ~10 days — use 30-day lookback to always catch data
+    if name == "Tarrant":
+        from datetime import timedelta as _td
+        start_dt = min(start_dt, end_dt - _td(days=30))
     log.info("%s - scraping %s to %s", name, start_dt.strftime("%Y-%m-%d"), end_dt.strftime("%Y-%m-%d"))
     all_records = []
     for slice_start, slice_end in date_slices(start_dt, end_dt, days=1):
@@ -279,11 +283,30 @@ async def _scrape_day(name, host, start_dt, end_dt):
                     await page.wait_for_timeout(1000)
                 except: pass
 
-                # Step 2: Fill recorded date range using exact IDs
-                await page.fill("#recordedDateRange-start", start_str)
-                await page.wait_for_timeout(300)
-                await page.fill("#recordedDateRange-end", end_str)
-                await page.wait_for_timeout(300)
+                # Step 2: Fill recorded date range
+                # Try direct fill first, fall back to JS injection if field not visible
+                try:
+                    await page.fill("#recordedDateRange-start", start_str, timeout=3000)
+                    await page.wait_for_timeout(300)
+                    await page.fill("#recordedDateRange-end", end_str, timeout=3000)
+                    await page.wait_for_timeout(300)
+                except:
+                    # JS injection fallback for sites that detect headless (e.g. Tarrant)
+                    await page.evaluate(f"""
+                        () => {{
+                            const setVal = (id, val) => {{
+                                const el = document.getElementById(id);
+                                if (!el) return;
+                                const nativeInput = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
+                                nativeInput.set.call(el, val);
+                                el.dispatchEvent(new Event('input', {{bubbles: true}}));
+                                el.dispatchEvent(new Event('change', {{bubbles: true}}));
+                            }};
+                            setVal('recordedDateRange-start', '{start_str}');
+                            setVal('recordedDateRange-end', '{end_str}');
+                        }}
+                    """)
+                    await page.wait_for_timeout(500)
 
                 # Step 3: Type document type into docTypes input
                 await page.click("#docTypes-input")
