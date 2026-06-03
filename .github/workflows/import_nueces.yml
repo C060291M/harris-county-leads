@@ -1,0 +1,23 @@
+﻿name: Import Nueces CAD
+
+on:
+  workflow_dispatch:
+
+jobs:
+  import-nueces:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install psycopg2-binary
+      - name: Download Nueces CAD
+        run: |
+          wget -q "https://nuecescad.net/wp-content/uploads/2026/04/2026-Preliminary-Public-Export-20260402.zip" -O nueces_cad.zip
+          unzip -q nueces_cad.zip -d nueces_cad
+      - name: Import to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python scraper/import_nueces_cad.py
