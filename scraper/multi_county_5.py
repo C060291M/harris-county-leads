@@ -233,24 +233,17 @@ async def _scrape_day(name, host, start_dt, end_dt):
                     await page.wait_for_timeout(1000)
                 except: pass
 
-                # Step 2: Open accordion, then fill date range
+                # Step 2: Fill date range
                 try:
-                    sc_btn = await page.query_selector("button:has-text('Search Criteria')")
-                    if sc_btn:
-                        box = await sc_btn.bounding_box()
-                        if box:
-                            await page.mouse.click(box['x'] + box['width']/2, box['y'] + box['height']/2)
-                        else:
-                            await sc_btn.click()
-                        await page.wait_for_timeout(800)
-                    await page.wait_for_selector("#recordedDateRange-start", state="visible", timeout=8000)
-                except Exception as _e:
-                    pass
-                await page.fill("#recordedDateRange-start", start_str)
+                    await page.fill("#instrumentDateRange-start", start_str, timeout=2000)
+                    await page.fill("#instrumentDateRange-end", end_str, timeout=2000)
+                except:
+                    try:
+                        await page.fill("#recordedDateRange-start", start_str, timeout=2000)
+                        await page.fill("#recordedDateRange-end", end_str, timeout=2000)
+                    except:
+                        pass
                 await page.wait_for_timeout(300)
-                await page.fill("#recordedDateRange-end", end_str)
-                await page.wait_for_timeout(300)
-
                 # Step 3: Type document type into docTypes input
                 await page.click("#docTypes-input")
                 await page.wait_for_timeout(300)

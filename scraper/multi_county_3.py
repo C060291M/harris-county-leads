@@ -233,12 +233,17 @@ async def _scrape_day(name, host, start_dt, end_dt):
                     await page.wait_for_timeout(1000)
                 except: pass
 
-                # Step 2: Fill recorded date range using exact IDs
-                await page.fill("#recordedDateRange-start", start_str)
+                # Step 2: Fill date range
+                try:
+                    await page.fill("#instrumentDateRange-start", start_str, timeout=2000)
+                    await page.fill("#instrumentDateRange-end", end_str, timeout=2000)
+                except:
+                    try:
+                        await page.fill("#recordedDateRange-start", start_str, timeout=2000)
+                        await page.fill("#recordedDateRange-end", end_str, timeout=2000)
+                    except:
+                        pass
                 await page.wait_for_timeout(300)
-                await page.fill("#recordedDateRange-end", end_str)
-                await page.wait_for_timeout(300)
-
                 # Step 3: Type document type into docTypes input
                 await page.click("#docTypes-input")
                 await page.wait_for_timeout(300)
