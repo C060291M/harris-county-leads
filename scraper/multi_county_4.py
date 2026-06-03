@@ -15,8 +15,6 @@ MAX_PAGES     = int(os.getenv("MAX_PAGES", "50"))
 API_URL = os.getenv("API_URL", "https://api.stackiq.org/leads/bulk-import")
 
 COUNTIES = {
-    "Brazoria":  "brazoria.tx.publicsearch.us",
-    "Galveston": "galveston.tx.publicsearch.us",
     "Brazos":    "brazos.tx.publicsearch.us",
     "Smith":     "smith.tx.publicsearch.us",
 }
