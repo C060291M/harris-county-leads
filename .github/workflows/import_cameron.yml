@@ -1,0 +1,23 @@
+﻿name: Import Cameron CAD
+
+on:
+  workflow_dispatch:
+
+jobs:
+  import-cameron:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install psycopg2-binary openpyxl
+      - name: Download Cameron CAD
+        run: |
+          wget -q "https://www.cameroncad.org/cad/exports/preliminary/2026/cameron-2026-GCC-preliminary-export-20260423.zip" -O cameron_cad.zip
+          unzip -q cameron_cad.zip -d cameron_cad
+      - name: Import to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python scraper/import_cameron_cad.py
