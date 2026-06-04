@@ -1,0 +1,24 @@
+name: Import El Paso CAD
+
+on:
+  workflow_dispatch:
+
+jobs:
+  import-elpaso:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install psycopg2-binary
+      - name: Download El Paso CAD
+        run: |
+          wget -q "https://export.epcad.org/datasets/2026_Preliminary_Export_Files.zip" -O elpaso_cad.zip
+          unzip -q elpaso_cad.zip -d elpaso_cad
+          ls elpaso_cad/
+      - name: Import to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python scraper/import_elpaso_cad.py
