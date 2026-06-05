@@ -343,7 +343,7 @@ jobs:
           LOOKBACK_DAYS: "3"
           API_URL: ${{ secrets.API_URL }}
   enrich-esearch:
-    needs: [harris, dallas-tarrant-bexar, collin, denton-group, south-texas, gulf-coast, central-texas]
+    needs: [harris, dallas-tarrant-bexar, collin, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9]
     runs-on: ubuntu-22.04
     if: always()
     steps:
@@ -359,7 +359,7 @@ jobs:
 
   # ── Email alert ─────────────────────────────────────────────────────────────
   email-alert:
-    needs: [harris, dallas-tarrant-bexar, collin, denton-group, south-texas, gulf-coast, central-texas]
+    needs: [harris, dallas-tarrant-bexar, collin, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9]
     runs-on: ubuntu-22.04
     if: always()
     steps:
