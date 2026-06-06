@@ -1,4 +1,11 @@
-﻿import asyncio, psycopg2, re, logging, os
+﻿import os
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+DB = os.environ["DATABASE_URL"]
+import asyncio, psycopg2, re, logging, os
 from playwright.async_api import async_playwright
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")

@@ -1,7 +1,15 @@
-﻿import psycopg2, os
+﻿import os
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+DB = os.environ["DATABASE_URL"]
+import psycopg2, os
 
-DB = os.environ.get("DATABASE_URL", "postgresql://postgres:REDACTED_OLD2@kodama.proxy.rlwy.net:42079/railway")
+
 LIMIT = 500
+OFFSET = int(os.environ.get("ENRICH_OFFSET", "0"))
 
 def normalize(s):
     if not s: return ""
@@ -31,8 +39,8 @@ cur.execute("""
     AND owner NOT ILIKE '%%BANK%%' AND owner NOT ILIKE '%%CREDIT%%'
     AND owner NOT ILIKE '%%MORTGAGE%%' AND owner NOT ILIKE '%%FINANCIAL%%'
     AND owner NOT ILIKE '%%FEDERAL%%' AND owner NOT ILIKE '%%LENDING%%'
-    ORDER BY score DESC LIMIT %s
-""", (LIMIT,))
+    ORDER BY score DESC LIMIT %s OFFSET %s
+""", (LIMIT, OFFSET))
 leads = cur.fetchall()
 print(f"Unaddressed Midland leads to process: {len(leads)}")
 

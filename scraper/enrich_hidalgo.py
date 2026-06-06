@@ -1,6 +1,13 @@
-﻿import psycopg2, requests, os, time
+﻿import os
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+DB = os.environ["DATABASE_URL"]
+import psycopg2, requests, os, time
 
-DB = os.environ.get("DATABASE_URL", "postgresql://postgres:REDACTED_OLD2@kodama.proxy.rlwy.net:42079/railway")
+
 BASE = "https://prod-container.trueprodigyapi.com"
 LIMIT = 500
 

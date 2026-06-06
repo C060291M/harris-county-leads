@@ -2,3 +2,5 @@ debug/
 scraper/__pycache__/
 cad-api/
 *.png
+
+.env
