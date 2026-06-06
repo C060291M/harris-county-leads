@@ -36,6 +36,24 @@ jobs:
             -H "Content-Type: application/json" --max-time 270 \
             -w "\nHTTP %{http_code}" || echo "batch 3 failed"
 
+      - name: Import Grayson CAD
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/admin/import-grayson-cad" \
+            -H "Content-Type: application/json" --max-time 600 \
+            -w "\nHTTP %{http_code}" || echo "Grayson import failed"
+
+      - name: Import Johnson CAD
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/admin/import-johnson-cad" \
+            -H "Content-Type: application/json" --max-time 600 \
+            -w "\nHTTP %{http_code}" || echo "Johnson import failed"
+
+      - name: Import Midland CAD
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/admin/import-midland-cad" \
+            -H "Content-Type: application/json" --max-time 600 \
+            -w "\nHTTP %{http_code}" || echo "Midland import failed"
+
       - name: Rescore
         run: |
           curl -s -X POST "https://api.stackiq.org/api/admin/rescore" \
