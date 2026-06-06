@@ -226,9 +226,13 @@ async def _scrape_day(name, host, start_dt, end_dt):
             page.on("response", on_response)
 
             try:
-                # Load advanced search page fresh each time
-                await page.goto(f"{base}/search/advanced", wait_until="networkidle", timeout=60000)
-                await page.wait_for_timeout(2000)
+                # Load homepage first (Tarrant blocks direct /search/advanced)
+                await page.goto(base, wait_until="domcontentloaded", timeout=60000)
+                await page.wait_for_timeout(3000)
+                # Dismiss any popups
+                try: await page.keyboard.press("Escape")
+                except: pass
+                await page.wait_for_timeout(500)
 
                 # Expand Search Criteria accordion (Tarrant/Neumo portals need mouse click)
                 try:
