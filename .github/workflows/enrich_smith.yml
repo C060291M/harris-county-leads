@@ -22,3 +22,5 @@ jobs:
         run: python scraper/enrich_smith.py
         env:
           PYTHONUNBUFFERED: "1"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+

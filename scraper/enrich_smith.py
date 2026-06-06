@@ -1,10 +1,10 @@
-﻿import asyncio, psycopg2, re, logging
+﻿import asyncio, psycopg2, re, logging, os
 from playwright.async_api import async_playwright
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
 logger = logging.getLogger(__name__)
 
-DB = "postgresql://postgres:bhcaKKQHIErqaAYMjQdTLtbuxHTZkdbd@kodama.proxy.rlwy.net:42079/railway"
+DB = os.environ["DATABASE_URL"]
 BASE = "https://esearch.smithcad.org"
 LIMIT = 50
 
@@ -90,3 +90,4 @@ async def enrich_smith():
     logger.info(f"Smith: done — {updated}/{len(leads)} enriched")
 
 asyncio.run(enrich_smith())
+
