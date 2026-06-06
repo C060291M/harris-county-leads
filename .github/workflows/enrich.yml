@@ -8,7 +8,7 @@ on:
 jobs:
   enrich:
     runs-on: ubuntu-22.04
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Run CAD bulk enrichment
         run: |
@@ -39,19 +39,19 @@ jobs:
       - name: Import Grayson CAD
         run: |
           curl -s -X POST "https://api.stackiq.org/api/admin/import-grayson-cad" \
-            -H "Content-Type: application/json" --max-time 600 \
+            -H "Content-Type: application/json" --max-time 3000 \
             -w "\nHTTP %{http_code}" || echo "Grayson import failed"
 
       - name: Import Johnson CAD
         run: |
           curl -s -X POST "https://api.stackiq.org/api/admin/import-johnson-cad" \
-            -H "Content-Type: application/json" --max-time 600 \
+            -H "Content-Type: application/json" --max-time 3000 \
             -w "\nHTTP %{http_code}" || echo "Johnson import failed"
 
       - name: Import Midland CAD
         run: |
           curl -s -X POST "https://api.stackiq.org/api/admin/import-midland-cad" \
-            -H "Content-Type: application/json" --max-time 600 \
+            -H "Content-Type: application/json" --max-time 3000 \
             -w "\nHTTP %{http_code}" || echo "Midland import failed"
 
       - name: Rescore
@@ -59,3 +59,4 @@ jobs:
           curl -s -X POST "https://api.stackiq.org/api/admin/rescore" \
             -H "Content-Type: application/json" --max-time 270 \
             -w "\nHTTP %{http_code}" || echo "rescore failed"
+
