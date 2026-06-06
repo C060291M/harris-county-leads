@@ -136,8 +136,27 @@ def parse_results(records, county, doc_type, cat, cat_label, base, api_responses
                 if item.get(k): rec["mail_address"] = str(item[k]).strip(); break
             records.append(rec)
 
+    # Bexar/Neumo HTML table parser (cell indices known)
+    if not api_responses and page_content and "bexar" in base.lower():
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(page_content, "lxml")
+        for row in soup.find_all("tr")[1:]:
+            cells = row.find_all("td")
+            if len(cells) < 8: continue
+            owner = cells[3].get_text(strip=True)
+            doc_type = cells[5].get_text(strip=True)
+            filed = norm_date(cells[6].get_text(strip=True))
+            doc_num = cells[7].get_text(strip=True)
+            prop_addr = cells[14].get_text(strip=True) if len(cells) > 14 else ""
+            if not owner or not doc_type: continue
+            url = f"{base}/doc/{doc_num}" if doc_num else ""
+            rec = blank_rec(county, doc_num, doc_type, cat, cat_label, filed, owner, "", None, "", url)
+            if prop_addr and prop_addr not in ("N/A", "--"):
+                rec["prop_address"] = prop_addr
+            records.append(rec)
+
     # HTML table fallback
-    if not api_responses and page_content:
+    if not api_responses and page_content and "bexar" not in base.lower():
         from bs4 import BeautifulSoup
         soup = BeautifulSoup(page_content, "lxml")
         for table in soup.find_all("table"):
