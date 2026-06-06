@@ -30,7 +30,10 @@ async def enrich_smith():
         for lead_id, owner in leads:
             try:
                 parts = owner.strip().upper().split()
-                last = parts[0] if parts else owner
+                # Use last word (actual last name) for better matching
+                last = parts[-1] if parts else owner
+                # Skip if last name is too short or generic
+                if len(last) < 3: continue
                 page = await browser.new_page()
                 await page.goto(f"{BASE}/search", timeout=30000)
                 await page.wait_for_timeout(2000)
