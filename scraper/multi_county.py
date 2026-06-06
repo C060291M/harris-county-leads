@@ -245,8 +245,8 @@ async def _scrape_day(name, host, start_dt, end_dt):
             page.on("response", on_response)
 
             try:
-                # Load homepage first (Tarrant blocks direct /search/advanced)
-                await page.goto(base, wait_until="domcontentloaded", timeout=60000)
+                # Load advanced search page
+                await page.goto(f"{base}/search/advanced", wait_until="domcontentloaded", timeout=60000)
                 await page.wait_for_timeout(3000)
                 # Dismiss any popups
                 try: await page.keyboard.press("Escape")
@@ -331,12 +331,11 @@ async def _scrape_day(name, host, start_dt, end_dt):
                     """)
                     await page.wait_for_timeout(500)
 
-                # Step 3: Type document type into docTypes input (skip for Tarrant)
-                if "tarrant" not in base.lower():
-                    await page.click("#docTypes-input")
-                    await page.wait_for_timeout(300)
-                    await page.type("#docTypes-input", doc_type, delay=50)
-                    await page.wait_for_timeout(1500)
+                # Step 3: Type document type into docTypes input
+                await page.click("#docTypes-input")
+                await page.wait_for_timeout(300)
+                await page.type("#docTypes-input", doc_type, delay=50)
+                await page.wait_for_timeout(1500)
 
                 # Click the first matching option in dropdown
                 try:
