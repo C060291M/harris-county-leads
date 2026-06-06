@@ -128,6 +128,7 @@ def parse_results(records, county, doc_type, cat, cat_label, base, api_responses
             fn      = str(item.get("instrumentNumber", item.get("docNumber", item.get("id",""))))
             filed   = norm_date(item.get("recordedDate", item.get("fileDate","")))
             owner   = str(item.get("grantor", item.get("grantorName", item.get("owner","")))).strip()
+            if owner.upper() in ("N/A", "NA", "NONE", "NULL", "UNKNOWN", ""): owner = ""
             grantee = str(item.get("grantee", item.get("granteeName",""))).strip()
             amt     = parse_amount(item.get("amount", item.get("consideration","")))
             legal   = str(item.get("legalDescription", item.get("legal",""))).strip()
