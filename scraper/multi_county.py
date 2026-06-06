@@ -335,7 +335,15 @@ async def _scrape_day(name, host, start_dt, end_dt):
                 await page.click("#docTypes-input")
                 await page.wait_for_timeout(300)
                 await page.type("#docTypes-input", doc_type, delay=50)
-                await page.wait_for_timeout(1500)
+                await page.wait_for_timeout(2000)
+                # Click checkbox via JS (custom styled checkboxes need JS click)
+                await page.evaluate("""
+                    () => {
+                        const boxes = document.querySelectorAll("input[type='checkbox']");
+                        for (const b of boxes) { b.click(); break; }
+                    }
+                """)
+                await page.wait_for_timeout(500)
 
                 # Click the first matching option in dropdown
                 try:
