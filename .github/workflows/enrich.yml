@@ -54,8 +54,11 @@ jobs:
             -H "Content-Type: application/json" --max-time 3000 \
             -w "\nHTTP %{http_code}" || echo "Midland import failed"
 
-  - name: Enrich Midland from CAD
+      - name: Enrich Midland from CAD
         run: python scraper/enrich_midland.py
+
+      - name: Enrich Hidalgo via TrueProdigy API
+        run: python scraper/enrich_hidalgo.py
 
       - name: Rescore
         run: |
