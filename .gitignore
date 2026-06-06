@@ -4,3 +4,6 @@ cad-api/
 *.png
 
 .env
+
+data/building_res.zip
+data/*.zip
