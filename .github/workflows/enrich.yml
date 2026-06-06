@@ -1,0 +1,43 @@
+﻿name: Enrich Leads
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */2 * * *'  # Every 2 hours
+
+jobs:
+  enrich:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Run CAD bulk enrichment
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-cad" \
+            -H "Content-Type: application/json" --max-time 270 \
+            -w "\nHTTP %{http_code}" || echo "enrich-cad failed"
+
+      - name: Run esearch enrichment batch 1
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-esearch?limit=100" \
+            -H "Content-Type: application/json" --max-time 270 \
+            -w "\nHTTP %{http_code}" || echo "batch 1 failed"
+
+      - name: Run esearch enrichment batch 2
+        run: |
+          sleep 15
+          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-esearch?limit=100" \
+            -H "Content-Type: application/json" --max-time 270 \
+            -w "\nHTTP %{http_code}" || echo "batch 2 failed"
+
+      - name: Run esearch enrichment batch 3
+        run: |
+          sleep 15
+          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-esearch?limit=100" \
+            -H "Content-Type: application/json" --max-time 270 \
+            -w "\nHTTP %{http_code}" || echo "batch 3 failed"
+
+      - name: Rescore
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/admin/rescore" \
+            -H "Content-Type: application/json" --max-time 270 \
+            -w "\nHTTP %{http_code}" || echo "rescore failed"
