@@ -19,6 +19,9 @@ async def enrich_smith():
         AND owner IS NOT NULL AND length(owner) > 5
         AND owner NOT ILIKE '%%LLC%%' AND owner NOT ILIKE '%%TRUST%%'
         AND owner NOT ILIKE '%%CORP%%' AND owner NOT ILIKE '%%INC %%'
+        AND owner NOT ILIKE '%%BANK%%' AND owner NOT ILIKE '%%CREDIT%%'
+        AND owner NOT ILIKE '%%FEDERAL%%' AND owner NOT ILIKE '%%MORTGAGE%%'
+        AND owner NOT ILIKE '%%FINANCIAL%%' AND owner NOT ILIKE '%%LENDING%%'
         ORDER BY score DESC LIMIT %s
     """, (LIMIT,))
     leads = cur.fetchall()
@@ -30,9 +33,14 @@ async def enrich_smith():
         for lead_id, owner in leads:
             try:
                 parts = owner.strip().upper().split()
-                # Use last word (actual last name) for better matching
-                last = parts[-1] if parts else owner
-                # Skip if last name is too short or generic
+                # Use best word as last name - skip single letters/initials
+                last = None
+                for word in reversed(parts):
+                    if len(word) >= 4 and word.isalpha():
+                        last = word
+                        break
+                if not last:
+                    last = parts[0] if parts else owner
                 if len(last) < 3: continue
                 page = await browser.new_page()
                 await page.goto(f"{BASE}/search", timeout=30000)
