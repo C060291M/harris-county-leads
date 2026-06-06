@@ -1,6 +1,6 @@
 ﻿import psycopg2, os
 
-DB = os.environ.get("DATABASE_URL", "postgresql://postgres:REDACTED_OLD1@kodama.proxy.rlwy.net:42079/railway")
+DB = os.environ.get("DATABASE_URL", "postgresql://postgres:REDACTED_OLD2@kodama.proxy.rlwy.net:42079/railway")
 LIMIT = 500
 
 def normalize(s):
@@ -64,3 +64,4 @@ for lead_id, owner in leads:
 conn.commit()
 print(f"Midland enriched: {matched}/{len(leads)} leads updated")
 conn.close()
+
