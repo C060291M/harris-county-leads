@@ -35,7 +35,7 @@ async def enrich_smith():
                 parts = owner.strip().upper().split()
                 # Use best word as last name - skip single letters/initials
                 last = None
-                for word in reversed(parts):
+                for word in parts:
                     if len(word) >= 4 and word.isalpha():
                         last = word
                         break

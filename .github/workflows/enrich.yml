@@ -54,6 +54,9 @@ jobs:
             -H "Content-Type: application/json" --max-time 3000 \
             -w "\nHTTP %{http_code}" || echo "Midland import failed"
 
+  - name: Enrich Midland from CAD
+        run: python scraper/enrich_midland.py
+
       - name: Rescore
         run: |
           curl -s -X POST "https://api.stackiq.org/api/admin/rescore" \
