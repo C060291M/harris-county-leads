@@ -297,7 +297,7 @@ jobs:
         run: |
           python3 - << 'PYEOF'
           import json, requests, glob
-          for f in glob.glob("dashboard/multi_county_5_records.json"):
+          for f in glob.glob("dashboard/multi_county_6_records.json"):
             try:
               payload = json.load(open(f))
               r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
@@ -325,6 +325,18 @@ jobs:
         env:
           LOOKBACK_DAYS: "3"
           API_URL: ${{ secrets.API_URL }}
+      - name: Push to DB
+        run: |
+          python3 - << 'PYEOF'
+          import json, requests, glob
+          for f in glob.glob("dashboard/multi_county_8_records.json"):
+            try:
+              payload = json.load(open(f))
+              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
+              print(f"{f}: {r.status_code} {r.text[:100]}")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF
 
   multi9:
     runs-on: ubuntu-22.04
@@ -343,6 +355,18 @@ jobs:
         env:
           LOOKBACK_DAYS: "3"
           API_URL: ${{ secrets.API_URL }}
+      - name: Push to DB
+        run: |
+          python3 - << 'PYEOF'
+          import json, requests, glob
+          for f in glob.glob("dashboard/multi_county_9_records.json"):
+            try:
+              payload = json.load(open(f))
+              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
+              print(f"{f}: {r.status_code} {r.text[:100]}")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF
 
   multi10:
     runs-on: ubuntu-22.04
@@ -361,6 +385,18 @@ jobs:
         env:
           LOOKBACK_DAYS: "3"
           API_URL: ${{ secrets.API_URL }}
+      - name: Push to DB
+        run: |
+          python3 - << 'PYEOF'
+          import json, requests, glob
+          for f in glob.glob("dashboard/multi_county_10_records.json"):
+            try:
+              payload = json.load(open(f))
+              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
+              print(f"{f}: {r.status_code} {r.text[:100]}")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF
 
   multi11:
     runs-on: ubuntu-22.04
@@ -379,6 +415,18 @@ jobs:
         env:
           LOOKBACK_DAYS: "3"
           API_URL: ${{ secrets.API_URL }}
+      - name: Push to DB
+        run: |
+          python3 - << 'PYEOF'
+          import json, requests, glob
+          for f in glob.glob("dashboard/multi_county_11_records.json"):
+            try:
+              payload = json.load(open(f))
+              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
+              print(f"{f}: {r.status_code} {r.text[:100]}")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF
   enrich-esearch:
     needs: [harris, dallas-tarrant-bexar, collin, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9, multi10, multi11]
     runs-on: ubuntu-22.04
@@ -440,3 +488,15 @@ jobs:
         env:
           LOOKBACK_DAYS: "3"
           API_URL: ${{ secrets.API_URL }}
+      - name: Push to DB
+        run: |
+          python3 - << 'PYEOF'
+          import json, requests, glob
+          for f in glob.glob("dashboard/multi_county_7_records.json"):
+            try:
+              payload = json.load(open(f))
+              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
+              print(f"{f}: {r.status_code} {r.text[:100]}")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF
