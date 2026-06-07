@@ -297,7 +297,15 @@ async def _scrape_day(name, host, start_dt, end_dt):
                             await page.mouse.click(box['x'] + box['width']/2, box['y'] + box['height']/2)
                             # Wait for date field to appear after accordion expands
                             try:
-                                await page.wait_for_selector("#recordedDateRange-start", timeout=5000, state="visible")
+                                # Detect date field name (varies by county)
+                            date_start_id = "#recordedDateRange-start"
+                            date_end_id = "#recordedDateRange-end"
+                            try:
+                                await page.wait_for_selector("#instrumentDateRange-start", timeout=1000, state="visible")
+                                date_start_id = "#instrumentDateRange-start"
+                                date_end_id = "#instrumentDateRange-end"
+                            except: pass
+                            await page.wait_for_selector(date_start_id, timeout=5000, state="visible")
                             except:
                                 # Try clicking again if first click didn't work
                                 await page.mouse.click(box['x'] + box['width']/2, box['y'] + box['height']/2)
@@ -326,9 +334,9 @@ async def _scrape_day(name, host, start_dt, end_dt):
                 # Step 2: Fill recorded date range
                 # Try direct fill first, fall back to JS injection if field not visible
                 try:
-                    await page.fill("#recordedDateRange-start", start_str, timeout=3000)
+                    await page.fill(date_start_id, start_str, timeout=3000)
                     await page.wait_for_timeout(300)
-                    await page.fill("#recordedDateRange-end", end_str, timeout=3000)
+                    await page.fill(date_end_id, end_str, timeout=3000)
                     await page.wait_for_timeout(300)
                 except:
                     # JS injection fallback for sites that detect headless (e.g. Tarrant)
