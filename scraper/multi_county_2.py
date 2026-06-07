@@ -16,7 +16,6 @@ API_URL = os.getenv("API_URL", "https://api.stackiq.org/leads/bulk-import")
 
 COUNTIES = {
     "Denton":     "denton.tx.publicsearch.us",
-    "Fort Bend":  "fortbend.tx.publicsearch.us",
     "Montgomery": "montgomery.tx.publicsearch.us",
     "Williamson": "williamson.tx.publicsearch.us",
 }
