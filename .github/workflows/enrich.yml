@@ -1,10 +1,8 @@
 ﻿name: Enrich Leads
-
 on:
   workflow_dispatch:
   schedule:
     - cron: '0 */2 * * *'  # Every 2 hours
-
 jobs:
   enrich:
     runs-on: ubuntu-22.04
@@ -28,23 +26,37 @@ jobs:
 
       - name: Run esearch enrichment batch 1
         run: |
-          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-esearch?limit=100" \
+          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-esearch?limit=20" \
             -H "Content-Type: application/json" --max-time 270 \
             -w "\nHTTP %{http_code}" || echo "batch 1 failed"
 
       - name: Run esearch enrichment batch 2
         run: |
-          sleep 15
-          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-esearch?limit=100" \
+          sleep 10
+          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-esearch?limit=20" \
             -H "Content-Type: application/json" --max-time 270 \
             -w "\nHTTP %{http_code}" || echo "batch 2 failed"
 
       - name: Run esearch enrichment batch 3
         run: |
-          sleep 15
-          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-esearch?limit=100" \
+          sleep 10
+          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-esearch?limit=20" \
             -H "Content-Type: application/json" --max-time 270 \
             -w "\nHTTP %{http_code}" || echo "batch 3 failed"
+
+      - name: Run esearch enrichment batch 4
+        run: |
+          sleep 10
+          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-esearch?limit=20" \
+            -H "Content-Type: application/json" --max-time 270 \
+            -w "\nHTTP %{http_code}" || echo "batch 4 failed"
+
+      - name: Run esearch enrichment batch 5
+        run: |
+          sleep 10
+          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-esearch?limit=20" \
+            -H "Content-Type: application/json" --max-time 270 \
+            -w "\nHTTP %{http_code}" || echo "batch 5 failed"
 
       - name: Import Grayson CAD
         run: |
@@ -71,13 +83,12 @@ jobs:
 
       - name: Enrich Hidalgo via TrueProdigy API
         run: |
-          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-hidalgo?limit=300"             -H "Content-Type: application/json" --max-time 270             -w "\nHTTP %{http_code}" || echo "hidalgo enrich failed"
-
-
+          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-hidalgo?limit=300" \
+            -H "Content-Type: application/json" --max-time 270 \
+            -w "\nHTTP %{http_code}" || echo "hidalgo enrich failed"
 
       - name: Rescore
         run: |
           curl -s -X POST "https://api.stackiq.org/api/admin/rescore" \
             -H "Content-Type: application/json" --max-time 270 \
             -w "\nHTTP %{http_code}" || echo "rescore failed"
-
