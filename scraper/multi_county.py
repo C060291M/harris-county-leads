@@ -149,8 +149,14 @@ def parse_results(records, county, doc_type, cat, cat_label, base, api_responses
             doc_num = cells[7].get_text(strip=True)
             prop_addr = cells[14].get_text(strip=True) if len(cells) > 14 else ""
             if not owner or not doc_type: continue
+            # Map doc_type to cat/cat_label using DOC_TYPES list
+            _cat, _cat_label = "LP", "Lis Pendens"
+            for _dt, _c, _cl in DOC_TYPES:
+                if _dt.lower() in doc_type.lower() or doc_type.lower() in _dt.lower():
+                    _cat, _cat_label = _c, _cl
+                    break
             url = f"{base}/doc/{doc_num}" if doc_num else ""
-            rec = blank_rec(county, doc_num, doc_type, cat, cat_label, filed, owner, "", None, "", url)
+            rec = blank_rec(county, doc_num, doc_type, _cat, _cat_label, filed, owner, "", None, "", url)
             if prop_addr and prop_addr not in ("N/A", "--"):
                 rec["prop_address"] = prop_addr
             records.append(rec)
