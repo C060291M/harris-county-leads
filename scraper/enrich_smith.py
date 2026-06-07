@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 DB = os.environ["DATABASE_URL"]
 BASE = "https://esearch.smithcad.org"
-LIMIT = 50
+LIMIT = 100
 
 def get_conn():
     return psycopg2.connect(DB, connect_timeout=30)
