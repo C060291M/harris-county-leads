@@ -137,17 +137,28 @@ def parse_results(records, county, doc_type, cat, cat_label, base, api_responses
             records.append(rec)
 
     # Bexar/Neumo HTML table parser (cell indices known)
-    if not api_responses and page_content and "bexar" in base.lower():
+    if not api_responses and page_content:
         from bs4 import BeautifulSoup
         soup = BeautifulSoup(page_content, "lxml")
         for row in soup.find_all("tr")[1:]:
             cells = row.find_all("td")
             if len(cells) < 8: continue
-            owner = cells[3].get_text(strip=True)
-            doc_type = cells[5].get_text(strip=True)
-            filed = norm_date(cells[6].get_text(strip=True))
-            doc_num = cells[7].get_text(strip=True)
-            prop_addr = cells[14].get_text(strip=True) if len(cells) > 14 else ""
+            ncells = len(cells)
+            # Montgomery layout: doc_num=3, doc_type=5, owner=7, filed=10
+            if ncells >= 17 and "montgomery" in base.lower():
+                owner    = cells[7].get_text(strip=True)
+                doc_type = cells[5].get_text(strip=True)
+                filed    = norm_date(cells[10].get_text(strip=True))
+                doc_num  = cells[3].get_text(strip=True)
+                prop_addr = ""
+            else:
+                # Bexar layout: owner=3, doc_type=5, filed=6, doc_num=7, addr=14
+                # Tarrant layout: owner=3, doc_type=5, filed=6, doc_num=7
+                owner    = cells[3].get_text(strip=True)
+                doc_type = cells[5].get_text(strip=True)
+                filed    = norm_date(cells[6].get_text(strip=True))
+                doc_num  = cells[7].get_text(strip=True)
+                prop_addr = cells[14].get_text(strip=True) if ncells > 14 else ""
             if not owner or not doc_type: continue
             # Map doc_type to cat/cat_label using DOC_TYPES list
             _cat, _cat_label = "LP", "Lis Pendens"
@@ -338,18 +349,20 @@ async def _scrape_day(name, host, start_dt, end_dt):
                     await page.wait_for_timeout(500)
 
                 # Step 3: Type document type into docTypes input
-                await page.click("#docTypes-input")
-                await page.wait_for_timeout(300)
-                await page.type("#docTypes-input", doc_type, delay=50)
-                await page.wait_for_timeout(2000)
-                # Click checkbox via JS (custom styled checkboxes need JS click)
-                await page.evaluate("""
-                    () => {
-                        const boxes = document.querySelectorAll("input[type='checkbox']");
-                        for (const b of boxes) { b.click(); break; }
-                    }
-                """)
-                await page.wait_for_timeout(500)
+                # Tarrant: skip doc type filter (checkbox selection returns 0 results)
+                # Filter by doc_type client-side instead
+                if "tarrant" not in base.lower():
+                    await page.click("#docTypes-input")
+                    await page.wait_for_timeout(300)
+                    await page.type("#docTypes-input", doc_type, delay=50)
+                    await page.wait_for_timeout(2000)
+                    await page.evaluate("""
+                        () => {
+                            const boxes = document.querySelectorAll("input[type='checkbox']");
+                            for (const b of boxes) { b.click(); break; }
+                        }
+                    """)
+                    await page.wait_for_timeout(500)
 
                 # Click the first matching option in dropdown
                 try:
