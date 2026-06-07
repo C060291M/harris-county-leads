@@ -296,8 +296,7 @@ async def _scrape_day(name, host, start_dt, end_dt):
                         if box:
                             await page.mouse.click(box['x'] + box['width']/2, box['y'] + box['height']/2)
                             # Wait for date field to appear after accordion expands
-                            try:
-                                # Detect date field name (varies by county)
+                            # Detect date field name (varies by county)
                             date_start_id = "#recordedDateRange-start"
                             date_end_id = "#recordedDateRange-end"
                             try:
