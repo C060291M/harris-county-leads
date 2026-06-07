@@ -305,10 +305,6 @@ async def _scrape_day(name, host, start_dt, end_dt):
                                 date_end_id = "#instrumentDateRange-end"
                             except: pass
                             await page.wait_for_selector(date_start_id, timeout=5000, state="visible")
-                            except:
-                                # Try clicking again if first click didn't work
-                                await page.mouse.click(box['x'] + box['width']/2, box['y'] + box['height']/2)
-                                await page.wait_for_timeout(2000)
                 except: pass
                 # Step 1: Select department via JS evaluation
                 try:
