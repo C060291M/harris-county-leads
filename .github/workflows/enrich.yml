@@ -70,9 +70,8 @@ jobs:
         run: python scraper/enrich_midland.py
 
       - name: Enrich Hidalgo via TrueProdigy API
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python scraper/enrich_hidalgo.py
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-hidalgo?limit=300"             -H "Content-Type: application/json" --max-time 270             -w "\nHTTP %{http_code}" || echo "hidalgo enrich failed"
 
 
 
