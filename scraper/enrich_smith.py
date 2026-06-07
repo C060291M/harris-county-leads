@@ -66,9 +66,18 @@ async def enrich_smith():
                     parts_row = [p.strip() for p in text.split("\t") if p.strip()]
                     addr = None
                     for part in parts_row:
-                        if re.search(r"\d+.*TX", part, re.IGNORECASE):
-                            addr = part.replace("\n", ", ").strip()
+                        if re.search(r"\d+.*TX", part, re.IGNORECASE | re.DOTALL):
+                            addr = re.sub(r"\s+", " ", part.replace("\n", " ")).strip()
+                            # Clean up - keep just street address + city/state
+                            addr_clean = addr.split("  ")[0].strip()
+                            addr = addr_clean if addr_clean else addr
                             break
+                    # Also try direct extraction from row text
+                    if not addr:
+                        full_text = " ".join(parts_row)
+                        m = re.search(r"(\d+\s+[A-Z0-9 ]+(?:DR|ST|AVE|RD|LN|BLVD|CT|PL|WAY|CIR|TRL)[^\n]*(?:TYLER|TX)[^\n]*)", full_text, re.IGNORECASE)
+                        if m:
+                            addr = re.sub(r"\s+", " ", m.group(1)).strip()
                     if addr:
                         # Get sqft from detail page
                         detail_links = await first_row.query_selector_all("a[href*='/parcels/']")
