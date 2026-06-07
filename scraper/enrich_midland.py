@@ -46,7 +46,11 @@ print(f"Unaddressed Midland leads to process: {len(leads)}")
 
 matched = 0
 for lead_id, owner in leads:
-    key = normalize(owner)
+    # Strip ET AL, ET UX and other suffixes before matching
+    clean = (owner or "").upper().strip()
+    for suffix in [" ET AL", " ET UX", " ET VIR", " ETAL", " ETUX", " SR", " JR", " III", " II"]:
+        clean = clean.replace(suffix, "").strip()
+    key = normalize(clean)
     if not key: continue
     
     # Exact match first
