@@ -271,7 +271,7 @@ async def _scrape_day(name, host, start_dt, end_dt):
 
                 # Paginate through all results
                 page_num = 1
-                while True:
+                while page_num <= MAX_PAGES:
                     page_content = await page.content()
                     before = len(records)
                     parse_results(records, name, doc_type, cat, cat_label, base, api_responses, page_content)
