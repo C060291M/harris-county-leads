@@ -12,7 +12,7 @@ SQL = ("INSERT INTO lead_records "
        "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) "
        "ON CONFLICT (doc_num) DO UPDATE SET "
        "score=EXCLUDED.score,flags=EXCLUDED.flags,"
-       "prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),"
+       "prop_address=COALESCE(NULLIF(EXCLUDED.prop_address,''),lead_records.prop_address),"
        "county=EXCLUDED.county")
 
 pattern = os.environ.get("JSON_GLOB", "dashboard/*_records.json")
