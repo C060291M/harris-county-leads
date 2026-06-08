@@ -16,7 +16,6 @@ API_URL = os.getenv("API_URL", "https://api.stackiq.org/leads/bulk-import")
 
 COUNTIES = {
     "Brazos":    "brazos.tx.publicsearch.us",
-    "Smith":     "smith.tx.publicsearch.us",
 }
 
 def date_slices(start, end, days=1):
