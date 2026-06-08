@@ -66,9 +66,11 @@ jobs:
               out.write("hot_leads=0\ntotal=0\n")
           PYEOF
       - name: Push Harris to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           python3 - << 'PYEOF'
-          import json, requests
+          import json, requests, os
           try:
             with open("dashboard/records.json") as f:
               payload = json.load(f)
@@ -81,8 +83,34 @@ jobs:
                 payload["records"] = records
             else:
                 payload = records
-            r = requests.post("https://api.stackiq.org/leads/bulk-import", json={"records": records} if isinstance(payload, list) else payload, timeout=120)
-            print(f"Harris API: {r.status_code} {r.text[:200]}")
+        # direct DB insert
+            import psycopg2, os, json as _json
+            DB = os.environ.get("DATABASE_URL","")
+            recs = records if isinstance(records, list) else payload.get("records", [])
+            conn = psycopg2.connect(DB, connect_timeout=30)
+            cur = conn.cursor()
+            ins = 0
+            for r in recs:
+              try:
+                cur.execute("""INSERT INTO lead_records
+                  (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                   prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                   mail_state,mail_zip,score,flags,county)
+                  VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                  ON CONFLICT (doc_num) DO UPDATE SET
+                    score=EXCLUDED.score,flags=EXCLUDED.flags,
+                    prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                    county=EXCLUDED.county""",
+                  (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                   r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                   r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                   r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                   r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                   r.get("score",0),_json.dumps(r.get("flags",[])),r.get("county","")))
+                ins += 1
+              except: pass
+            conn.commit(); conn.close()
+            print(f"Harris DB: {ins} inserted")
           except Exception as e:
             print(f"Push failed: {e}")
           PYEOF
@@ -124,14 +152,246 @@ jobs:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
           MAX_PAGES: ${{ github.event.inputs.max_pages || '50' }}
       - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           python3 - << 'PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_11_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_10_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_9_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_8_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_7_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_6_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
           import json, requests, glob
           for f in glob.glob("dashboard/multi_county_records.json"):
             try:
               payload = json.load(open(f))
-              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
-              print(f"{f}: {r.status_code} {r.text[:100]}")
+              import psycopg2, os, json as _json
+              DB = os.environ.get("DATABASE_URL","")
+              if not DB: print("No DATABASE_URL"); raise SystemExit
+              recs = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              ins = 0
+              for r in recs:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score,flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),_json.dumps(r.get("flags",[])),r.get("county","")))
+                  ins += 1
+                except: pass
+              conn.commit(); conn.close()
+              print(f"{f}: {ins} inserted")
             except Exception as e:
               print(f"Push failed: {e}")
           PYEOF
@@ -155,14 +415,246 @@ jobs:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
           MAX_PAGES: ${{ github.event.inputs.max_pages || '50' }}
       - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           python3 - << 'PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_11_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_10_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_9_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_8_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_7_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_6_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
           import json, requests, glob
           for f in glob.glob("dashboard/multi_county_1b_records.json"):
             try:
               payload = json.load(open(f))
-              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
-              print(f"{f}: {r.status_code} {r.text[:100]}")
+              import psycopg2, os, json as _json
+              DB = os.environ.get("DATABASE_URL","")
+              if not DB: print("No DATABASE_URL"); raise SystemExit
+              recs = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              ins = 0
+              for r in recs:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score,flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),_json.dumps(r.get("flags",[])),r.get("county","")))
+                  ins += 1
+                except: pass
+              conn.commit(); conn.close()
+              print(f"{f}: {ins} inserted")
             except Exception as e:
               print(f"Push failed: {e}")
           PYEOF
@@ -186,14 +678,246 @@ jobs:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
           MAX_PAGES: ${{ github.event.inputs.max_pages || '50' }}
       - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           python3 - << 'PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_11_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_10_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_9_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_8_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_7_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_6_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
           import json, requests, glob
           for f in glob.glob("dashboard/multi_county_2_records.json"):
             try:
               payload = json.load(open(f))
-              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
-              print(f"{f}: {r.status_code} {r.text[:100]}")
+              import psycopg2, os, json as _json
+              DB = os.environ.get("DATABASE_URL","")
+              if not DB: print("No DATABASE_URL"); raise SystemExit
+              recs = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              ins = 0
+              for r in recs:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score,flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),_json.dumps(r.get("flags",[])),r.get("county","")))
+                  ins += 1
+                except: pass
+              conn.commit(); conn.close()
+              print(f"{f}: {ins} inserted")
             except Exception as e:
               print(f"Push failed: {e}")
           PYEOF
@@ -217,14 +941,246 @@ jobs:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
           MAX_PAGES: ${{ github.event.inputs.max_pages || '50' }}
       - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           python3 - << 'PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_11_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_10_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_9_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_8_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_7_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_6_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
           import json, requests, glob
           for f in glob.glob("dashboard/multi_county_3_records.json"):
             try:
               payload = json.load(open(f))
-              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
-              print(f"{f}: {r.status_code} {r.text[:100]}")
+              import psycopg2, os, json as _json
+              DB = os.environ.get("DATABASE_URL","")
+              if not DB: print("No DATABASE_URL"); raise SystemExit
+              recs = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              ins = 0
+              for r in recs:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score,flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),_json.dumps(r.get("flags",[])),r.get("county","")))
+                  ins += 1
+                except: pass
+              conn.commit(); conn.close()
+              print(f"{f}: {ins} inserted")
             except Exception as e:
               print(f"Push failed: {e}")
           PYEOF
@@ -248,14 +1204,246 @@ jobs:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
           MAX_PAGES: ${{ github.event.inputs.max_pages || '50' }}
       - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           python3 - << 'PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_11_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_10_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_9_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_8_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_7_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_6_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
           import json, requests, glob
           for f in glob.glob("dashboard/multi_county_4_records.json"):
             try:
               payload = json.load(open(f))
-              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
-              print(f"{f}: {r.status_code} {r.text[:100]}")
+              import psycopg2, os, json as _json
+              DB = os.environ.get("DATABASE_URL","")
+              if not DB: print("No DATABASE_URL"); raise SystemExit
+              recs = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              ins = 0
+              for r in recs:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score,flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),_json.dumps(r.get("flags",[])),r.get("county","")))
+                  ins += 1
+                except: pass
+              conn.commit(); conn.close()
+              print(f"{f}: {ins} inserted")
             except Exception as e:
               print(f"Push failed: {e}")
           PYEOF
@@ -294,14 +1482,246 @@ jobs:
           LOOKBACK_DAYS: "3"
           API_URL: ${{ secrets.API_URL }}
       - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           python3 - << 'PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_11_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_10_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_9_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_8_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_7_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_6_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
           import json, requests, glob
           for f in glob.glob("dashboard/multi_county_6_records.json"):
             try:
               payload = json.load(open(f))
-              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
-              print(f"{f}: {r.status_code} {r.text[:100]}")
+              import psycopg2, os, json as _json
+              DB = os.environ.get("DATABASE_URL","")
+              if not DB: print("No DATABASE_URL"); raise SystemExit
+              recs = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              ins = 0
+              for r in recs:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score,flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),_json.dumps(r.get("flags",[])),r.get("county","")))
+                  ins += 1
+                except: pass
+              conn.commit(); conn.close()
+              print(f"{f}: {ins} inserted")
             except Exception as e:
               print(f"Push failed: {e}")
           PYEOF
@@ -326,14 +1746,246 @@ jobs:
           LOOKBACK_DAYS: "3"
           API_URL: ${{ secrets.API_URL }}
       - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           python3 - << 'PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_11_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_10_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_9_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_8_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_7_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_6_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
           import json, requests, glob
           for f in glob.glob("dashboard/multi_county_8_records.json"):
             try:
               payload = json.load(open(f))
-              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
-              print(f"{f}: {r.status_code} {r.text[:100]}")
+              import psycopg2, os, json as _json
+              DB = os.environ.get("DATABASE_URL","")
+              if not DB: print("No DATABASE_URL"); raise SystemExit
+              recs = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              ins = 0
+              for r in recs:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score,flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),_json.dumps(r.get("flags",[])),r.get("county","")))
+                  ins += 1
+                except: pass
+              conn.commit(); conn.close()
+              print(f"{f}: {ins} inserted")
             except Exception as e:
               print(f"Push failed: {e}")
           PYEOF
@@ -356,14 +2008,246 @@ jobs:
           LOOKBACK_DAYS: "3"
           API_URL: ${{ secrets.API_URL }}
       - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           python3 - << 'PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_11_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_10_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_9_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_8_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_7_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_6_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
           import json, requests, glob
           for f in glob.glob("dashboard/multi_county_9_records.json"):
             try:
               payload = json.load(open(f))
-              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
-              print(f"{f}: {r.status_code} {r.text[:100]}")
+              import psycopg2, os, json as _json
+              DB = os.environ.get("DATABASE_URL","")
+              if not DB: print("No DATABASE_URL"); raise SystemExit
+              recs = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              ins = 0
+              for r in recs:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score,flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),_json.dumps(r.get("flags",[])),r.get("county","")))
+                  ins += 1
+                except: pass
+              conn.commit(); conn.close()
+              print(f"{f}: {ins} inserted")
             except Exception as e:
               print(f"Push failed: {e}")
           PYEOF
@@ -386,14 +2270,246 @@ jobs:
           LOOKBACK_DAYS: "3"
           API_URL: ${{ secrets.API_URL }}
       - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           python3 - << 'PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_11_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_10_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_9_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_8_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_7_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_6_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
           import json, requests, glob
           for f in glob.glob("dashboard/multi_county_10_records.json"):
             try:
               payload = json.load(open(f))
-              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
-              print(f"{f}: {r.status_code} {r.text[:100]}")
+              import psycopg2, os, json as _json
+              DB = os.environ.get("DATABASE_URL","")
+              if not DB: print("No DATABASE_URL"); raise SystemExit
+              recs = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              ins = 0
+              for r in recs:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score,flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),_json.dumps(r.get("flags",[])),r.get("county","")))
+                  ins += 1
+                except: pass
+              conn.commit(); conn.close()
+              print(f"{f}: {ins} inserted")
             except Exception as e:
               print(f"Push failed: {e}")
           PYEOF
@@ -416,14 +2532,246 @@ jobs:
           LOOKBACK_DAYS: "3"
           API_URL: ${{ secrets.API_URL }}
       - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           python3 - << 'PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_11_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_10_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_9_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_8_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_7_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_6_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
           import json, requests, glob
           for f in glob.glob("dashboard/multi_county_11_records.json"):
             try:
               payload = json.load(open(f))
-              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
-              print(f"{f}: {r.status_code} {r.text[:100]}")
+              import psycopg2, os, json as _json
+              DB = os.environ.get("DATABASE_URL","")
+              if not DB: print("No DATABASE_URL"); raise SystemExit
+              recs = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              ins = 0
+              for r in recs:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score,flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),_json.dumps(r.get("flags",[])),r.get("county","")))
+                  ins += 1
+                except: pass
+              conn.commit(); conn.close()
+              print(f"{f}: {ins} inserted")
             except Exception as e:
               print(f"Push failed: {e}")
           PYEOF
@@ -489,14 +2837,246 @@ jobs:
           LOOKBACK_DAYS: "3"
           API_URL: ${{ secrets.API_URL }}
       - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           python3 - << 'PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_11_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_10_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_9_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_8_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_7_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
+          import json, glob, psycopg2, os
+          DB = os.environ["DATABASE_URL"]
+          for f in glob.glob("dashboard/multi_county_6_records.json"):
+            try:
+              payload = json.load(open(f))
+              records = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              inserted = 0
+              for r in records:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score, flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),json.dumps(r.get("flags",[])),r.get("county","")))
+                  inserted += 1
+                except: pass
+              conn.commit()
+              conn.close()
+              print(f"{f}: {inserted} inserted")
+            except Exception as e:
+              print(f"Push failed: {e}")
+          PYEOF'
           import json, requests, glob
           for f in glob.glob("dashboard/multi_county_7_records.json"):
             try:
               payload = json.load(open(f))
-              r = requests.post("https://api.stackiq.org/leads/bulk-import", json=payload, timeout=180)
-              print(f"{f}: {r.status_code} {r.text[:100]}")
+              import psycopg2, os, json as _json
+              DB = os.environ.get("DATABASE_URL","")
+              if not DB: print("No DATABASE_URL"); raise SystemExit
+              recs = payload.get("records", payload) if isinstance(payload, dict) else payload
+              conn = psycopg2.connect(DB, connect_timeout=30)
+              cur = conn.cursor()
+              ins = 0
+              for r in recs:
+                try:
+                  cur.execute("""INSERT INTO lead_records
+                    (doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,
+                     prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,
+                     mail_state,mail_zip,score,flags,county)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    ON CONFLICT (doc_num) DO UPDATE SET
+                      score=EXCLUDED.score,flags=EXCLUDED.flags,
+                      prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+                      county=EXCLUDED.county""",
+                    (r.get("doc_num",""),r.get("owner",""),r.get("cat",""),r.get("cat_label",""),
+                     r.get("doc_type",""),r.get("filed"),r.get("amount"),r.get("legal",""),
+                     r.get("clerk_url",""),r.get("prop_address",""),r.get("prop_city",""),
+                     r.get("prop_state","TX"),r.get("prop_zip",""),r.get("mail_address",""),
+                     r.get("mail_city",""),r.get("mail_state","TX"),r.get("mail_zip",""),
+                     r.get("score",0),_json.dumps(r.get("flags",[])),r.get("county","")))
+                  ins += 1
+                except: pass
+              conn.commit(); conn.close()
+              print(f"{f}: {ins} inserted")
             except Exception as e:
               print(f"Push failed: {e}")
           PYEOF
