@@ -1,4 +1,4 @@
-name: StackIQ Multi-County Scraper
+﻿name: StackIQ Multi-County Scraper
 
 on:
   schedule:
@@ -22,7 +22,7 @@ permissions:
   id-token: write
 
 jobs:
-  # ── Harris County (SFTP) ────────────────────────────────────────────────────
+  # â”€â”€ Harris County (SFTP) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   harris:
     runs-on: ubuntu-22.04
     timeout-minutes: 45
@@ -88,7 +88,7 @@ jobs:
           path: debug/
           retention-days: 3
 
-  # ── Dallas / Tarrant / Bexar ────────────────────────────────────────────────
+  # â”€â”€ Dallas / Tarrant / Bexar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   dallas-tarrant-bexar:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
@@ -105,13 +105,13 @@ jobs:
         run: python scraper/multi_county.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '50' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '15' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
 
-  # ── Collin ──────────────────────────────────────────────────────────────────
+  # â”€â”€ Collin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   collin:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
@@ -128,13 +128,13 @@ jobs:
         run: python scraper/multi_county_1b.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '50' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '15' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
 
-  # ── Denton / Fort Bend / Montgomery / Williamson ────────────────────────────
+  # â”€â”€ Denton / Fort Bend / Montgomery / Williamson â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   denton-group:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
@@ -151,13 +151,13 @@ jobs:
         run: python scraper/multi_county_2.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '50' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '15' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
 
-  # ── Hidalgo / El Paso / Nueces / Jefferson ──────────────────────────────────
+  # â”€â”€ Hidalgo / El Paso / Nueces / Jefferson â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   south-texas:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
@@ -174,13 +174,13 @@ jobs:
         run: python scraper/multi_county_3.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '50' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '15' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
 
-  # ── Brazoria / Galveston / Brazos / Smith ───────────────────────────────────
+  # â”€â”€ Brazoria / Galveston / Brazos / Smith â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   gulf-coast:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
@@ -197,13 +197,13 @@ jobs:
         run: python scraper/multi_county_4.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '50' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '15' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
 
-  # ── Travis / Lubbock / McLennan / Bell ─────────────────────────────────────
+  # â”€â”€ Travis / Lubbock / McLennan / Bell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   central-texas:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
@@ -241,7 +241,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
 
-  # ── CAD Enrichment (esearch for counties without bulk data) ─────────────────
+  # â”€â”€ CAD Enrichment (esearch for counties without bulk data) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   multi8:
     runs-on: ubuntu-22.04
@@ -345,7 +345,7 @@ jobs:
         run: |
           curl -s -X POST "https://api.stackiq.org/api/admin/rescore"             -H "Content-Type: application/json"             --max-time 300             -w "\nHTTP %{http_code}" || echo "Rescore failed"
 
-  # ── Email alert ─────────────────────────────────────────────────────────────
+  # â”€â”€ Email alert â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   email-alert:
     needs: [harris, dallas-tarrant-bexar, collin, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9, multi10, multi11]
     runs-on: ubuntu-22.04
@@ -357,7 +357,7 @@ jobs:
             -H "Content-Type: application/json" \
             -w "\nHTTP %{http_code}" || echo "Alert API call failed"
 
-  # ── Deploy dashboard to GitHub Pages ────────────────────────────────────────
+  # â”€â”€ Deploy dashboard to GitHub Pages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   deploy-pages:
     needs: harris
     runs-on: ubuntu-22.04
