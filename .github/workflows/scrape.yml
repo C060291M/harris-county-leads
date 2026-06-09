@@ -22,7 +22,7 @@ permissions:
   id-token: write
 
 jobs:
-  # â”€â”€ Harris County (SFTP) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
   harris:
     runs-on: ubuntu-22.04
     timeout-minutes: 45
@@ -88,7 +88,6 @@ jobs:
           path: debug/
           retention-days: 3
 
-  # â”€â”€ Dallas / Tarrant / Bexar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   dallas-tarrant-bexar:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
@@ -111,7 +110,6 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
 
-  # â”€â”€ Collin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   collin:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
@@ -134,7 +132,6 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
 
-  # â”€â”€ Denton / Fort Bend / Montgomery / Williamson â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   denton-group:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
@@ -157,7 +154,6 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
 
-  # â”€â”€ Hidalgo / El Paso / Nueces / Jefferson â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   south-texas:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
@@ -180,7 +176,6 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
 
-  # â”€â”€ Brazoria / Galveston / Brazos / Smith â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   gulf-coast:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
@@ -203,7 +198,6 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
 
-  # â”€â”€ Travis / Lubbock / McLennan / Bell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   central-texas:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
@@ -241,14 +235,34 @@ jobs:
       - name: Run multi_county_6
         run: python scraper/multi_county_6.py
         env:
-          LOOKBACK_DAYS: "3"
-          API_URL: ${{ secrets.API_URL }}
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '15' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
 
-  # â”€â”€ CAD Enrichment (esearch for counties without bulk data) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  multi7:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run multi_county_7
+        run: python scraper/multi_county_7.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '15' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
 
   multi8:
     runs-on: ubuntu-22.04
@@ -265,8 +279,8 @@ jobs:
       - name: Run multi_county_8
         run: python scraper/multi_county_8.py
         env:
-          LOOKBACK_DAYS: "3"
-          API_URL: ${{ secrets.API_URL }}
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '15' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -287,8 +301,8 @@ jobs:
       - name: Run multi_county_9
         run: python scraper/multi_county_9.py
         env:
-          LOOKBACK_DAYS: "3"
-          API_URL: ${{ secrets.API_URL }}
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '15' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -309,8 +323,8 @@ jobs:
       - name: Run multi_county_10
         run: python scraper/multi_county_10.py
         env:
-          LOOKBACK_DAYS: "3"
-          API_URL: ${{ secrets.API_URL }}
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '15' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -331,13 +345,14 @@ jobs:
       - name: Run multi_county_11
         run: python scraper/multi_county_11.py
         env:
-          LOOKBACK_DAYS: "3"
-          API_URL: ${{ secrets.API_URL }}
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '15' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
-  multi7:
+
+  multi12:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
     steps:
@@ -349,31 +364,97 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run multi_county_7
-        run: python scraper/multi_county_7.py
+      - name: Run multi_county_12 (East Texas / Piney Woods)
+        run: python scraper/multi_county_12.py
         env:
-          LOOKBACK_DAYS: "3"
-          API_URL: ${{ secrets.API_URL }}
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '15' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
 
+  multi13:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run multi_county_13 (Panhandle / West Texas)
+        run: python scraper/multi_county_13.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '15' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
+
+  multi14:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run multi_county_14 (Gulf Coast South)
+        run: python scraper/multi_county_14.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '15' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
+
+  multi15:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run multi_county_15 (Central Texas Heartland)
+        run: python scraper/multi_county_15.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '15' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
+
+  enrich-esearch:
     needs: [harris, dallas-tarrant-bexar, collin, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9, multi10, multi11, multi12, multi13, multi14, multi15]
     runs-on: ubuntu-22.04
     if: always()
     steps:
       - name: Run bulk CAD enrichment (bulk tables)
         run: |
-          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-cad"             -H "Content-Type: application/json"             --max-time 300             -w "\nHTTP %{http_code}" || echo "Enrich-CAD failed"
+          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-cad" -H "Content-Type: application/json" --max-time 300 -w "\nHTTP %{http_code}" || echo "Enrich-CAD failed"
       - name: Run esearch enrichment (50 leads per county)
         run: |
           curl -s -X POST "https://api.stackiq.org/api/admin/enrich-esearch?limit=50" -H "Content-Type: application/json" --max-time 300 -w "\nHTTP %{http_code}" || echo "Enrich-esearch failed"
       - name: Rescore all leads
         run: |
-          curl -s -X POST "https://api.stackiq.org/api/admin/rescore"             -H "Content-Type: application/json"             --max-time 300             -w "\nHTTP %{http_code}" || echo "Rescore failed"
+          curl -s -X POST "https://api.stackiq.org/api/admin/rescore" -H "Content-Type: application/json" --max-time 300 -w "\nHTTP %{http_code}" || echo "Rescore failed"
 
-  # â”€â”€ Email alert â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   email-alert:
     needs: [harris, dallas-tarrant-bexar, collin, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9, multi10, multi11, multi12, multi13, multi14, multi15]
     runs-on: ubuntu-22.04
@@ -381,11 +462,8 @@ jobs:
     steps:
       - name: Trigger StackIQ alert emails
         run: |
-          curl -s -X POST "https://api.stackiq.org/api/alerts/send" \
-            -H "Content-Type: application/json" \
-            -w "\nHTTP %{http_code}" || echo "Alert API call failed"
+          curl -s -X POST "https://api.stackiq.org/api/alerts/send" -H "Content-Type: application/json" -w "\nHTTP %{http_code}" || echo "Alert API call failed"
 
-  # â”€â”€ Deploy dashboard to GitHub Pages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   deploy-pages:
     needs: harris
     runs-on: ubuntu-22.04
@@ -402,4 +480,3 @@ jobs:
           path: dashboard/
       - id: deployment
         uses: actions/deploy-pages@v4
-  
