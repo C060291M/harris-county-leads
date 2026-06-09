@@ -134,7 +134,7 @@ jobs:
 
   collin:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -147,8 +147,8 @@ jobs:
       - name: Run Collin scraper
         run: python scraper/multi_county_1b.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '1' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -178,7 +178,7 @@ jobs:
 
   south-texas:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -192,7 +192,7 @@ jobs:
         run: python scraper/multi_county_3.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -200,7 +200,7 @@ jobs:
 
   gulf-coast:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -214,7 +214,7 @@ jobs:
         run: python scraper/multi_county_4.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -244,7 +244,7 @@ jobs:
 
   multi6:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -258,7 +258,7 @@ jobs:
         run: python scraper/multi_county_6.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -288,7 +288,7 @@ jobs:
 
   multi8:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -302,7 +302,7 @@ jobs:
         run: python scraper/multi_county_8.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -310,7 +310,7 @@ jobs:
 
   multi9:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -324,7 +324,7 @@ jobs:
         run: python scraper/multi_county_9.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -332,7 +332,7 @@ jobs:
 
   multi10:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -346,7 +346,7 @@ jobs:
         run: python scraper/multi_county_10.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -376,7 +376,7 @@ jobs:
 
   multi12:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -390,7 +390,7 @@ jobs:
         run: python scraper/multi_county_12.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -420,7 +420,7 @@ jobs:
 
   multi14:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -434,7 +434,7 @@ jobs:
         run: python scraper/multi_county_14.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -465,7 +465,7 @@ jobs:
 
   travis:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -478,8 +478,8 @@ jobs:
       - name: Run Travis County scraper
         run: python scraper/multi_county_travis.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '1' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -636,8 +636,272 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
+  hill:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Hill County scraper (Tyler iDS)
+        run: python scraper/multi_county_hill.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
+
+  lamar:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Lamar County scraper (Tyler iDS)
+        run: python scraper/multi_county_lamar.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
+
+  hood:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Hood County scraper (Tyler iDS)
+        run: python scraper/multi_county_hood.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
+
+  henderson:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Henderson County scraper (Tyler iDS)
+        run: python scraper/multi_county_henderson.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
+
+  howard:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Howard County scraper (Tyler iDS)
+        run: python scraper/multi_county_howard.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
+
+  wise:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Wise County scraper (Tyler iDS)
+        run: python scraper/multi_county_wise.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
+
+  wood:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Wood County scraper (Tyler iDS)
+        run: python scraper/multi_county_wood.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
+
+  eastland:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Eastland County scraper (Tyler iDS)
+        run: python scraper/multi_county_eastland.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
+
+  harrison:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Harrison County scraper (Tyler iDS)
+        run: python scraper/multi_county_harrison.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
+
+  andrews:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Andrews County scraper (Tyler iDS)
+        run: python scraper/multi_county_andrews.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
+
+  erath:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Erath County scraper (Tyler iDS)
+        run: python scraper/multi_county_erath.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
+
+  palopinto:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Palo Pinto County scraper (Tyler iDS)
+        run: python scraper/multi_county_palopinto.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
   enrich-esearch:
-    needs: [harris, dallas-bexar, tarrant, collin, travis, fort-bend, mclennan, webb, galveston, rockwall, kaufman, parker, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9, multi10, multi11, multi12, multi13, multi14, multi15]
+    needs: [harris, dallas-bexar, tarrant, collin, travis, fort-bend, mclennan, webb, galveston, rockwall, kaufman, parker, hill, lamar, hood, henderson, howard, wise, wood, eastland, harrison, andrews, erath, palopinto, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9, multi10, multi11, multi12, multi13, multi14, multi15]
     runs-on: ubuntu-22.04
     if: always()
     steps:
@@ -652,7 +916,7 @@ jobs:
           curl -s -X POST "https://api.stackiq.org/api/admin/rescore" -H "Content-Type: application/json" --max-time 300 -w "\nHTTP %{http_code}" || echo "Rescore failed"
 
   email-alert:
-    needs: [harris, dallas-bexar, tarrant, collin, travis, fort-bend, mclennan, webb, galveston, rockwall, kaufman, parker, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9, multi10, multi11, multi12, multi13, multi14, multi15]
+    needs: [harris, dallas-bexar, tarrant, collin, travis, fort-bend, mclennan, webb, galveston, rockwall, kaufman, parker, hill, lamar, hood, henderson, howard, wise, wood, eastland, harrison, andrews, erath, palopinto, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9, multi10, multi11, multi12, multi13, multi14, multi15]
     runs-on: ubuntu-22.04
     if: always()
     steps:
