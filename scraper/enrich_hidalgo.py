@@ -56,7 +56,19 @@ for lead_id, owner in leads:
     last = next((w for w in parts if len(w) >= 4 and w.isalpha()), parts[0] if parts else "")
     if not last or len(last) < 3: continue
 
-    results = search_owner(token, last)
+    try:
+        results = search_owner(token, last)
+    except Exception as e:
+        print(f"  API error for {last}: {str(e)[:50]}, skipping")
+        time.sleep(2)
+        continue
+
+    # Reconnect DB if needed
+    try:
+        cur.execute("SELECT 1")
+    except Exception:
+        conn = psycopg2.connect(DB, connect_timeout=30)
+        cur = conn.cursor()
     best = None
     for res in results:
         r_name = normalize(res.get("name",""))
