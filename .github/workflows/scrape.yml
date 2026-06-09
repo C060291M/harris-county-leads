@@ -90,7 +90,7 @@ jobs:
 
   dallas-bexar:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -104,7 +104,7 @@ jobs:
         run: python scraper/multi_county_dallas_bexar.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '1' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -112,7 +112,7 @@ jobs:
 
   tarrant:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -126,7 +126,7 @@ jobs:
         run: python scraper/multi_county_tarrant.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '1' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -156,7 +156,7 @@ jobs:
 
   denton-group:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -170,7 +170,7 @@ jobs:
         run: python scraper/multi_county_2.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '1' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
