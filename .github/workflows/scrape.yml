@@ -506,8 +506,30 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
+  mclennan:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run McLennan County scraper (Tyler iDS)
+        run: python scraper/multi_county_mclennan.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
   enrich-esearch:
-    needs: [harris, dallas-bexar, tarrant, collin, travis, fort-bend, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9, multi10, multi11, multi12, multi13, multi14, multi15]
+    needs: [harris, dallas-bexar, tarrant, collin, travis, fort-bend, mclennan, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9, multi10, multi11, multi12, multi13, multi14, multi15]
     runs-on: ubuntu-22.04
     if: always()
     steps:
@@ -522,7 +544,7 @@ jobs:
           curl -s -X POST "https://api.stackiq.org/api/admin/rescore" -H "Content-Type: application/json" --max-time 300 -w "\nHTTP %{http_code}" || echo "Rescore failed"
 
   email-alert:
-    needs: [harris, dallas-bexar, tarrant, collin, travis, fort-bend, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9, multi10, multi11, multi12, multi13, multi14, multi15]
+    needs: [harris, dallas-bexar, tarrant, collin, travis, fort-bend, mclennan, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9, multi10, multi11, multi12, multi13, multi14, multi15]
     runs-on: ubuntu-22.04
     if: always()
     steps:
