@@ -218,6 +218,13 @@ jobs:
       - run: python -m playwright install --with-deps chromium
       - name: Run Central Texas scraper
         run: python scraper/multi_county_5.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '15' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
 
   multi6:
     runs-on: ubuntu-22.04
@@ -330,7 +337,28 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
-  enrich-esearch:
+  multi7:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run multi_county_7
+        run: python scraper/multi_county_7.py
+        env:
+          LOOKBACK_DAYS: "3"
+          API_URL: ${{ secrets.API_URL }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
+
     needs: [harris, dallas-tarrant-bexar, collin, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9, multi10, multi11]
     runs-on: ubuntu-22.04
     if: always()
@@ -374,24 +402,4 @@ jobs:
           path: dashboard/
       - id: deployment
         uses: actions/deploy-pages@v4
-  multi7:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 120
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: scraper/requirements.txt
-      - run: pip install -r scraper/requirements.txt
-      - run: python -m playwright install --with-deps chromium
-      - name: Run multi_county_7
-        run: python scraper/multi_county_7.py
-        env:
-          LOOKBACK_DAYS: "3"
-          API_URL: ${{ secrets.API_URL }}
-      - name: Push to DB
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python3 scraper/push_to_db.py
+  

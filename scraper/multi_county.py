@@ -17,7 +17,6 @@ COUNTIES = {
     "Dallas":  "dallas.tx.publicsearch.us",
     "Tarrant": "tarrant.tx.publicsearch.us",
     "Bexar":   "bexar.tx.publicsearch.us",
-    "Collin":  "collin.tx.publicsearch.us",
 }
 
 def date_slices(start, end, days=1):
