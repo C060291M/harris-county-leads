@@ -103,7 +103,7 @@ jobs:
       - name: Run Dallas/Bexar scraper
         run: python scraper/multi_county_dallas_bexar.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '1' }}
           MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
       - name: Push to DB
         env:
@@ -125,7 +125,7 @@ jobs:
       - name: Run Tarrant scraper
         run: python scraper/multi_county_tarrant.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '1' }}
           MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
       - name: Push to DB
         env:
@@ -147,7 +147,7 @@ jobs:
       - name: Run Collin scraper
         run: python scraper/multi_county_1b.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '1' }}
           MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
       - name: Push to DB
         env:
@@ -169,7 +169,7 @@ jobs:
       - name: Run Denton group scraper
         run: python scraper/multi_county_2.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '1' }}
           MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
       - name: Push to DB
         env:
@@ -478,7 +478,7 @@ jobs:
       - name: Run Travis County scraper
         run: python scraper/multi_county_travis.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '1' }}
           MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
       - name: Push to DB
         env:
@@ -500,7 +500,7 @@ jobs:
       - name: Run Fort Bend County scraper (Aumentum)
         run: python scraper/multi_county_fort_bend.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '1' }}
           MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
       - name: Push to DB
         env:
