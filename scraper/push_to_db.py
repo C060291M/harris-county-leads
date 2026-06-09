@@ -21,6 +21,11 @@ LOG_SQL = ("INSERT INTO scraper_runs (job_name, county, run_at, leads_pushed, st
 
 pattern = os.environ.get("JSON_GLOB", "dashboard/*_records.json")
 files = glob.glob(pattern)
+# Also pick up Harris records.json
+harris_file = "dashboard/records.json"
+import os as _os
+if _os.path.exists(harris_file) and harris_file not in files:
+    files.append(harris_file)
 
 if not files:
     print("No JSON files found")
