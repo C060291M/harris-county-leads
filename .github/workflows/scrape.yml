@@ -523,7 +523,7 @@ jobs:
         run: python scraper/multi_county_mclennan.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -588,7 +588,7 @@ jobs:
         run: python scraper/multi_county_rockwall.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -610,7 +610,7 @@ jobs:
         run: python scraper/multi_county_kaufman.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -653,7 +653,7 @@ jobs:
         run: python scraper/multi_county_hill.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -675,7 +675,7 @@ jobs:
         run: python scraper/multi_county_lamar.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -697,7 +697,7 @@ jobs:
         run: python scraper/multi_county_hood.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -719,7 +719,7 @@ jobs:
         run: python scraper/multi_county_henderson.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -741,7 +741,7 @@ jobs:
         run: python scraper/multi_county_howard.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -763,7 +763,7 @@ jobs:
         run: python scraper/multi_county_wise.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -785,7 +785,7 @@ jobs:
         run: python scraper/multi_county_wood.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -807,7 +807,7 @@ jobs:
         run: python scraper/multi_county_eastland.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -829,7 +829,7 @@ jobs:
         run: python scraper/multi_county_harrison.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -851,7 +851,7 @@ jobs:
         run: python scraper/multi_county_andrews.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -873,7 +873,7 @@ jobs:
         run: python scraper/multi_county_erath.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -895,7 +895,7 @@ jobs:
         run: python scraper/multi_county_palopinto.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -917,7 +917,7 @@ jobs:
         run: python scraper/multi_county_hunt.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -939,7 +939,7 @@ jobs:
         run: python scraper/multi_county_hays.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -961,7 +961,7 @@ jobs:
         run: python scraper/multi_county_comal.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -983,7 +983,7 @@ jobs:
         run: python scraper/multi_county_guadalupe.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1005,7 +1005,7 @@ jobs:
         run: python scraper/multi_county_bastrop.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1027,7 +1027,7 @@ jobs:
         run: python scraper/multi_county_wichita.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1049,7 +1049,7 @@ jobs:
         run: python scraper/multi_county_navarro.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1071,7 +1071,7 @@ jobs:
         run: python scraper/multi_county_upshur.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1093,7 +1093,7 @@ jobs:
         run: python scraper/multi_county_vanzandt.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1115,7 +1115,7 @@ jobs:
         run: python scraper/multi_county_gregg.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1137,7 +1137,7 @@ jobs:
         run: python scraper/multi_county_liberty.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1159,7 +1159,7 @@ jobs:
         run: python scraper/multi_county_hardin.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1181,7 +1181,7 @@ jobs:
         run: python scraper/multi_county_orange.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1203,7 +1203,7 @@ jobs:
         run: python scraper/multi_county_jasper.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1225,7 +1225,7 @@ jobs:
         run: python scraper/multi_county_bowie.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1247,7 +1247,7 @@ jobs:
         run: python scraper/multi_county_burnet.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1269,7 +1269,7 @@ jobs:
         run: python scraper/multi_county_calhoun.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1291,7 +1291,7 @@ jobs:
         run: python scraper/multi_county_gonzales.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1313,7 +1313,7 @@ jobs:
         run: python scraper/multi_county_karnes.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1335,7 +1335,7 @@ jobs:
         run: python scraper/multi_county_polk.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1357,7 +1357,7 @@ jobs:
         run: python scraper/multi_county_winkler.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1379,7 +1379,7 @@ jobs:
         run: python scraper/multi_county_yoakum.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1401,7 +1401,7 @@ jobs:
         run: python scraper/multi_county_somervell.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1423,7 +1423,7 @@ jobs:
         run: python scraper/multi_county_hamilton.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1445,7 +1445,7 @@ jobs:
         run: python scraper/multi_county_mills.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -1488,7 +1488,7 @@ jobs:
         run: python scraper/multi_county_delta.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
