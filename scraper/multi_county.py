@@ -17,7 +17,7 @@ COUNTIES = {
     "Dallas":  "dallas.tx.publicsearch.us",
     "Tarrant": "tarrant.tx.publicsearch.us",
     "Bexar":   "bexar.tx.publicsearch.us",
-}
+    }
 
 def date_slices(start, end, days=1):
     from datetime import timedelta
@@ -59,47 +59,24 @@ def parse_amount(raw):
 def compute_score(r, cutoff):
     s, flags = 0, []
     cat = r.get("cat","")
-    # Base score by category
-    if cat in ("TAXDEED","TAXLIEN"): flags.append("Tax Deed / IRS / Corp Lien"); s += 50
-    elif cat in ("LNIRS","LNFED"): flags.append("Tax Deed / IRS / Corp Lien"); s += 45
-    elif cat in ("JUD",): flags.append("Judgment Lien"); s += 35
-    elif cat in ("LNHOA","LNMECH"): flags.append("HOA / Mechanic Lien"); s += 30
-    elif cat in ("PRO",): flags.append("Probate / Estate"); s += 25
-    elif cat in ("LP","NOFC","NOFD"): flags.append("Lis Pendens / Pre-foreclosure"); s += 20
-    elif cat in ("LN","LNSTATE"): flags.append("Lien on record"); s += 20
-    elif cat in ("DIV","BK"): flags.append("Divorce / Bankruptcy"); s += 15
-    else: flags.append("Distress signal"); s += 10
-    # Amount bonus
+    if cat in ("TAXDEED","TAXLIEN","LNIRS","LNFED"): flags.append("Tax Deed / IRS / Corp Lien"); s += 30
+    if cat in ("LNHOA",): flags.append("HOA / Mechanic Lien"); s += 25
+    if cat in ("PRO",): flags.append("Probate / Estate"); s += 20
+    if cat in ("LN","LNMECH","LNSTATE"): flags.append("Lien on record"); s += 15
+    if cat in ("LP","NOFC","NOFD"): flags.append("Lis Pendens / Pre-foreclosure"); s += 10
+    if cat in ("JUD",): flags.append("Judgment Lien"); s += 10
+    if cat in ("DIV","BK"): flags.append("Divorce / Bankruptcy"); s += 10
     amt = r.get("amount")
     if amt and amt > 100000: flags.append("Amount > $100k"); s += 15
     elif amt and amt > 50000: flags.append("Amount > $50k"); s += 10
-    # Recency bonus
     filed_str = r.get("filed","")
     if filed_str:
         try:
-            filed_dt = datetime.strptime(filed_str,"%Y-%m-%d")
-            days_ago = (datetime.now() - filed_dt).days
-            if days_ago <= 7: flags.append("New this week"); s += 10
-            elif days_ago <= 30: flags.append("Filed this month"); s += 5
+            if datetime.strptime(filed_str,"%Y-%m-%d") >= cutoff: flags.append("New this week"); s += 5
         except: pass
-    # Absentee owner
-    mail_state = (r.get("mail_state") or "").upper().strip()
-    if mail_state and mail_state != "TX":
+    if (r.get("mail_state") or "").upper().strip() not in ("","TX"):
         flags.append("Absentee owner (out of state)"); s += 15
-    # LLC / corp owner
-    owner = (r.get("owner") or r.get("primary_owner") or "").upper()
-    if any(k in owner for k in ["LLC","INC","CORP","TRUST","LTD","HOLDINGS","PROPERTIES","INVESTMENTS","BANK"]):
-        flags.append("LLC / corp owner"); s += 10
-    # Has address
-    if r.get("prop_address","").strip():
-        flags.append("Has address"); s += 5
-    # Address + lien combo
-    if r.get("prop_address","").strip() and len(flags) >= 2:
-        flags.append("Address + Lien combo"); s += 10
-    # Multi-flag bonus
-    if len(flags) >= 3:
-        s += (len(flags) - 2) * 3
-        flags.append("3+ distress signals")
+    if len(flags) >= 3: s += 10
     return min(s, 100), flags
 
 def blank_rec(county, doc_num, doc_type, cat, cat_label, filed, owner,
@@ -135,44 +112,8 @@ def parse_results(records, county, doc_type, cat, cat_label, base, api_responses
                 if item.get(k): rec["mail_address"] = str(item[k]).strip(); break
             records.append(rec)
 
-    # Bexar/Neumo HTML table parser (cell indices known)
-    if not api_responses and page_content:
-        from bs4 import BeautifulSoup
-        soup = BeautifulSoup(page_content, "lxml")
-        for row in soup.find_all("tr")[1:]:
-            cells = row.find_all("td")
-            if len(cells) < 8: continue
-            ncells = len(cells)
-            # Montgomery layout: doc_num=3, doc_type=5, owner=7, filed=10
-            if ncells >= 17 and "montgomery" in base.lower():
-                owner    = cells[7].get_text(strip=True)
-                doc_type = cells[5].get_text(strip=True)
-                filed    = norm_date(cells[10].get_text(strip=True))
-                doc_num  = cells[3].get_text(strip=True)
-                prop_addr = ""
-            else:
-                # Bexar layout: owner=3, doc_type=5, filed=6, doc_num=7, addr=14
-                # Tarrant layout: owner=3, doc_type=5, filed=6, doc_num=7
-                owner    = cells[3].get_text(strip=True)
-                doc_type = cells[5].get_text(strip=True)
-                filed    = norm_date(cells[6].get_text(strip=True))
-                doc_num  = cells[7].get_text(strip=True)
-                prop_addr = cells[14].get_text(strip=True) if ncells > 14 else ""
-            if not owner or not doc_type: continue
-            # Map doc_type to cat/cat_label using DOC_TYPES list
-            _cat, _cat_label = "LP", "Lis Pendens"
-            for _dt, _c, _cl in DOC_TYPES:
-                if _dt.lower() in doc_type.lower() or doc_type.lower() in _dt.lower():
-                    _cat, _cat_label = _c, _cl
-                    break
-            url = f"{base}/doc/{doc_num}" if doc_num else ""
-            rec = blank_rec(county, doc_num, doc_type, _cat, _cat_label, filed, owner, "", None, "", url)
-            if prop_addr and prop_addr not in ("N/A", "--"):
-                rec["prop_address"] = prop_addr
-            records.append(rec)
-
     # HTML table fallback
-    if not api_responses and page_content and "bexar" not in base.lower():
+    if not api_responses and page_content:
         from bs4 import BeautifulSoup
         soup = BeautifulSoup(page_content, "lxml")
         for table in soup.find_all("table"):
@@ -194,22 +135,13 @@ def parse_results(records, county, doc_type, cat, cat_label, base, api_responses
                 fn    = f("instrument","number","document","file")
                 filed = norm_date(f("date","recorded","filed"))
                 owner = f("grantor","owner","name")
-                grantee = f("grantee","")
                 amt   = parse_amount(f("amount","consideration"))
-                town  = f("town","city","municipality","")
-                legal = f("legal","description","")
                 link  = next((a["href"] for cell in cells for a in cell.find_all("a",href=True) if a.get("href")),"")
                 if link and not link.startswith("http"): link = base + link
                 if fn or owner:
-                    rec = blank_rec(county, fn, doc_type, cat, cat_label, filed, owner, grantee=grantee, amount=amt, legal=legal, url=link)
-                    if town: rec["prop_city"] = town.strip()
-                    records.append(rec)
+                    records.append(blank_rec(county, fn, doc_type, cat, cat_label, filed, owner, amount=amt, url=link))
 
 async def scrape_county(name, host, start_dt, end_dt):
-    # Tarrant certified data lags ~10 days — use 14-day lookback to always catch data
-    if name == "Tarrant":
-        from datetime import timedelta as _td
-        start_dt = min(start_dt, end_dt - _td(days=14))
     log.info("%s - scraping %s to %s", name, start_dt.strftime("%Y-%m-%d"), end_dt.strftime("%Y-%m-%d"))
     all_records = []
     for slice_start, slice_end in date_slices(start_dt, end_dt, days=1):
@@ -225,25 +157,11 @@ async def _scrape_day(name, host, start_dt, end_dt):
     end_str   = end_dt.strftime("%m/%d/%Y")
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True, args=[
-            "--no-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-blink-features=AutomationControlled",
-            "--disable-infobars",
-            "--window-size=1280,900",
-        ])
+        browser = await p.chromium.launch(headless=True, args=["--no-sandbox","--disable-dev-shm-usage"])
         context = await browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            viewport={"width": 1280, "height": 900},
-            java_script_enabled=True,
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122.0.0.0 Safari/537.36",
+            viewport={"width": 1280, "height": 900}
         )
-        # Stealth mode — hide automation signals (required for Tarrant/Neumo portals)
-        await context.add_init_script("""
-            Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
-            Object.defineProperty(navigator, 'plugins', {get: () => [1,2,3]});
-            Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
-            window.chrome = {runtime: {}, loadTimes: () => {}, csi: () => {}, app: {}};
-        """)
         page = await context.new_page()
 
         for doc_type, cat, cat_label in DOC_TYPES:
@@ -261,50 +179,10 @@ async def _scrape_day(name, host, start_dt, end_dt):
             page.on("response", on_response)
 
             try:
-                # Load advanced search page
-                await page.goto(f"{base}/search/advanced", wait_until="domcontentloaded", timeout=60000)
-                await page.wait_for_timeout(3000)
-                # Dismiss any popups
-                try: await page.keyboard.press("Escape")
-                except: pass
-                await page.wait_for_timeout(500)
+                # Load advanced search page fresh each time
+                await page.goto(f"{base}/search/advanced", wait_until="networkidle", timeout=60000)
+                await page.wait_for_timeout(2000)
 
-                # Expand Search Criteria accordion (Tarrant/Neumo portals need mouse click)
-                try:
-                    sc = await page.query_selector("button:has-text('Search Criteria')")
-                    if sc:
-                        box = await sc.bounding_box()
-                        if box:
-                            await page.mouse.click(box['x'] + box['width']/2, box['y'] + box['height']/2)
-                            await page.wait_for_timeout(1500)
-                except: pass
-                # Expand Search Criteria accordion (Tarrant/Neumo portals need mouse click)
-                try:
-                    sc = await page.query_selector("button:has-text('Search Criteria')")
-                    if sc:
-                        box = await sc.bounding_box()
-                        if box:
-                            await page.mouse.click(box['x'] + box['width']/2, box['y'] + box['height']/2)
-                            await page.wait_for_timeout(1500)
-                except: pass
-                # Expand Search Criteria accordion (Tarrant/Neumo portals need mouse click)
-                try:
-                    sc = await page.query_selector("button:has-text('Search Criteria')")
-                    if sc:
-                        box = await sc.bounding_box()
-                        if box:
-                            await page.mouse.click(box['x'] + box['width']/2, box['y'] + box['height']/2)
-                            # Wait for date field to appear after accordion expands
-                            # Detect date field name (varies by county)
-                            date_start_id = "#recordedDateRange-start"
-                            date_end_id = "#recordedDateRange-end"
-                            try:
-                                await page.wait_for_selector("#instrumentDateRange-start", timeout=1000, state="visible")
-                                date_start_id = "#instrumentDateRange-start"
-                                date_end_id = "#instrumentDateRange-end"
-                            except: pass
-                            await page.wait_for_selector(date_start_id, timeout=5000, state="visible")
-                except: pass
                 # Step 1: Select department via JS evaluation
                 try:
                     await page.click("#department", timeout=5000)
@@ -325,46 +203,17 @@ async def _scrape_day(name, host, start_dt, end_dt):
                     await page.wait_for_timeout(1000)
                 except: pass
 
-                # Step 2: Fill recorded date range
-                # Try direct fill first, fall back to JS injection if field not visible
-                try:
-                    await page.fill(date_start_id, start_str, timeout=3000)
-                    await page.wait_for_timeout(300)
-                    await page.fill(date_end_id, end_str, timeout=3000)
-                    await page.wait_for_timeout(300)
-                except:
-                    # JS injection fallback for sites that detect headless (e.g. Tarrant)
-                    await page.evaluate(f"""
-                        () => {{
-                            const setVal = (id, val) => {{
-                                const el = document.getElementById(id);
-                                if (!el) return;
-                                const nativeInput = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
-                                nativeInput.set.call(el, val);
-                                el.dispatchEvent(new Event('input', {{bubbles: true}}));
-                                el.dispatchEvent(new Event('change', {{bubbles: true}}));
-                            }};
-                            setVal('recordedDateRange-start', '{start_str}');
-                            setVal('recordedDateRange-end', '{end_str}');
-                        }}
-                    """)
-                    await page.wait_for_timeout(500)
+                # Step 2: Fill recorded date range using exact IDs
+                await page.fill("#recordedDateRange-start", start_str)
+                await page.wait_for_timeout(300)
+                await page.fill("#recordedDateRange-end", end_str)
+                await page.wait_for_timeout(300)
 
                 # Step 3: Type document type into docTypes input
-                # Tarrant: skip doc type filter (checkbox selection returns 0 results)
-                # Filter by doc_type client-side instead
-                if "tarrant" not in base.lower():
-                    await page.click("#docTypes-input")
-                    await page.wait_for_timeout(300)
-                    await page.type("#docTypes-input", doc_type, delay=50)
-                    await page.wait_for_timeout(2000)
-                    await page.evaluate("""
-                        () => {
-                            const boxes = document.querySelectorAll("input[type='checkbox']");
-                            for (const b of boxes) { b.click(); break; }
-                        }
-                    """)
-                    await page.wait_for_timeout(500)
+                await page.click("#docTypes-input")
+                await page.wait_for_timeout(300)
+                await page.type("#docTypes-input", doc_type, delay=50)
+                await page.wait_for_timeout(1500)
 
                 # Click the first matching option in dropdown
                 try:
@@ -383,8 +232,7 @@ async def _scrape_day(name, host, start_dt, end_dt):
 
                 # Paginate through all results
                 page_num = 1
-                MAX_PAGES = 15
-                while page_num <= MAX_PAGES:
+                while True:
                     page_content = await page.content()
                     before = len(records)
                     parse_results(records, name, doc_type, cat, cat_label, base, api_responses, page_content)
@@ -403,7 +251,7 @@ async def _scrape_day(name, host, start_dt, end_dt):
                             await page.wait_for_timeout(3000)
                             api_responses.clear()
                             page_num += 1
-                            if page_num > MAX_PAGES:  # Configurable via MAX_PAGES env var
+                            if page_num > 200:  # Safety cap
                                 break
                         else:
                             break
