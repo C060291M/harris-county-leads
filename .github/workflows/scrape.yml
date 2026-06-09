@@ -1514,8 +1514,29 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
+  eagleweb:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run Tyler EagleWeb scraper (Crane, Loving)
+        run: python scraper/multi_county_eagleweb.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
   enrich-esearch:
-    needs: [harris, dallas-bexar, tarrant, collin, travis, fort-bend, mclennan, webb, galveston, rockwall, kaufman, parker, hill, lamar, hood, henderson, howard, wise, wood, eastland, harrison, andrews, erath, palopinto, hunt, hays, comal, guadalupe, bastrop, wichita, navarro, upshur, vanzandt, gregg, liberty, hardin, orange, jasper, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9, multi10, multi11, multi12, multi13, multi14, multi15, bowie, burnet, calhoun, gonzales, karnes, polk, winkler, yoakum, somervell, hamilton, mills, kerr, delta, txlr]
+    needs: [harris, dallas-bexar, tarrant, collin, travis, fort-bend, mclennan, webb, galveston, rockwall, kaufman, parker, hill, lamar, hood, henderson, howard, wise, wood, eastland, harrison, andrews, erath, palopinto, hunt, hays, comal, guadalupe, bastrop, wichita, navarro, upshur, vanzandt, gregg, liberty, hardin, orange, jasper, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9, multi10, multi11, multi12, multi13, multi14, multi15, bowie, burnet, calhoun, gonzales, karnes, polk, winkler, yoakum, somervell, hamilton, mills, kerr, delta, txlr, eagleweb]
     runs-on: ubuntu-22.04
     if: always()
     steps:
@@ -1530,7 +1551,7 @@ jobs:
           curl -s -X POST "https://api.stackiq.org/api/admin/rescore" -H "Content-Type: application/json" --max-time 300 -w "\nHTTP %{http_code}" || echo "Rescore failed"
 
   email-alert:
-    needs: [harris, dallas-bexar, tarrant, collin, travis, fort-bend, mclennan, webb, galveston, rockwall, kaufman, parker, hill, lamar, hood, henderson, howard, wise, wood, eastland, harrison, andrews, erath, palopinto, hunt, hays, comal, guadalupe, bastrop, wichita, navarro, upshur, vanzandt, gregg, liberty, hardin, orange, jasper, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9, multi10, multi11, multi12, multi13, multi14, multi15, bowie, burnet, calhoun, gonzales, karnes, polk, winkler, yoakum, somervell, hamilton, mills, kerr, delta, txlr]
+    needs: [harris, dallas-bexar, tarrant, collin, travis, fort-bend, mclennan, webb, galveston, rockwall, kaufman, parker, hill, lamar, hood, henderson, howard, wise, wood, eastland, harrison, andrews, erath, palopinto, hunt, hays, comal, guadalupe, bastrop, wichita, navarro, upshur, vanzandt, gregg, liberty, hardin, orange, jasper, denton-group, south-texas, gulf-coast, central-texas, multi6, multi7, multi8, multi9, multi10, multi11, multi12, multi13, multi14, multi15, bowie, burnet, calhoun, gonzales, karnes, polk, winkler, yoakum, somervell, hamilton, mills, kerr, delta, txlr, eagleweb]
     runs-on: ubuntu-22.04
     if: always()
     steps:
