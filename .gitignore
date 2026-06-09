@@ -1,9 +1,22 @@
-debug/
-scraper/__pycache__/
-cad-api/
-*.png
+﻿# Temp build scripts
+add_*.py
+fix_*.py
+create_*.py
+test_*.py
+make_*.py
+split_*.py
+rewrite_*.py
+*_backup.*
+mc_template.txt
 
-.env
+# Python
+__pycache__/
+*.pyc
+*.pyo
 
-data/building_res.zip
-data/*.zip
+# Data files that get auto-generated
+data/*.json
+dashboard/*.json
+dashboard/records.json
+data/records.json
+data/leads_ghl.csv
