@@ -15,7 +15,7 @@ MAX_PAGES     = int(os.getenv("MAX_PAGES", "50"))
 API_URL = os.getenv("API_URL", "https://api.stackiq.org/leads/bulk-import")
 
 COUNTIES = {
-    "Bell": "bell.tx.publicsearch.us",
+    "Travis": "travis.tx.publicsearch.us",
 }
 
 def date_slices(start, end, days=1):
@@ -344,11 +344,11 @@ async def main_async():
 
     os.makedirs("dashboard", exist_ok=True)
     os.makedirs("data", exist_ok=True)
-    with open("dashboard/multi_county_11_records.json","w") as f:
+    with open("dashboard/multi_county_travis_records.json","w") as f:
         json.dump(payload, f, indent=2, default=str)
-    with open("data/multi_county_11_records.json","w") as f:
+    with open("data/multi_county_travis_records.json","w") as f:
         json.dump(payload, f, indent=2, default=str)
-    log.info("Saved -> dashboard/multi_county_11_records.json")
+    log.info("Saved -> dashboard/multi_county_travis_records.json")
 
     try:
         r = requests.post(API_URL, json=payload, timeout=120)
