@@ -12,6 +12,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 log = logging.getLogger("parker")
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "3"))
+MAX_PAGES     = int(os.getenv("MAX_PAGES", "5"))
 BASE_URL      = "https://ava.fidlar.com/TXParker/AvaWeb/#/search"
 
 KEEP_DOC_TYPES = {

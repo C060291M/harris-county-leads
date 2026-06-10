@@ -381,7 +381,7 @@ async def _scrape_day(name, host, start_dt, end_dt):
 
                 # Paginate through all results
                 page_num = 1
-                MAX_PAGES = 15
+                MAX_PAGES     = int(os.getenv("MAX_PAGES", "5"))
                 while page_num <= MAX_PAGES:
                     page_content = await page.content()
                     before = len(records)

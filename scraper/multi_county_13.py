@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 log = logging.getLogger("multi_county")
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "3"))
-MAX_PAGES     = int(os.getenv("MAX_PAGES", "5"))
+MAX_PAGES     = int(os.getenv("MAX_PAGES", "3"))
 API_URL = os.getenv("API_URL", "https://api.stackiq.org/leads/bulk-import")
 
 COUNTIES = {

@@ -11,6 +11,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 log = logging.getLogger("eagleweb")
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "3"))
+MAX_PAGES     = int(os.getenv("MAX_PAGES", "5"))
 
 COUNTIES = {
     "Crane":  ("https://cranetx.countygovernmentrecords.com/CraneTX/web/", "CraneTX"),
