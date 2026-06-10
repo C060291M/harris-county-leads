@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 log = logging.getLogger("fort_bend")
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "3"))
-MAX_PAGES     = int(os.getenv("MAX_PAGES", "15"))
+MAX_PAGES     = int(os.getenv("MAX_PAGES", "5"))
 BASE_URL      = "https://ccweb.co.fort-bend.tx.us"
 SEARCH_URL    = f"{BASE_URL}/RealEstate/SearchEntry.aspx"
 
