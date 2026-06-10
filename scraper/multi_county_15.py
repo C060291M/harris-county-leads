@@ -10,7 +10,7 @@ import requests
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger("multi_county")
 
-LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "14"))
+LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "3"))
 MAX_PAGES     = int(os.getenv("MAX_PAGES", "5"))
 API_URL = os.getenv("API_URL", "https://api.stackiq.org/leads/bulk-import")
 
