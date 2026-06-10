@@ -14,7 +14,7 @@ on:
 
 jobs:
 
-  dallas-bexar:
+  dallas:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
     steps:
@@ -26,8 +26,8 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run dallas-bexar scraper
-        run: python scraper/multi_county_dallas_bexar.py
+      - name: Run dallas scraper
+        run: python scraper/multi_county_dallas.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
           MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}

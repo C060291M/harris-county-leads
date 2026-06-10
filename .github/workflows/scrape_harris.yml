@@ -44,5 +44,5 @@ jobs:
           git fetch origin main
           git checkout main
           git add dashboard/ data/ || true
-          git diff --cached --quiet || git commit -m "chore: update Harris dashboard data"
+          git diff --cached --quiet || git commit -m "chore: update Harris dashboard"
           git push origin main || true
