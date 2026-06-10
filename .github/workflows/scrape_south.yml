@@ -13,6 +13,7 @@ on:
         default: '5'
 
 jobs:
+
   south-texas:
     runs-on: ubuntu-22.04
     timeout-minutes: 180
@@ -25,7 +26,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run South Texas scraper
+      - name: Run south-texas scraper
         run: python scraper/multi_county_3.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -34,6 +35,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   gulf-coast:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -46,7 +48,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Gulf Coast scraper
+      - name: Run gulf-coast scraper
         run: python scraper/multi_county_4.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -55,6 +57,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   central-texas:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
@@ -67,7 +70,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Central Texas scraper
+      - name: Run central-texas scraper
         run: python scraper/multi_county_5.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -76,6 +79,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   multi6:
     runs-on: ubuntu-22.04
     timeout-minutes: 180
@@ -88,7 +92,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run multi_county_6
+      - name: Run multi6 scraper
         run: python scraper/multi_county_6.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -97,6 +101,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   multi7:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
@@ -109,7 +114,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run multi_county_7
+      - name: Run multi7 scraper
         run: python scraper/multi_county_7.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -118,6 +123,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   multi8:
     runs-on: ubuntu-22.04
     timeout-minutes: 180
@@ -130,7 +136,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run multi_county_8
+      - name: Run multi8 scraper
         run: python scraper/multi_county_8.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -139,6 +145,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   multi9:
     runs-on: ubuntu-22.04
     timeout-minutes: 180
@@ -151,7 +158,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run multi_county_9
+      - name: Run multi9 scraper
         run: python scraper/multi_county_9.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -160,6 +167,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   multi10:
     runs-on: ubuntu-22.04
     timeout-minutes: 180
@@ -172,7 +180,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run multi_county_10
+      - name: Run multi10 scraper
         run: python scraper/multi_county_10.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -181,6 +189,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   multi11:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
@@ -193,7 +202,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run multi_county_11
+      - name: Run multi11 scraper
         run: python scraper/multi_county_11.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -202,6 +211,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   multi12:
     runs-on: ubuntu-22.04
     timeout-minutes: 180
@@ -214,7 +224,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run multi_county_12 (East Texas / Piney Woods)
+      - name: Run multi12 scraper
         run: python scraper/multi_county_12.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -223,6 +233,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   multi13:
     runs-on: ubuntu-22.04
     timeout-minutes: 180
@@ -235,7 +246,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run multi_county_13 (Panhandle / West Texas)
+      - name: Run multi13 scraper
         run: python scraper/multi_county_13.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -244,6 +255,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   multi14:
     runs-on: ubuntu-22.04
     timeout-minutes: 180
@@ -256,7 +268,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run multi_county_14 (Gulf Coast South)
+      - name: Run multi14 scraper
         run: python scraper/multi_county_14.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -265,6 +277,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   multi15:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
@@ -277,7 +290,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run multi_county_15 (Central Texas Heartland)
+      - name: Run multi15 scraper
         run: python scraper/multi_county_15.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -286,4 +299,3 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
-

@@ -13,6 +13,7 @@ on:
         default: '5'
 
 jobs:
+
   rockwall:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -25,7 +26,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Rockwall County scraper (Tyler iDS)
+      - name: Run rockwall scraper
         run: python scraper/multi_county_rockwall.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -34,6 +35,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   kaufman:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -46,7 +48,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Kaufman County scraper (Tyler iDS)
+      - name: Run kaufman scraper
         run: python scraper/multi_county_kaufman.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -55,6 +57,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   hill:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -67,7 +70,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Hill County scraper (Tyler iDS)
+      - name: Run hill scraper
         run: python scraper/multi_county_hill.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -76,6 +79,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   lamar:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -88,7 +92,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Lamar County scraper (Tyler iDS)
+      - name: Run lamar scraper
         run: python scraper/multi_county_lamar.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -97,6 +101,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   hood:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -109,7 +114,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Hood County scraper (Tyler iDS)
+      - name: Run hood scraper
         run: python scraper/multi_county_hood.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -118,6 +123,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   henderson:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -130,7 +136,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Henderson County scraper (Tyler iDS)
+      - name: Run henderson scraper
         run: python scraper/multi_county_henderson.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -139,6 +145,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   howard:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -151,7 +158,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Howard County scraper (Tyler iDS)
+      - name: Run howard scraper
         run: python scraper/multi_county_howard.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -160,6 +167,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   wise:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -172,7 +180,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Wise County scraper (Tyler iDS)
+      - name: Run wise scraper
         run: python scraper/multi_county_wise.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -181,6 +189,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   wood:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -193,7 +202,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Wood County scraper (Tyler iDS)
+      - name: Run wood scraper
         run: python scraper/multi_county_wood.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -202,6 +211,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   eastland:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -214,7 +224,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Eastland County scraper (Tyler iDS)
+      - name: Run eastland scraper
         run: python scraper/multi_county_eastland.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -223,6 +233,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   harrison:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -235,7 +246,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Harrison County scraper (Tyler iDS)
+      - name: Run harrison scraper
         run: python scraper/multi_county_harrison.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -244,6 +255,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   andrews:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -256,7 +268,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Andrews County scraper (Tyler iDS)
+      - name: Run andrews scraper
         run: python scraper/multi_county_andrews.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -265,6 +277,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   erath:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -277,7 +290,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Erath County scraper (Tyler iDS)
+      - name: Run erath scraper
         run: python scraper/multi_county_erath.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -286,6 +299,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   palopinto:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -298,7 +312,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Palo Pinto County scraper (Tyler iDS)
+      - name: Run palopinto scraper
         run: python scraper/multi_county_palopinto.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -307,6 +321,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   hunt:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -319,7 +334,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Hunt County scraper (Tyler iDS)
+      - name: Run hunt scraper
         run: python scraper/multi_county_hunt.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -328,6 +343,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   hays:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -340,7 +356,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Hays County scraper (Tyler iDS)
+      - name: Run hays scraper
         run: python scraper/multi_county_hays.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -349,6 +365,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   comal:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -361,7 +378,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Comal County scraper (Tyler iDS)
+      - name: Run comal scraper
         run: python scraper/multi_county_comal.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -370,6 +387,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   guadalupe:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -382,7 +400,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Guadalupe County scraper (Tyler iDS)
+      - name: Run guadalupe scraper
         run: python scraper/multi_county_guadalupe.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -391,6 +409,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   bastrop:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -403,7 +422,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Bastrop County scraper (Tyler iDS)
+      - name: Run bastrop scraper
         run: python scraper/multi_county_bastrop.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -412,6 +431,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   wichita:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -424,7 +444,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Wichita County scraper (Tyler iDS)
+      - name: Run wichita scraper
         run: python scraper/multi_county_wichita.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -433,6 +453,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   navarro:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -445,7 +466,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Navarro County scraper (Tyler iDS)
+      - name: Run navarro scraper
         run: python scraper/multi_county_navarro.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -454,6 +475,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   upshur:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -466,7 +488,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Upshur County scraper (Tyler iDS)
+      - name: Run upshur scraper
         run: python scraper/multi_county_upshur.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -475,6 +497,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   vanzandt:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -487,7 +510,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Van Zandt County scraper (Tyler iDS)
+      - name: Run vanzandt scraper
         run: python scraper/multi_county_vanzandt.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -496,6 +519,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   gregg:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -508,7 +532,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Gregg County scraper (Tyler iDS)
+      - name: Run gregg scraper
         run: python scraper/multi_county_gregg.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -517,6 +541,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   liberty:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -529,7 +554,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Liberty County scraper (Tyler iDS)
+      - name: Run liberty scraper
         run: python scraper/multi_county_liberty.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -538,6 +563,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   hardin:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -550,7 +576,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Hardin County scraper (Tyler iDS)
+      - name: Run hardin scraper
         run: python scraper/multi_county_hardin.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -559,6 +585,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   orange:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -571,7 +598,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Orange County scraper (Tyler iDS)
+      - name: Run orange scraper
         run: python scraper/multi_county_orange.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -580,6 +607,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   jasper:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -592,7 +620,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Jasper County scraper (Tyler iDS)
+      - name: Run jasper scraper
         run: python scraper/multi_county_jasper.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -601,6 +629,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   bowie:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -613,7 +642,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Bowie County scraper (Tyler iDS)
+      - name: Run bowie scraper
         run: python scraper/multi_county_bowie.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -622,6 +651,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   burnet:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -634,7 +664,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Burnet County scraper (Tyler iDS)
+      - name: Run burnet scraper
         run: python scraper/multi_county_burnet.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -643,6 +673,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   calhoun:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -655,7 +686,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Calhoun County scraper (Tyler iDS)
+      - name: Run calhoun scraper
         run: python scraper/multi_county_calhoun.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -664,6 +695,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   gonzales:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -676,7 +708,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Gonzales County scraper (Tyler iDS)
+      - name: Run gonzales scraper
         run: python scraper/multi_county_gonzales.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -685,6 +717,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   karnes:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -697,7 +730,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Karnes County scraper (Tyler iDS)
+      - name: Run karnes scraper
         run: python scraper/multi_county_karnes.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -706,6 +739,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   polk:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -718,7 +752,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Polk County scraper (Tyler iDS)
+      - name: Run polk scraper
         run: python scraper/multi_county_polk.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -727,6 +761,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   winkler:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -739,7 +774,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Winkler County scraper (Tyler iDS)
+      - name: Run winkler scraper
         run: python scraper/multi_county_winkler.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -748,6 +783,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   yoakum:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -760,7 +796,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Yoakum County scraper (Tyler iDS)
+      - name: Run yoakum scraper
         run: python scraper/multi_county_yoakum.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -769,6 +805,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   somervell:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -781,7 +818,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Somervell County scraper (Tyler iDS)
+      - name: Run somervell scraper
         run: python scraper/multi_county_somervell.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -790,6 +827,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   hamilton:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -802,7 +840,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Hamilton County scraper (Tyler iDS)
+      - name: Run hamilton scraper
         run: python scraper/multi_county_hamilton.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -811,6 +849,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   mills:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -823,7 +862,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Mills County scraper (Tyler iDS)
+      - name: Run mills scraper
         run: python scraper/multi_county_mills.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -832,6 +871,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   delta:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -844,7 +884,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Delta County scraper (Tyler iDS)
+      - name: Run delta scraper
         run: python scraper/multi_county_delta.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -853,9 +893,10 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   mclennan:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -865,7 +906,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run McLennan County scraper (Tyler iDS)
+      - name: Run mclennan scraper
         run: python scraper/multi_county_mclennan.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}

@@ -13,6 +13,7 @@ on:
         default: '5'
 
 jobs:
+
   fort-bend:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -25,7 +26,7 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Fort Bend County scraper (Aumentum)
+      - name: Run fort-bend scraper
         run: python scraper/multi_county_fort_bend.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
@@ -34,27 +35,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
-  webb:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 120
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: scraper/requirements.txt
-      - run: pip install -r scraper/requirements.txt
-      - run: python -m playwright install --with-deps chromium
-      - name: Run Webb County scraper (Kofile GovOS)
-        run: python scraper/multi_county_webb.py
-        env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
-      - name: Push to DB
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python3 scraper/push_to_db.py
+
   galveston:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
@@ -67,15 +48,16 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Galveston County scraper (Fidlar AVA)
+      - name: Run galveston scraper
         run: python scraper/multi_county_galveston.py
         env:
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   parker:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
@@ -88,15 +70,16 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Parker County scraper (Fidlar AVA)
+      - name: Run parker scraper
         run: python scraper/multi_county_parker.py
         env:
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   kerr:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -109,15 +92,38 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Kerr County scraper (Fidlar AVA)
+      - name: Run kerr scraper
         run: python scraper/multi_county_kerr.py
         env:
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
+  webb:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: Run webb scraper
+        run: python scraper/multi_county_webb.py
+        env:
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+      - name: Push to DB
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python3 scraper/push_to_db.py
+
   txlr:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
@@ -130,15 +136,16 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Texas Land Records scraper (12 counties)
+      - name: Run txlr scraper
         run: python scraper/multi_county_txlr.py
         env:
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+
   eagleweb:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
@@ -151,52 +158,12 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run Tyler EagleWeb scraper (Crane, Loving)
+      - name: Run eagleweb scraper
         run: python scraper/multi_county_eagleweb.py
         env:
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
-  enrich-esearch:
-    if: always()
-    runs-on: ubuntu-22.04
-    if: always()
-    steps:
-      - name: Run bulk CAD enrichment (bulk tables)
-        run: |
-          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-cad" -H "Content-Type: application/json" --max-time 300 -w "\nHTTP %{http_code}" || echo "Enrich-CAD failed"
-      - name: Run esearch enrichment (50 leads per county)
-        run: |
-          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-esearch?limit=50" -H "Content-Type: application/json" --max-time 300 -w "\nHTTP %{http_code}" || echo "Enrich-esearch failed"
-      - name: Rescore all leads
-        run: |
-          curl -s -X POST "https://api.stackiq.org/api/admin/rescore" -H "Content-Type: application/json" --max-time 300 -w "\nHTTP %{http_code}" || echo "Rescore failed"
-
-  email-alert:
-    if: always()
-    runs-on: ubuntu-22.04
-    if: always()
-    steps:
-      - name: Trigger StackIQ alert emails
-        run: |
-          curl -s -X POST "https://api.stackiq.org/api/alerts/send" -H "Content-Type: application/json" -w "\nHTTP %{http_code}" || echo "Alert API call failed"
-
-  deploy-pages:
-    needs: harris
-    runs-on: ubuntu-22.04
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dashboard/
-      - id: deployment
-        uses: actions/deploy-pages@v4

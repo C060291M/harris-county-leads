@@ -13,12 +13,10 @@ on:
         default: '5'
 
 jobs:
+
   harris:
     runs-on: ubuntu-22.04
     timeout-minutes: 45
-    outputs:
-      hot_leads: ${{ steps.count.outputs.hot_leads }}
-      total:     ${{ steps.count.outputs.total }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -35,26 +33,6 @@ jobs:
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASS: ${{ secrets.FTP_PASS }}
           LOOKBACK_DAYS: "3"
-      - name: Count hot leads
-        id: count
-        run: |
-          python3 - << 'PYEOF'
-          import json, os
-          try:
-            with open("dashboard/records.json") as f:
-              data = json.load(f)
-            records = data.get("records", [])
-            hot = [r for r in records if (r.get("score") or 0) >= 70 and "New this week" in (r.get("flags") or [])]
-            total = len(records)
-            print(f"Total: {total}, Hot new: {len(hot)}")
-            with open(os.environ["GITHUB_OUTPUT"], "a") as out:
-              out.write(f"hot_leads={len(hot)}\n")
-              out.write(f"total={total}\n")
-          except Exception as e:
-            print(f"Count error: {e}")
-            with open(os.environ["GITHUB_OUTPUT"], "a") as out:
-              out.write("hot_leads=0\ntotal=0\n")
-          PYEOF
       - name: Push Harris to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -65,15 +43,6 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin main
           git checkout main
-          git add dashboard/records.json data/records.json data/leads_ghl.csv dashboard/leadiq_stats.json data/leadiq_stats.json
-          git diff --staged --quiet || git commit -m "chore: update harris leads [skip ci]"
-          git pull --rebase origin main || true
+          git add dashboard/ data/ || true
+          git diff --cached --quiet || git commit -m "chore: update Harris dashboard data"
           git push origin main || true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: debug-html
-          path: debug/
-          retention-days: 3
