@@ -87,11 +87,11 @@ async def scrape_somervell(start_dt, end_dt):
         # Accept disclaimer once
         try:
             await page.goto(BASE_URL, wait_until="networkidle", timeout=60000)
-            await page.wait_for_timeout(2000)
+            await page.wait_for_timeout(1000)
             accept_btn = await page.query_selector("button:has-text('I Accept'), input[value='I Accept'], a:has-text('I Accept')")
             if accept_btn:
                 await accept_btn.click()
-                await page.wait_for_timeout(2000)
+                await page.wait_for_timeout(1000)
         except Exception as e:
             log.warning("Somervell: disclaimer error: %s", e)
 
@@ -100,7 +100,7 @@ async def scrape_somervell(start_dt, end_dt):
             log.info("Somervell: page %d of %d (%s to %s)", page_num, MAX_PAGES, start_str, end_str)
             try:
                 await page.goto(f"{BASE_URL}/search/official-records-search", wait_until="networkidle", timeout=60000)
-                await page.wait_for_timeout(2000)
+                await page.wait_for_timeout(1000)
 
                 # Fill date range
                 inputs = await page.query_selector_all("input[placeholder='mm/dd/yyyy']")
@@ -114,7 +114,7 @@ async def scrape_somervell(start_dt, end_dt):
                 search_btn = await page.query_selector("button:has-text('Search'), input[value='Search']")
                 if search_btn:
                     await search_btn.click()
-                    await page.wait_for_timeout(5000)
+                    await page.wait_for_timeout(2000)
 
                 # Parse results
                 from bs4 import BeautifulSoup
@@ -153,7 +153,7 @@ async def scrape_somervell(start_dt, end_dt):
                 next_btn = await page.query_selector("a:has-text('Next'), button:has-text('Next'), .next-page")
                 if not next_btn: break
                 await next_btn.click()
-                await page.wait_for_timeout(3000)
+                await page.wait_for_timeout(2000)
 
             except Exception as e:
                 log.warning("Somervell: page %d error: %s", page_num, e)
