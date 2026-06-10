@@ -222,6 +222,7 @@ def blank_rec(fn, dtype, cat, cat_label, filed, owner,
         "amount": amount, "legal": legal, "clerk_url": url,
         "prop_address":"","prop_city":"","prop_state":"TX","prop_zip":"",
         "mail_address":"","mail_city":"","mail_state":"TX","mail_zip":"",
+        "county": "Harris",
     }
 
 
