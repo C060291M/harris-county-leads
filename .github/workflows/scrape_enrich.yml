@@ -1,0 +1,87 @@
+name: StackIQ Enrichment
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+    inputs:
+      lookback_days:
+        description: 'Days to look back'
+        default: '3'
+      max_pages:
+        description: 'Max pages per doc type'
+        default: '5'
+
+jobs:
+  enrich-esearch:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Run bulk CAD enrichment (bulk tables)
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-cad" -H "Content-Type: application/json" --max-time 300 -w "\nHTTP %{http_code}" || echo "Enrich-CAD failed"
+      - name: Run esearch enrichment (50 leads per county)
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-esearch?limit=50" -H "Content-Type: application/json" --max-time 300 -w "\nHTTP %{http_code}" || echo "Enrich-esearch failed"
+      - name: Rescore all leads
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/admin/rescore" -H "Content-Type: application/json" --max-time 300 -w "\nHTTP %{http_code}" || echo "Rescore failed"
+
+  email-alert:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Trigger StackIQ alert emails
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/alerts/send" -H "Content-Type: application/json" -w "\nHTTP %{http_code}" || echo "Alert API call failed"
+
+  deploy-pages:
+    runs-on: ubuntu-22.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboard/
+      - id: deployment
+        uses: actions/deploy-pages@v4
+  email-alert:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Trigger StackIQ alert emails
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/alerts/send" -H "Content-Type: application/json" -w "\nHTTP %{http_code}" || echo "Alert API call failed"
+
+  deploy-pages:
+    runs-on: ubuntu-22.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboard/
+      - id: deployment
+        uses: actions/deploy-pages@v4
+  deploy-pages:
+    runs-on: ubuntu-22.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboard/
+      - id: deployment
+        uses: actions/deploy-pages@v4
