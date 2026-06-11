@@ -1,0 +1,644 @@
+[
+  {
+    "county": "bell",
+    "platform": "pubsearch",
+    "url": "https://bell.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "bexar",
+    "platform": "pubsearch",
+    "url": "https://bexar.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "anderson",
+    "platform": "pubsearch",
+    "url": "https://anderson.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "blanco",
+    "platform": "pubsearch",
+    "url": "https://blanco.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "bee",
+    "platform": "pubsearch",
+    "url": "https://bee.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "brazoria",
+    "platform": "tyler_ids2",
+    "url": "https://brazoriacountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "bandera",
+    "platform": "i2i",
+    "url": "https://i2i.uslandrecords.com/TX/Bandera/D/",
+    "status": "live"
+  },
+  {
+    "county": "angelina",
+    "platform": "i2i",
+    "url": "https://i2i.uslandrecords.com/TX/Angelina/D/",
+    "status": "live"
+  },
+  {
+    "county": "brewster",
+    "platform": "pubsearch",
+    "url": "https://brewster.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "brazos",
+    "platform": "pubsearch",
+    "url": "https://brazos.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "andrews",
+    "platform": "tyler_ids2",
+    "url": "https://andrewscountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "bowie",
+    "platform": "tyler_ids2",
+    "url": "https://bowiecountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "aransas",
+    "platform": "tyler_ids2",
+    "url": "https://aransascountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "cherokee",
+    "platform": "i2i",
+    "url": "https://i2i.uslandrecords.com/TX/Cherokee/D/",
+    "status": "live"
+  },
+  {
+    "county": "castro",
+    "platform": "i2i",
+    "url": "https://i2i.uslandrecords.com/TX/Castro/D/",
+    "status": "live"
+  },
+  {
+    "county": "burleson",
+    "platform": "pubsearch",
+    "url": "https://burleson.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "cameron",
+    "platform": "pubsearch",
+    "url": "https://cameron.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "chambers",
+    "platform": "pubsearch",
+    "url": "https://chambers.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "calhoun",
+    "platform": "tyler_ids2",
+    "url": "https://calhouncountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "burnet",
+    "platform": "tyler_ids2",
+    "url": "https://burnetcountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "coleman",
+    "platform": "pubsearch",
+    "url": "https://coleman.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "collin",
+    "platform": "pubsearch",
+    "url": "https://collin.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "cooke",
+    "platform": "i2i",
+    "url": "https://i2i.uslandrecords.com/TX/Cooke/D/",
+    "status": "live"
+  },
+  {
+    "county": "carson",
+    "platform": "tyler_ids2",
+    "url": "https://carsoncountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "denton",
+    "platform": "pubsearch",
+    "url": "https://denton.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "colorado",
+    "platform": "tyler_ids2",
+    "url": "https://coloradocountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "ector",
+    "platform": "tyler_ids2",
+    "url": "https://ectorcountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "delta",
+    "platform": "tyler_ids2",
+    "url": "https://deltacountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "dallas",
+    "platform": "pubsearch",
+    "url": "https://dallas.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "franklin",
+    "platform": "eagleweb",
+    "url": "https://franklintx.countygovernmentrecords.com/FranklinTXRecorder/web/",
+    "status": "live"
+  },
+  {
+    "county": "erath",
+    "platform": "tyler_ids2",
+    "url": "https://erathcountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "cochran",
+    "platform": "i2i",
+    "url": "https://i2i.uslandrecords.com/TX/Cochran/D/",
+    "status": "live"
+  },
+  {
+    "county": "donley",
+    "platform": "tyler_ids2",
+    "url": "https://donleycountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "freestone",
+    "platform": "pubsearch",
+    "url": "https://freestone.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "goliad",
+    "platform": "pubsearch",
+    "url": "https://goliad.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "gillespie",
+    "platform": "pubsearch",
+    "url": "https://gillespie.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "grayson",
+    "platform": "pubsearch",
+    "url": "https://grayson.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "gonzales",
+    "platform": "tyler_ids2",
+    "url": "https://gonzalescountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "grimes",
+    "platform": "pubsearch",
+    "url": "https://grimes.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "hidalgo",
+    "platform": "pubsearch",
+    "url": "https://hidalgo.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "hamilton",
+    "platform": "tyler_ids2",
+    "url": "https://hamiltoncountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "henderson",
+    "platform": "tyler_ids2",
+    "url": "https://hendersoncountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "hill",
+    "platform": "tyler_ids2",
+    "url": "https://hillcountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "hood",
+    "platform": "tyler_ids2",
+    "url": "https://hoodcountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "hockley",
+    "platform": "pubsearch",
+    "url": "https://hockley.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "edwards",
+    "platform": "i2i",
+    "url": "https://i2i.uslandrecords.com/TX/Edwards/D/",
+    "status": "live"
+  },
+  {
+    "county": "falls",
+    "platform": "i2i",
+    "url": "https://i2i.uslandrecords.com/TX/Falls/D/",
+    "status": "live"
+  },
+  {
+    "county": "howard",
+    "platform": "tyler_ids2",
+    "url": "https://howardcountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "dallam",
+    "platform": "tyler_ids2",
+    "url": "https://dallamcountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "hutchinson",
+    "platform": "i2i",
+    "url": "https://i2i.uslandrecords.com/TX/Hutchinson/D/",
+    "status": "live"
+  },
+  {
+    "county": "duval",
+    "platform": "i2i",
+    "url": "https://i2i.uslandrecords.com/TX/Duval/D/",
+    "status": "live"
+  },
+  {
+    "county": "jimwells",
+    "platform": "pubsearch",
+    "url": "https://jimwells.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "jefferson",
+    "platform": "pubsearch",
+    "url": "https://jefferson.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "johnson",
+    "platform": "pubsearch",
+    "url": "https://johnson.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "kendall",
+    "platform": "pubsearch",
+    "url": "https://kendall.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "hunt",
+    "platform": "tyler_ids2",
+    "url": "https://huntcountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "jimhogg",
+    "platform": "pubsearch",
+    "url": "https://jimhogg.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "loving",
+    "platform": "eagleweb",
+    "url": "https://lovingtx.countygovernmentrecords.com/LovingTXRecorder/web/",
+    "status": "live"
+  },
+  {
+    "county": "kaufman",
+    "platform": "tyler_ids2",
+    "url": "https://kaufmancountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "karnes",
+    "platform": "tyler_ids2",
+    "url": "https://karnescountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "lubbock",
+    "platform": "eagleweb2",
+    "url": "https://erecord.lubbockcounty.gov/recorder/web/",
+    "status": "live"
+  },
+  {
+    "county": "llano",
+    "platform": "pubsearch",
+    "url": "https://llano.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "leon",
+    "platform": "pubsearch",
+    "url": "https://leon.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "leon",
+    "platform": "i2i",
+    "url": "https://i2i.uslandrecords.com/TX/Leon/D/",
+    "status": "live"
+  },
+  {
+    "county": "kimble",
+    "platform": "tyler_ids2",
+    "url": "https://kimblecountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "lamar",
+    "platform": "tyler_ids2",
+    "url": "https://lamarcountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "liberty",
+    "platform": "tyler_ids2",
+    "url": "https://libertycountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "madison",
+    "platform": "pubsearch",
+    "url": "https://madison.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "madison",
+    "platform": "i2i",
+    "url": "https://i2i.uslandrecords.com/TX/Madison/D/",
+    "status": "live"
+  },
+  {
+    "county": "lavaca",
+    "platform": "tyler_ids2",
+    "url": "https://lavacacountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "matagorda",
+    "platform": "pubsearch",
+    "url": "https://matagorda.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "medina",
+    "platform": "pubsearch",
+    "url": "https://medina.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "midland",
+    "platform": "pubsearch",
+    "url": "https://midland.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "nacogdoches",
+    "platform": "pubsearch",
+    "url": "https://nacogdoches.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "milam",
+    "platform": "pubsearch",
+    "url": "https://milam.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "montgomery",
+    "platform": "pubsearch",
+    "url": "https://montgomery.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "nueces",
+    "platform": "pubsearch",
+    "url": "https://nueces.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "mills",
+    "platform": "tyler_ids2",
+    "url": "https://millscountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "navarro",
+    "platform": "tyler_ids2",
+    "url": "https://navarrocountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "orange",
+    "platform": "tyler_ids2",
+    "url": "https://orangecountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "panola",
+    "platform": "tyler_ids2",
+    "url": "https://panolacountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "reagan",
+    "platform": "pubsearch",
+    "url": "https://reagan.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "reeves",
+    "platform": "pubsearch",
+    "url": "https://reeves.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "polk",
+    "platform": "tyler_ids2",
+    "url": "https://polkcountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "rockwall",
+    "platform": "tyler_ids",
+    "url": "https://rockwalltx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "potter",
+    "platform": "pubsearch",
+    "url": "https://potter.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "potter",
+    "platform": "tyler_ids2",
+    "url": "https://pottercountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "randall",
+    "platform": "tyler_ids2",
+    "url": "https://randallcountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "redriver",
+    "platform": "pubsearch",
+    "url": "https://redriver.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "tarrant",
+    "platform": "pubsearch",
+    "url": "https://tarrant.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "starr",
+    "platform": "pubsearch",
+    "url": "https://starr.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "somervell",
+    "platform": "tyler_ids2",
+    "url": "https://somervellcountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "refugio",
+    "platform": "pubsearch",
+    "url": "https://refugio.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "smith",
+    "platform": "pubsearch",
+    "url": "https://smith.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "travis",
+    "platform": "pubsearch",
+    "url": "https://travis.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "taylor",
+    "platform": "tyler_ids2",
+    "url": "https://taylorcountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "upshur",
+    "platform": "tyler_ids2",
+    "url": "https://upshurcountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "walker",
+    "platform": "pubsearch",
+    "url": "https://walker.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "waller",
+    "platform": "tyler_ids2",
+    "url": "https://wallercountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "wilson",
+    "platform": "pubsearch",
+    "url": "https://wilson.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "williamson",
+    "platform": "pubsearch",
+    "url": "https://williamson.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "zapata",
+    "platform": "pubsearch",
+    "url": "https://zapata.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "young",
+    "platform": "pubsearch",
+    "url": "https://young.tx.publicsearch.us",
+    "status": "live"
+  },
+  {
+    "county": "wood",
+    "platform": "tyler_ids2",
+    "url": "https://woodcountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "webb",
+    "platform": "tyler_ids2",
+    "url": "https://webbcountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "wise",
+    "platform": "tyler_ids2",
+    "url": "https://wisecountytx-web.tylerhost.net/web",
+    "status": "live"
+  },
+  {
+    "county": "mclennan",
+    "platform": "tyler_ids2",
+    "url": "https://mclennancountytx-web.tylerhost.net/web",
+    "status": "live"
+  }
+]
