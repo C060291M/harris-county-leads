@@ -1,6 +1,6 @@
 """
-StackIQ — Calhoun County Scraper (Tyler iDS)
-Portal: calhouncountytx-web.tylerhost.net
+StackIQ — Rockwall County Scraper (Tyler iDS)
+Portal: rockwalltx-web.tylerhost.net
 Optimized: single date-range search, client-side doc type filtering
 """
 import json, logging, re, os, asyncio
@@ -165,7 +165,7 @@ async def scrape_calhoun(start_dt, end_dt):
 async def main_async():
     now    = datetime.now()
     cutoff = now - timedelta(days=LOOKBACK_DAYS)
-    log.info("=== Calhoun County Scraper (optimized) ===")
+    log.info("=== Calhoun County Scraper (Tyler iDS) (optimized) ===")
     log.info("Date range: %s to %s", cutoff.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d"))
 
     all_records = await scrape_calhoun(cutoff, now)
