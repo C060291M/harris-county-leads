@@ -38,7 +38,7 @@ jobs:
 
   galveston:
     runs-on: ubuntu-22.04
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -52,7 +52,7 @@ jobs:
         run: python scraper/multi_county_galveston.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -60,7 +60,7 @@ jobs:
 
   parker:
     runs-on: ubuntu-22.04
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -74,7 +74,7 @@ jobs:
         run: python scraper/multi_county_parker.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -96,7 +96,7 @@ jobs:
         run: python scraper/multi_county_kerr.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -118,7 +118,7 @@ jobs:
         run: python scraper/multi_county_webb.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '8' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -126,7 +126,7 @@ jobs:
 
   txlr:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -140,7 +140,7 @@ jobs:
         run: python scraper/multi_county_txlr.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -148,7 +148,7 @@ jobs:
 
   eagleweb:
     runs-on: ubuntu-22.04
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -162,7 +162,7 @@ jobs:
         run: python scraper/multi_county_eagleweb.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}

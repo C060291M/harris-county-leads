@@ -16,7 +16,7 @@ jobs:
 
   collin:
     runs-on: ubuntu-22.04
-    timeout-minutes: 90
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -30,7 +30,7 @@ jobs:
         run: python scraper/multi_county_1b.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -38,7 +38,7 @@ jobs:
 
   denton-group:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -52,7 +52,7 @@ jobs:
         run: python scraper/multi_county_2.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -60,7 +60,7 @@ jobs:
 
   travis:
     runs-on: ubuntu-22.04
-    timeout-minutes: 90
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -74,7 +74,7 @@ jobs:
         run: python scraper/multi_county_travis.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
