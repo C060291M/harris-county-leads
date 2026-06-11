@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 DB = os.environ["DATABASE_URL"]
 BASE = "https://esearch.smithcad.org"
-LIMIT = 200
+LIMIT = 500
 
 def get_conn():
     return psycopg2.connect(DB, connect_timeout=30)
@@ -51,14 +51,14 @@ async def enrich_smith():
                 if len(last) < 3: continue
                 page = await browser.new_page()
                 await page.goto(f"{BASE}/search", timeout=30000)
-                await page.wait_for_timeout(2000)
+                await page.wait_for_timeout(1000)
                 await page.click("a[href='#tab-search-adv']")
-                await page.wait_for_timeout(500)
+                await page.wait_for_timeout(300)
                 owner_input = page.locator("#tab-search-adv input[name='query[owner][name]']")
                 await owner_input.fill(last)
                 submit = page.locator("#tab-search-adv button[type=submit]")
                 await submit.click()
-                await page.wait_for_timeout(3000)
+                await page.wait_for_timeout(1000)
                 rows = await page.query_selector_all("table tr")
                 if len(rows) >= 2:
                     first_row = rows[1]
@@ -87,7 +87,7 @@ async def enrich_smith():
                             detail_url = BASE + href if href.startswith("/") else href
                             dp = await browser.new_page()
                             await dp.goto(detail_url, timeout=20000)
-                            await dp.wait_for_timeout(1500)
+                            await dp.wait_for_timeout(1000)
                             content = await dp.content()
                             sqft_m = re.search(r"Living Area[^\d]*(\d+)", content)
                             yr_m = re.search(r"Year Built[^\d]*(\d{4})", content)
