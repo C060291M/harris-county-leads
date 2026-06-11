@@ -1,6 +1,6 @@
 """
-StackIQ — Upshur County Scraper (Tyler iDS)
-Portal: upshurtx-web.tylerhost.net
+StackIQ — Rockwall County Scraper (Tyler iDS)
+Portal: rockwalltx-web.tylerhost.net
 Optimized: single date-range search, client-side doc type filtering
 """
 import json, logging, re, os, asyncio
@@ -8,11 +8,11 @@ from datetime import datetime, timedelta
 from playwright.async_api import async_playwright
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S")
-log = logging.getLogger("upshur")
+log = logging.getLogger("aransas")
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "3"))
 MAX_PAGES     = int(os.getenv("MAX_PAGES", "3"))
-BASE_URL      = "https://upshurcountytx-web.tylerhost.net/web"
+BASE_URL      = "https://aransascountytx-web.tylerhost.net/web"
 
 KEEP_DOC_TYPES = {
     "LIS PENDENS","TAX DEED","ABSTRACT OF JUDGMENT","MECHANIC LIEN",
@@ -71,7 +71,7 @@ def compute_score(r):
         flags.append("LLC/Corp owner"); s += 10
     return min(s, 100), flags
 
-async def scrape_upshur(start_dt, end_dt):
+async def scrape_aransas(start_dt, end_dt):
     records = []
     start_str = start_dt.strftime("%m/%d/%Y")
     end_str   = end_dt.strftime("%m/%d/%Y")
@@ -93,11 +93,11 @@ async def scrape_upshur(start_dt, end_dt):
                 await accept_btn.click()
                 await page.wait_for_timeout(1000)
         except Exception as e:
-            log.warning("Upshur: disclaimer error: %s", e)
+            log.warning("Aransas: disclaimer error: %s", e)
 
         # Single search by date range only - no doc type filter
         for page_num in range(1, MAX_PAGES + 1):
-            log.info("Upshur: page %d of %d (%s to %s)", page_num, MAX_PAGES, start_str, end_str)
+            log.info("Aransas: page %d of %d (%s to %s)", page_num, MAX_PAGES, start_str, end_str)
             try:
                 await page.goto(f"{BASE_URL}/search/official-records-search", wait_until="networkidle", timeout=60000)
                 await page.wait_for_timeout(1000)
@@ -139,14 +139,14 @@ async def scrape_upshur(start_dt, end_dt):
                         "filed": filed, "owner": owner, "grantee": "",
                         "amount": None, "legal": "",
                         "clerk_url": f"{BASE_URL}/search/official-records-search",
-                        "county": "Upshur",
+                        "county": "Aransas",
                         "prop_address":"","prop_city":"","prop_state":"TX","prop_zip":"",
                         "mail_address":"","mail_city":"","mail_state":"TX","mail_zip":"",
                         "score": 0, "flags": [],
                     })
                     page_records += 1
 
-                log.info("Upshur: page %d found %d distress records", page_num, page_records)
+                log.info("Aransas: page %d found %d distress records", page_num, page_records)
                 if page_records == 0: break
 
                 # Try next page
@@ -156,7 +156,7 @@ async def scrape_upshur(start_dt, end_dt):
                 await page.wait_for_timeout(2000)
 
             except Exception as e:
-                log.warning("Upshur: page %d error: %s", page_num, e)
+                log.warning("Aransas: page %d error: %s", page_num, e)
                 break
 
         await browser.close()
@@ -165,10 +165,10 @@ async def scrape_upshur(start_dt, end_dt):
 async def main_async():
     now    = datetime.now()
     cutoff = now - timedelta(days=LOOKBACK_DAYS)
-    log.info("=== Upshur County Scraper (optimized) ===")
+    log.info("=== Rockwall County Scraper (optimized) ===")
     log.info("Date range: %s to %s", cutoff.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d"))
 
-    all_records = await scrape_upshur(cutoff, now)
+    all_records = await scrape_aransas(cutoff, now)
 
     seen, deduped = set(), []
     for r in all_records:
@@ -183,18 +183,18 @@ async def main_async():
 
     payload = {
         "fetched_at": now.isoformat(),
-        "source": "Upshur County Clerk (Tyler iDS)",
+        "source": "Aransas County Clerk (Tyler iDS)",
         "date_range": {"start": cutoff.strftime("%Y-%m-%d"), "end": now.strftime("%Y-%m-%d")},
         "total": len(deduped),
-        "counties": ["Upshur"],
+        "counties": ["Aransas"],
         "records": deduped,
     }
 
     os.makedirs("dashboard", exist_ok=True)
     os.makedirs("data", exist_ok=True)
-    with open("dashboard/upshur_records.json","w") as f: json.dump(payload,f,indent=2,default=str)
-    with open("data/upshur_records.json","w") as f: json.dump(payload,f,indent=2,default=str)
-    log.info("Saved -> dashboard/upshur_records.json")
+    with open("dashboard/aransas_records.json","w") as f: json.dump(payload,f,indent=2,default=str)
+    with open("data/aransas_records.json","w") as f: json.dump(payload,f,indent=2,default=str)
+    log.info("Saved -> dashboard/aransas_records.json")
 
     hot  = sum(1 for r in deduped if r.get("score",0) >= 70)
     warm = sum(1 for r in deduped if 40 <= r.get("score",0) < 70)
