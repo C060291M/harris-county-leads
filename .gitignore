@@ -20,3 +20,7 @@ dashboard/*.json
 dashboard/records.json
 data/records.json
 data/leads_ghl.csv
+
+scraper/__pycache__/
+**/*.pyc
+**/*.pyo
