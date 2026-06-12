@@ -1,4 +1,4 @@
-﻿import json, glob, psycopg2, os, sys
+﻿import json, glob, psycopg2, os, sys, time
 from datetime import datetime
 
 DB = os.environ.get("DATABASE_URL","")
@@ -15,21 +15,27 @@ SQL = ("INSERT INTO lead_records "
        "score=EXCLUDED.score,flags=EXCLUDED.flags,"
        "prop_address=COALESCE(NULLIF(EXCLUDED.prop_address,''),lead_records.prop_address),"
        "county=EXCLUDED.county")
-
 LOG_SQL = ("INSERT INTO scraper_runs (job_name, county, run_at, leads_pushed, status, error_msg) "
            "VALUES (%s,%s,%s,%s,%s,%s)")
 
 pattern = os.environ.get("JSON_GLOB", "dashboard/*_records.json")
-files = glob.glob(pattern)
-# Also pick up Harris records.json
+all_files = glob.glob(pattern)
+
+# Only push files modified in the last 2 hours (current run)
+cutoff = time.time() - 7200
+files = [f for f in all_files if os.path.getmtime(f) > cutoff]
+
+# Also pick up Harris records.json if fresh
 harris_file = "dashboard/records.json"
-import os as _os
-if _os.path.exists(harris_file) and harris_file not in files:
-    files.append(harris_file)
+if os.path.exists(harris_file) and harris_file not in files:
+    if os.path.getmtime(harris_file) > cutoff:
+        files.append(harris_file)
 
 if not files:
-    print("No JSON files found")
+    print(f"No fresh JSON files found (checked {len(all_files)} total, none modified in last 2h)")
     sys.exit(0)
+
+print(f"Pushing {len(files)} fresh files (skipping {len(all_files)-len(files)} stale)")
 
 for f in files:
     try:
@@ -37,13 +43,10 @@ for f in files:
         recs = payload.get("records", payload) if isinstance(payload, dict) else payload
         job_name = os.path.basename(f).replace("_records.json","")
         run_at = datetime.utcnow()
-
-        # Group records by county for logging
         county_counts = {}
         for r in recs:
             c = r.get("county","unknown")
             county_counts[c] = county_counts.get(c, 0) + 1
-
         conn = psycopg2.connect(DB, connect_timeout=30)
         cur = conn.cursor()
         ins = 0
@@ -61,20 +64,15 @@ for f in files:
                 ))
                 ins += 1
             except: pass
-
-        # Log per-county run results
         for county, count in county_counts.items():
             try:
                 cur.execute(LOG_SQL, (job_name, county, run_at, count, "success", None))
             except: pass
-
         conn.commit()
         conn.close()
         print(f"{f}: {ins} inserted across {list(county_counts.keys())}")
-
     except Exception as e:
         print(f"Error {f}: {e}")
-        # Try to log the failure
         try:
             conn2 = psycopg2.connect(DB, connect_timeout=30)
             cur2 = conn2.cursor()
