@@ -145,7 +145,7 @@ async def scrape_panola(start_dt, end_dt):
                         "cat": cat, "cat_label": cat_label,
                         "filed": filed, "owner": owner, "grantee": "",
                         "amount": None, "legal": "",
-                        "clerk_url": f"{BASE_URL}/search/official-records-search",
+                        "clerk_url": f"{BASE_URL}/search/DOCSEARCH144S1",
                         "county": "Panola",
                         "prop_address":"","prop_city":"","prop_state":"TX","prop_zip":"",
                         "mail_address":"","mail_city":"","mail_state":"TX","mail_zip":"",

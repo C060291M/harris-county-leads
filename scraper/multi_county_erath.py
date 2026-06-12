@@ -86,12 +86,12 @@ async def scrape_erath(start_dt, end_dt):
 
         # Accept disclaimer once
         try:
-            await page.goto(BASE_URL, wait_until="networkidle", timeout=60000)
-            await page.wait_for_timeout(1000)
-            accept_btn = await page.query_selector("button:has-text('I Accept'), input[value='I Accept'], a:has-text('I Accept')")
+            await page.goto(BASE_URL + "/user/disclaimer", wait_until="networkidle", timeout=60000)
+            await page.wait_for_timeout(2000)
+            accept_btn = await page.query_selector("button:has-text('I Accept'), a:has-text('I Accept')")
             if accept_btn:
                 await accept_btn.click()
-                await page.wait_for_timeout(1000)
+                await page.wait_for_timeout(3000)
         except Exception as e:
             log.warning("Erath: disclaimer error: %s", e)
 
@@ -99,22 +99,19 @@ async def scrape_erath(start_dt, end_dt):
         for page_num in range(1, MAX_PAGES + 1):
             log.info("Erath: page %d of %d (%s to %s)", page_num, MAX_PAGES, start_str, end_str)
             try:
-                await page.goto(f"{BASE_URL}/search/official-records-search", wait_until="networkidle", timeout=60000)
-                await page.wait_for_timeout(1000)
+                await page.goto(f"{BASE_URL}/search/DOCSEARCH144S1", wait_until="networkidle", timeout=60000)
+                await page.wait_for_timeout(5000)
 
                 # Fill date range
-                inputs = await page.query_selector_all("input[placeholder='mm/dd/yyyy']")
-                if len(inputs) >= 2:
-                    await inputs[0].fill(start_str)
-                    await page.wait_for_timeout(200)
-                    await inputs[1].fill(end_str)
-                    await page.wait_for_timeout(200)
+                await page.fill("input[name='field_RecordingDateID_DOT_StartDate']", start_str)
+                await page.fill("input[name='field_RecordingDateID_DOT_EndDate']", end_str)
+                await page.wait_for_timeout(500)
 
                 # Click search
-                search_btn = await page.query_selector("button:has-text('Search'), input[value='Search']")
-                if search_btn:
-                    await search_btn.click()
-                    await page.wait_for_timeout(2000)
+                search_link = await page.query_selector("a[href*='searchResults']")
+                if search_link:
+                    await search_link.click()
+                    await page.wait_for_timeout(6000)
 
                 # Parse results - Tyler iDS countytx card layout
                 from bs4 import BeautifulSoup as _BS
@@ -147,7 +144,7 @@ async def scrape_erath(start_dt, end_dt):
                         "cat": cat, "cat_label": cat_label,
                         "filed": filed, "owner": owner, "grantee": "",
                         "amount": None, "legal": "",
-                        "clerk_url": f"{BASE_URL}/search/official-records-search",
+                        "clerk_url": f"{BASE_URL}/search/DOCSEARCH144S1",
                         "county": "Erath",
                         "prop_address":"","prop_city":"","prop_state":"TX","prop_zip":"",
                         "mail_address":"","mail_city":"","mail_state":"TX","mail_zip":"",
