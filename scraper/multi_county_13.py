@@ -15,11 +15,11 @@ MAX_PAGES     = int(os.getenv("MAX_PAGES", "3"))
 API_URL = os.getenv("API_URL", "https://api.stackiq.org/leads/bulk-import")
 
 COUNTIES = {
-    "Randall": "randall.tx.publicsearch.us",
-    "Tom Green": "tomgreen.tx.publicsearch.us",
-    "Taylor": "taylor.tx.publicsearch.us",
-    "Ector": "ector.tx.publicsearch.us",
-    "Lubbock": "lubbock.tx.publicsearch.us",
+    "Brewster": "brewster.tx.publicsearch.us",
+    "Coleman":  "coleman.tx.publicsearch.us",
+    "Goliad":   "goliad.tx.publicsearch.us",
+    "Hockley":  "hockley.tx.publicsearch.us",
+    "Reagan":   "reagan.tx.publicsearch.us",
 }
 
 def date_slices(start, end, days=1):

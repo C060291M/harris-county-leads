@@ -86,12 +86,15 @@ async def scrape_ector(start_dt, end_dt):
 
         # Accept disclaimer once
         try:
-            await page.goto(BASE_URL, wait_until="networkidle", timeout=60000)
-            await page.wait_for_timeout(1000)
-            accept_btn = await page.query_selector("button:has-text('I Accept'), input[value='I Accept'], a:has-text('I Accept')")
+            await page.goto(BASE_URL + "/user/disclaimer", wait_until="networkidle", timeout=60000)
+            await page.wait_for_timeout(1500)
+            accept_btn = await page.query_selector("button:has-text('I Accept')")
             if accept_btn:
                 await accept_btn.click()
-                await page.wait_for_timeout(1000)
+                await page.wait_for_timeout(2000)
+                log.info("Ector: disclaimer accepted")
+            else:
+                log.warning("Ector: I Accept button not found")
         except Exception as e:
             log.warning("Ector: disclaimer error: %s", e)
 
@@ -99,46 +102,50 @@ async def scrape_ector(start_dt, end_dt):
         for page_num in range(1, MAX_PAGES + 1):
             log.info("Ector: page %d of %d (%s to %s)", page_num, MAX_PAGES, start_str, end_str)
             try:
-                await page.goto(f"{BASE_URL}/search/official-records-search", wait_until="networkidle", timeout=60000)
-                await page.wait_for_timeout(1000)
+                await page.goto(f"{BASE_URL}/search/DOCSEARCH144S1", wait_until="networkidle", timeout=60000)
+                await page.wait_for_timeout(5000)
 
                 # Fill date range
-                inputs = await page.query_selector_all("input[placeholder='mm/dd/yyyy']")
-                if len(inputs) >= 2:
-                    await inputs[0].fill(start_str)
-                    await page.wait_for_timeout(200)
-                    await inputs[1].fill(end_str)
-                    await page.wait_for_timeout(200)
+                await page.fill("input[name='field_RecordingDateID_DOT_StartDate']", start_str)
+                await page.fill("input[name='field_RecordingDateID_DOT_EndDate']", end_str)
+                await page.wait_for_timeout(500)
 
                 # Click search
-                search_btn = await page.query_selector("button:has-text('Search'), input[value='Search']")
-                if search_btn:
-                    await search_btn.click()
-                    await page.wait_for_timeout(2000)
+                search_link = await page.query_selector("a[href*='searchResults']")
+                if search_link:
+                    await search_link.click()
+                    await page.wait_for_timeout(6000)
 
-                # Parse results
-                from bs4 import BeautifulSoup
-                soup = BeautifulSoup(await page.content(), "lxml")
-                rows = soup.select("table tbody tr, .search-result-row, tr.result-row")
-                if not rows:
-                    rows = soup.find_all("tr")
-
+                # Parse results - Tyler iDS countytx card layout
+                from bs4 import BeautifulSoup as _BS
+                import re as _re
+                soup = _BS(await page.content(), "lxml")
+                items = soup.find_all("li", attrs={"data-documentid": True})
+                log.info("Ector: %d raw items", len(items))
+                KEEP_TYPES = ["LIS PENDENS","ABSTRACT OF JUDGMENT","FEDERAL TAX LIEN",
+                    "MECHANIC","STATE TAX LIEN","JUDGMENT","LIEN",
+                    "NOTICE OF TRUSTEE SALE","PROBATE","DIVORCE","HOSPITAL LIEN","FORECLOSURE"]
                 page_records = 0
-                for row in rows:
-                    cells = row.find_all("td")
-                    if len(cells) < 3: continue
-                    doc_type = cells[1].get_text(" ", strip=True) if len(cells) > 1 else ""
-                    if not doc_type or not should_keep(doc_type): continue
-                    doc_num  = cells[0].get_text(" ", strip=True)
-                    filed    = norm_date(cells[2].get_text(" ", strip=True) if len(cells) > 2 else "")
-                    owner    = cells[3].get_text(" ", strip=True) if len(cells) > 3 else ""
+                for item in items:
+                    h1 = item.find("h1")
+                    if not h1: continue
+                    h1_text = h1.get_text(" ", strip=True)
+                    if not any(k in h1_text.upper() for k in KEEP_TYPES): continue
+                    parts = h1_text.split(" . ")
+                    doc_num = parts[0].strip() if parts else ""
+                    doc_type = parts[1].strip() if len(parts) > 1 else h1_text.strip()
+                    full_text = item.get_text(" ", strip=True)
+                    date_m = _re.search(r"(\d{2}/\d{2}/\d{4})", full_text)
+                    filed = norm_date(date_m.group(1)) if date_m else ""
+                    grantor_m = _re.search(r"Grantor\s+([A-Z][^\n]+?)(?:\s{2,}|Grantee|Recording)", full_text)
+                    owner = grantor_m.group(1).strip() if grantor_m else ""
                     cat, cat_label = cat_from_doc_type(doc_type)
                     records.append({
                         "doc_num": doc_num, "doc_type": doc_type,
                         "cat": cat, "cat_label": cat_label,
                         "filed": filed, "owner": owner, "grantee": "",
                         "amount": None, "legal": "",
-                        "clerk_url": f"{BASE_URL}/search/official-records-search",
+                        "clerk_url": f"{BASE_URL}/search/DOCSEARCH144S1",
                         "county": "Ector",
                         "prop_address":"","prop_city":"","prop_state":"TX","prop_zip":"",
                         "mail_address":"","mail_city":"","mail_state":"TX","mail_zip":"",
