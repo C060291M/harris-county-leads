@@ -130,10 +130,12 @@ async def scrape_comal(start_dt, end_dt):
                     h1 = item.find("h1")
                     if not h1: continue
                     h1_text = h1.get_text(" ", strip=True)
-                    if not any(k in h1_text.upper() for k in KEEP_TYPES): continue
-                    parts = h1_text.split(" . ")
-                    doc_num = parts[0].strip() if parts else ""
-                    doc_type = parts[1].strip() if len(parts) > 1 else h1_text.strip()
+                    h1_clean = " ".join(h1_text.split())
+                    if not any(k in h1_clean.upper() for k in KEEP_TYPES): continue
+                    parts = re.split(r"[\u2022\xa0\s]{2,}", h1_clean)
+                    parts = [p.strip() for p in parts if p.strip()]
+                    doc_num = parts[0] if parts else ""
+                    doc_type = parts[-1] if len(parts) > 1 else h1_clean
                     full_text = item.get_text(" ", strip=True)
                     date_m = _re.search(r"(\d{2}/\d{2}/\d{4})", full_text)
                     filed = norm_date(date_m.group(1)) if date_m else ""
