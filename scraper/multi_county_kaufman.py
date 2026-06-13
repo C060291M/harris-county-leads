@@ -87,9 +87,10 @@ async def scrape_kaufman(start_dt, end_dt):
         # Accept disclaimer once
         try:
             await page.goto(BASE_URL + "/user/disclaimer", wait_until="networkidle", timeout=60000)
-            await page.wait_for_timeout(2000)
+            await page.wait_for_timeout(4000)
             accept_btn = await page.query_selector("button:has-text('I Accept'), a:has-text('I Accept')")
             if accept_btn:
+                await page.wait_for_timeout(1000)
                 await accept_btn.click()
                 await page.wait_for_timeout(3000)
         except Exception as e:
