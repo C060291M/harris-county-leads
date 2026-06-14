@@ -1,26 +1,22 @@
-﻿# Temp build scripts
-add_*.py
+﻿# Debug files
+debug_*.py
+check_*.py
 fix_*.py
-create_*.py
+diag_*.py
+find_*.py
+patch*.py
+count_*.py
+full_*.py
+quick_*.py
 test_*.py
-make_*.py
-split_*.py
-rewrite_*.py
-*_backup.*
-mc_template.txt
-
-# Python
-__pycache__/
+mkwf.py
+gap_analysis.py
+audit.py
+db_status.py
 *.pyc
-*.pyo
-
-# Data files that get auto-generated
-data/*.json
-dashboard/*.json
-dashboard/records.json
-data/records.json
-data/leads_ghl.csv
-
+__pycache__/
 scraper/__pycache__/
-**/*.pyc
-**/*.pyo
+.env
+data/building_res.zip
+dashboard/*.json
+debug/
