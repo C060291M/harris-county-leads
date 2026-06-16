@@ -1,72 +1,76 @@
-﻿import os, psycopg2, smtplib
+﻿import os, psycopg2, urllib.request, json
 from datetime import datetime
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
 DB = os.environ.get("DATABASE_URL", "")
-GMAIL_USER = os.environ.get("GMAIL_USER", "")
-GMAIL_PASS = os.environ.get("GMAIL_PASS", "")
-ALERT_EMAIL = os.environ.get("ALERT_EMAIL", "cmunoz@stackiq.org")
+API_URL = "https://api.stackiq.org"
+API_SECRET = os.environ.get("API_SECRET", "")
+ALERT_EMAIL = "cmunoz@stackiq.org"
 
 if not DB:
-    print("No DATABASE_URL")
-    exit(0)
+    print("No DATABASE_URL"); exit(0)
 
 conn = psycopg2.connect(DB, connect_timeout=30)
 cur = conn.cursor()
-
 cur.execute("SELECT COUNT(*) FROM lead_records")
 total = cur.fetchone()[0]
-
 cur.execute("SELECT COUNT(*) FROM lead_records WHERE scraped_at >= NOW() - INTERVAL '24 hours'")
 new_today = cur.fetchone()[0]
-
 cur.execute("SELECT COUNT(*) FROM lead_records WHERE score >= 70")
 hot = cur.fetchone()[0]
-
-cur.execute("SELECT county, COUNT(*) as cnt FROM lead_records WHERE scraped_at >= NOW() - INTERVAL '24 hours' GROUP BY county ORDER BY cnt DESC LIMIT 10")
-new_by_county = cur.fetchall()
-
+cur.execute("SELECT county, COUNT(*) as cnt, SUM(CASE WHEN score>=70 THEN 1 ELSE 0 END) as hot_cnt FROM lead_records WHERE scraped_at >= NOW() - INTERVAL '24 hours' GROUP BY county ORDER BY cnt DESC LIMIT 15")
+rows = cur.fetchall()
 cur.execute("SELECT COUNT(DISTINCT county) FROM lead_records")
 county_count = cur.fetchone()[0]
-
 cur.close()
 conn.close()
 
-county_lines = "\n".join([f"  {c}: {n} new" for c, n in new_by_county]) or "  None"
+county_rows = ""
+for county, cnt, hot_cnt in rows:
+    county_rows += f"""
+    <tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #1e2d3d">{county}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #1e2d3d;color:#ef4444;text-align:center">{int(hot_cnt or 0)}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #1e2d3d;color:#10b981;text-align:center">{cnt}</td>
+    </tr>"""
 
-body = f"""StackIQ Daily Scrape Report - {datetime.now().strftime('%Y-%m-%d')}
-
-SUMMARY
--------
-Total leads: {total:,}
-New today:   {new_today:,}
-Hot leads:   {hot:,}
-Counties:    {county_count}
-
-NEW LEADS BY COUNTY (last 24h)
-------------------------------
-{county_lines}
-
-View dashboard: https://stackiq.org/apps/underwriteiq/dashboard.html
+body = f"""
+<div style="background:#0f1c2e;color:#e2e8f0;font-family:Arial,sans-serif;max-width:600px;margin:0 auto;border-radius:12px;overflow:hidden">
+  <div style="background:linear-gradient(135deg,#1e40af,#0f766e);padding:32px;text-align:center">
+    <h1 style="margin:0;font-size:28px;font-weight:700">StackIQ</h1>
+    <p style="margin:8px 0 0;opacity:0.8">Daily Lead Intelligence Report</p>
+  </div>
+  <div style="padding:24px">
+    <div style="background:#1e2d3d;border-radius:8px;padding:20px;margin-bottom:20px">
+      <p style="margin:0;font-size:16px">Good morning, <strong>Chris</strong> 👋</p>
+      <p style="margin:8px 0 0;color:#94a3b8">Here's your daily lead report — <span style="color:#ef4444;font-weight:600">{hot:,} hot leads</span> and <span style="color:#10b981;font-weight:600">{new_today:,} new filings</span> across {county_count} counties.</p>
+    </div>
+    <h3 style="color:#94a3b8;font-size:11px;letter-spacing:1px;text-transform:uppercase;margin:0 0 12px">County Breakdown</h3>
+    <table style="width:100%;border-collapse:collapse;background:#1e2d3d;border-radius:8px;overflow:hidden">
+      <tr style="background:#162032">
+        <th style="padding:10px 12px;text-align:left;font-size:11px;color:#64748b;text-transform:uppercase">County</th>
+        <th style="padding:10px 12px;text-align:center;font-size:11px;color:#64748b;text-transform:uppercase">Hot (70+)</th>
+        <th style="padding:10px 12px;text-align:center;font-size:11px;color:#64748b;text-transform:uppercase">New Today</th>
+      </tr>
+      {county_rows}
+    </table>
+    <div style="margin-top:24px;text-align:center">
+      <a href="https://stackiq.org/apps/underwriteiq/dashboard.html" style="background:#10b981;color:#fff;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block">View Dashboard →</a>
+    </div>
+    <p style="margin:24px 0 0;color:#475569;font-size:12px;text-align:center">Total leads in database: {total:,}</p>
+  </div>
+</div>
 """
 
-print(body)
+print(f"Total: {total:,} | New: {new_today:,} | Hot: {hot:,} | Counties: {county_count}")
 
-if not GMAIL_USER or not GMAIL_PASS:
-    print("No GMAIL credentials - skipping email")
+if not API_SECRET:
+    print("No API_SECRET - skipping email")
     exit(0)
 
 try:
-    msg = MIMEMultipart()
-    msg['From'] = GMAIL_USER
-    msg['To'] = ALERT_EMAIL
-    msg['Subject'] = f"StackIQ: {new_today:,} new leads | {county_count} counties | {datetime.now().strftime('%m/%d/%Y')}"
-    msg.attach(MIMEText(body, 'plain'))
-    
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-        server.login(GMAIL_USER, GMAIL_PASS)
-        server.sendmail(GMAIL_USER, ALERT_EMAIL, msg.as_string())
-    print(f"Email sent to {ALERT_EMAIL}")
+    data = json.dumps({"to_email": ALERT_EMAIL, "subject": f"StackIQ: {new_today:,} new leads | {hot:,} hot | {county_count} counties | {datetime.now().strftime('%m/%d/%Y')}", "body": body}).encode()
+    req = urllib.request.Request(f"{API_URL}/api/send-email", data=data, headers={"Content-Type": "application/json", "Authorization": f"Bearer {API_SECRET}"}, method="POST")
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        print(f"Email sent: {resp.status}")
 except Exception as e:
     print(f"Email failed: {e}")

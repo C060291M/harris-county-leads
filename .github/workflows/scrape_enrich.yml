@@ -34,5 +34,5 @@ jobs:
         run: python scraper/email_alert.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          API_SECRET: ${{ secrets.API_SECRET }}
         continue-on-error: true
