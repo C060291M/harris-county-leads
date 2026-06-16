@@ -1,8 +1,11 @@
-import os, psycopg2
-from datetime import datetime, timedelta
+﻿import os, psycopg2, smtplib
+from datetime import datetime
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 DB = os.environ.get("DATABASE_URL", "")
-SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "")
+GMAIL_USER = os.environ.get("GMAIL_USER", "")
+GMAIL_PASS = os.environ.get("GMAIL_PASS", "")
 ALERT_EMAIL = os.environ.get("ALERT_EMAIL", "cmunoz@stackiq.org")
 
 if not DB:
@@ -12,7 +15,6 @@ if not DB:
 conn = psycopg2.connect(DB, connect_timeout=30)
 cur = conn.cursor()
 
-# Get stats
 cur.execute("SELECT COUNT(*) FROM lead_records")
 total = cur.fetchone()[0]
 
@@ -38,9 +40,9 @@ body = f"""StackIQ Daily Scrape Report - {datetime.now().strftime('%Y-%m-%d')}
 SUMMARY
 -------
 Total leads: {total:,}
-New today: {new_today:,}
-Hot leads (70+): {hot:,}
-Active counties: {county_count}
+New today:   {new_today:,}
+Hot leads:   {hot:,}
+Counties:    {county_count}
 
 NEW LEADS BY COUNTY (last 24h)
 ------------------------------
@@ -51,25 +53,20 @@ View dashboard: https://stackiq.org/apps/underwriteiq/dashboard.html
 
 print(body)
 
-if not SENDGRID_API_KEY:
-    print("No SENDGRID_API_KEY - skipping email")
+if not GMAIL_USER or not GMAIL_PASS:
+    print("No GMAIL credentials - skipping email")
     exit(0)
 
-import urllib.request, json
-data = {
-    "personalizations": [{"to": [{"email": ALERT_EMAIL}]}],
-    "from": {"email": "alerts@stackiq.org", "name": "StackIQ"},
-    "subject": f"StackIQ: {new_today} new leads today across {county_count} counties",
-    "content": [{"type": "text/plain", "value": body}]
-}
-req = urllib.request.Request(
-    "https://api.sendgrid.com/v3/mail/send",
-    data=json.dumps(data).encode(),
-    headers={"Authorization": f"Bearer {SENDGRID_API_KEY}", "Content-Type": "application/json"},
-    method="POST"
-)
 try:
-    with urllib.request.urlopen(req) as resp:
-        print(f"Email sent: {resp.status}")
+    msg = MIMEMultipart()
+    msg['From'] = GMAIL_USER
+    msg['To'] = ALERT_EMAIL
+    msg['Subject'] = f"StackIQ: {new_today:,} new leads | {county_count} counties | {datetime.now().strftime('%m/%d/%Y')}"
+    msg.attach(MIMEText(body, 'plain'))
+    
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        server.login(GMAIL_USER, GMAIL_PASS)
+        server.sendmail(GMAIL_USER, ALERT_EMAIL, msg.as_string())
+    print(f"Email sent to {ALERT_EMAIL}")
 except Exception as e:
-    print(f"Email failed: {e}")
+    print(f"Email failed: {e}")
