@@ -640,5 +640,29 @@
     "platform": "tyler_ids2",
     "url": "https://mclennancountytx-web.tylerhost.net/web",
     "status": "live"
+  },
+  {
+    "county": "clay",
+    "platform": "edistrict",
+    "url": "https://www.claycountyclerk.com/records",
+    "status": "live"
+  },
+  {
+    "county": "glasscock",
+    "platform": "cscsearch",
+    "url": "https://csc.glasscocktx.com/records/",
+    "status": "live"
+  },
+  {
+    "county": "fayette",
+    "platform": "edistrict",
+    "url": "https://www.fayettecountyclerk.com/records",
+    "status": "live"
+  },
+  {
+    "county": "martin",
+    "platform": "edistrict",
+    "url": "https://www.martincountyclerk.com/records",
+    "status": "live"
   }
 ]

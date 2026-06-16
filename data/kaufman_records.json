@@ -1,0 +1,13 @@
+{
+  "fetched_at": "2026-06-12T17:39:05.298390",
+  "source": "Kaufman County Clerk (Tyler iDS)",
+  "date_range": {
+    "start": "2026-05-13",
+    "end": "2026-06-12"
+  },
+  "total": 0,
+  "counties": [
+    "Kaufman"
+  ],
+  "records": []
+}
