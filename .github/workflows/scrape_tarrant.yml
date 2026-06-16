@@ -1,8 +1,6 @@
 name: StackIQ Tarrant Scraper
 
 on:
-  schedule:
-    - cron: "0 3 * * *"
   workflow_dispatch:
     inputs:
       lookback_days:
