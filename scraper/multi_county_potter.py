@@ -202,9 +202,9 @@ async def scrape_ector(start_dt, end_dt):
 
                 # Fill date range
 
-                await page.fill("input[name='field_RecordingDateID_DOT_StartDate']", start_str)
+                await page.fill("input[name='field_RecDateID_DOT_StartDate']", start_str)
 
-                await page.fill("input[name='field_RecordingDateID_DOT_EndDate']", end_str)
+                await page.fill("input[name='field_RecDateID_DOT_EndDate']", end_str)
 
                 await page.wait_for_timeout(500)
 
