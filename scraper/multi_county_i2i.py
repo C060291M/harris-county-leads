@@ -1,4 +1,4 @@
-﻿"""
+"""
 StackIQ - USLandRecords (i2i) Adapter
 Covers: Angelina, Bandera, Castro, Cherokee, Cochran, Cooke,
         Duval, Edwards, Falls, Hutchinson, Leon, Madison + others
@@ -258,4 +258,4 @@ def main():
     asyncio.run(main_async())
 
 if __name__ == "__main__":
-    main()
+    main()

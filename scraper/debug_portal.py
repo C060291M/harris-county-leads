@@ -1,4 +1,4 @@
-﻿import asyncio, json, logging
+import asyncio, json, logging
 from playwright.async_api import async_playwright
 from datetime import datetime, timedelta
 
@@ -124,4 +124,4 @@ async def main():
 
         await browser.close()
 
-asyncio.run(main())
+asyncio.run(main())

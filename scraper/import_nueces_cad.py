@@ -1,4 +1,4 @@
-﻿import psycopg2, glob, logging, time, os
+import psycopg2, glob, logging, time, os
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
 logger = logging.getLogger(__name__)
 DB = os.environ["DATABASE_URL"]
@@ -53,4 +53,4 @@ with open(info_files[0],"r",encoding="latin-1",errors="ignore") as f:
         if len(batch)>=500:
             insert_batch(batch); total+=len(batch); logger.info(f"Inserted {total} rows..."); batch=[]
 if batch: insert_batch(batch); total+=len(batch)
-logger.info(f"Done! Total {total} Nueces properties imported")
+logger.info(f"Done! Total {total} Nueces properties imported")

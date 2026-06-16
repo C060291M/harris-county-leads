@@ -1,4 +1,4 @@
-﻿import os, psycopg2
+import os, psycopg2
 from datetime import datetime, timedelta
 
 DB = os.environ.get("DATABASE_URL", "")
@@ -72,4 +72,4 @@ try:
     with urllib.request.urlopen(req) as resp:
         print(f"Email sent: {resp.status}")
 except Exception as e:
-    print(f"Email failed: {e}")
+    print(f"Email failed: {e}")

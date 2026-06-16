@@ -1,8 +1,8 @@
 """
 
-StackIQ — Jasper County Scraper (Tyler iDS)
+StackIQ — Rockwall County Scraper (Tyler iDS)
 
-Portal: jaspercountytx-web.tylerhost.net
+Portal: rockwalltx-web.tylerhost.net
 
 Optimized: single date-range search, client-side doc type filtering
 
@@ -18,7 +18,7 @@ from playwright.async_api import async_playwright
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S")
 
-log = logging.getLogger("jasper")
+log = logging.getLogger("ector")
 
 
 
@@ -26,7 +26,7 @@ LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "3"))
 
 MAX_PAGES     = int(os.getenv("MAX_PAGES", "3"))
 
-BASE_URL      = "https://jaspercountytx-web.tylerhost.net/web"
+BASE_URL      = "https://brazoriacountytx-web.tylerhost.net/web"
 
 
 
@@ -144,7 +144,7 @@ def compute_score(r):
 
 
 
-async def scrape_jasper(start_dt, end_dt):
+async def scrape_ector(start_dt, end_dt):
 
     records = []
 
@@ -182,7 +182,7 @@ async def scrape_jasper(start_dt, end_dt):
 
             await page.wait_for_timeout(2000)
         except Exception as e:
-            log.warning("Jasper: disclaimer error: %s", e)
+            log.warning("Brazoria: disclaimer error: %s", e)
 
 
 
@@ -190,7 +190,7 @@ async def scrape_jasper(start_dt, end_dt):
 
         for page_num in range(1, MAX_PAGES + 1):
 
-            log.info("Jasper: page %d of %d (%s to %s)", page_num, MAX_PAGES, start_str, end_str)
+            log.info("Brazoria: page %d of %d (%s to %s)", page_num, MAX_PAGES, start_str, end_str)
 
             try:
 
@@ -232,7 +232,7 @@ async def scrape_jasper(start_dt, end_dt):
 
                 items = soup.find_all("li", attrs={"data-documentid": True})
 
-                log.info("Jasper: %d raw items", len(items))
+                log.info("Brazoria: %d raw items", len(items))
 
                 KEEP_TYPES = ["LIS PENDENS","ABSTRACT OF JUDGMENT","FEDERAL TAX LIEN",
 
@@ -286,7 +286,7 @@ async def scrape_jasper(start_dt, end_dt):
 
                         "clerk_url": f"{BASE_URL}/search/DOCSEARCH144S1",
 
-                        "county": "Jasper",
+                        "county": "Brazoria",
 
                         "prop_address":"","prop_city":"","prop_state":"TX","prop_zip":"",
 
@@ -300,7 +300,7 @@ async def scrape_jasper(start_dt, end_dt):
 
 
 
-                log.info("Jasper: page %d found %d distress records", page_num, page_records)
+                log.info("Brazoria: page %d found %d distress records", page_num, page_records)
 
                 if page_records == 0: break
 
@@ -320,7 +320,7 @@ async def scrape_jasper(start_dt, end_dt):
 
             except Exception as e:
 
-                log.warning("Jasper: page %d error: %s", page_num, e)
+                log.warning("Brazoria: page %d error: %s", page_num, e)
 
                 break
 
@@ -338,13 +338,13 @@ async def main_async():
 
     cutoff = now - timedelta(days=LOOKBACK_DAYS)
 
-    log.info("=== Jasper County Scraper (optimized) ===")
+    log.info("=== Brazoria County Scraper (Tyler iDS) (optimized) ===")
 
     log.info("Date range: %s to %s", cutoff.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d"))
 
 
 
-    all_records = await scrape_jasper(cutoff, now)
+    all_records = await scrape_ector(cutoff, now)
 
 
 
@@ -374,13 +374,13 @@ async def main_async():
 
         "fetched_at": now.isoformat(),
 
-        "source": "Jasper County Clerk (Tyler iDS)",
+        "source": "Ector County Clerk (Tyler iDS)",
 
         "date_range": {"start": cutoff.strftime("%Y-%m-%d"), "end": now.strftime("%Y-%m-%d")},
 
         "total": len(deduped),
 
-        "counties": ["Jasper"],
+        "counties": ["Ector"],
 
         "records": deduped,
 
@@ -392,11 +392,11 @@ async def main_async():
 
     os.makedirs("data", exist_ok=True)
 
-    with open("dashboard/jasper_records.json","w") as f: json.dump(payload,f,indent=2,default=str)
+    with open("dashboard/brazoria_records.json","w") as f: json.dump(payload,f,indent=2,default=str)
 
-    with open("data/jasper_records.json","w") as f: json.dump(payload,f,indent=2,default=str)
+    with open("data/brazoria_records.json","w") as f: json.dump(payload,f,indent=2,default=str)
 
-    log.info("Saved -> dashboard/jasper_records.json")
+    log.info("Saved -> dashboard/brazoria_records.json")
 
 
 

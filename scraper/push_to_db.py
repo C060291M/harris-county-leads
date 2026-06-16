@@ -1,4 +1,4 @@
-﻿import json, glob, psycopg2, os, sys, time
+import json, glob, psycopg2, os, sys, time
 from datetime import datetime
 
 DB = os.environ.get("DATABASE_URL","")
@@ -79,4 +79,4 @@ for f in files:
             cur2.execute(LOG_SQL, (os.path.basename(f), "unknown", datetime.utcnow(), 0, "error", str(e)))
             conn2.commit()
             conn2.close()
-        except: pass
+        except: pass

@@ -1,4 +1,4 @@
-﻿import psycopg2, logging, time, os, openpyxl
+import psycopg2, logging, time, os, openpyxl
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
 log = logging.getLogger(__name__)
 DB = os.environ["DATABASE_URL"]
@@ -65,4 +65,4 @@ for row in ws.iter_rows(min_row=2, values_only=True):
 
 if batch: insert_batch(batch); total += len(batch)
 log.info(f"Done! {total} Cameron properties imported")
-wb.close()
+wb.close()

@@ -1,4 +1,4 @@
-﻿"""
+"""
 StackIQ — Webb County Scraper (Kofile/GovOS countyfusion)
 Portal: countyfusion13.govos.com/countyweb/
 System: Kofile GovOS (Neumo-like interface)
@@ -162,8 +162,6 @@ async def scrape_webb(start_dt, end_dt):
                 if next_btn:
                     await next_btn.click()
                     await page.wait_for_timeout(3000)
-                else:
-                    break
             except:
                 break
 
@@ -291,4 +289,4 @@ def main():
     asyncio.run(main_async())
 
 if __name__ == "__main__":
-    main()
+    main()
