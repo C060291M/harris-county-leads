@@ -34,5 +34,6 @@ jobs:
         run: python scraper/email_alert.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          API_SECRET: ${{ secrets.API_SECRET }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_PASS: ${{ secrets.GMAIL_PASS }}
         continue-on-error: true

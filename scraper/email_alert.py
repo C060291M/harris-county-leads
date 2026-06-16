@@ -1,8 +1,11 @@
-﻿import os, psycopg2, urllib.request, json
+﻿import os, psycopg2, smtplib, ssl, json
 from datetime import datetime
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 DB = os.environ.get("DATABASE_URL", "")
-API_SECRET = os.environ.get("API_SECRET", "")
+GMAIL_USER = os.environ.get("GMAIL_USER", "")
+GMAIL_PASS = os.environ.get("GMAIL_PASS", "")
 ALERT_EMAIL = "cmunoz@stackiq.org"
 
 if not DB:
@@ -47,7 +50,7 @@ html = f"""<!DOCTYPE html><html><body style="background:#0a0f1a;margin:0;padding
       {county_rows}
     </table>
     <div style="margin-top:24px;text-align:center">
-      <a href="https://stackiq.org/apps/underwriteiq/dashboard.html" style="background:#10b981;color:#fff;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block">View Dashboard →</a>
+      <a href="https://stackiq.org/apps/underwriteiq/dashboard.html" style="background:#10b981;color:#fff;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block">View Dashboard</a>
     </div>
     <p style="margin:24px 0 0;color:#475569;font-size:12px;text-align:center">Total in database: {total:,}</p>
   </div>
@@ -55,23 +58,19 @@ html = f"""<!DOCTYPE html><html><body style="background:#0a0f1a;margin:0;padding
 
 print(f"Total: {total:,} | New: {new_today:,} | Hot: {hot:,} | Counties: {county_count}")
 
-if not API_SECRET:
-    print("No API_SECRET - skipping email")
+if not GMAIL_USER or not GMAIL_PASS:
+    print("No GMAIL credentials - skipping email")
     exit(0)
 
 try:
-    data = json.dumps({
-        "to_email": ALERT_EMAIL,
-        "subject": f"StackIQ: {new_today:,} new leads | {hot:,} hot | {county_count} counties | {datetime.now().strftime('%m/%d/%Y')}",
-        "body": html
-    }).encode()
-    req = urllib.request.Request(
-        "https://api.stackiq.org/api/admin/send-alert",
-        data=data,
-        headers={"Content-Type": "application/json"},
-        method="POST"
-    )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        print(f"Email sent: {resp.status}")
+    msg = MIMEMultipart('alternative')
+    msg['From'] = f"StackIQ Leads <{GMAIL_USER}>"
+    msg['To'] = ALERT_EMAIL
+    msg['Subject'] = f"StackIQ: {new_today:,} new leads | {hot:,} hot | {county_count} counties | {datetime.now().strftime('%m/%d/%Y')}"
+    msg.attach(MIMEText(html, 'html'))
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=ssl.create_default_context()) as server:
+        server.login(GMAIL_USER, GMAIL_PASS)
+        server.sendmail(GMAIL_USER, ALERT_EMAIL, msg.as_string())
+    print(f"Email sent to {ALERT_EMAIL}")
 except Exception as e:
     print(f"Email failed: {e}")
