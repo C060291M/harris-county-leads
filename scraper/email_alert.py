@@ -28,7 +28,7 @@ county_rows = ""
 for county, cnt, hot_cnt in rows:
     county_rows += f"""
     <tr>
-      <td style="padding:8px 12px;border-bottom:1px solid #1e2d3d">{county}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #1e2d3d;color:#ffffff;font-weight:500">{county}</td>
       <td style="padding:8px 12px;border-bottom:1px solid #1e2d3d;color:#ef4444;text-align:center">{int(hot_cnt or 0)}</td>
       <td style="padding:8px 12px;border-bottom:1px solid #1e2d3d;color:#10b981;text-align:center">{cnt}</td>
     </tr>"""
