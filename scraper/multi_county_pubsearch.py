@@ -144,8 +144,21 @@ async def scrape_county(page, county, base_url, dept, start_dt, end_dt):
 async def main():
     now = datetime.now()
     cutoff = now - timedelta(days=LOOKBACK_DAYS)
+    
+    # Filter counties based on env vars
+    counties_env = os.getenv("COUNTIES", "")
+    skip_env = os.getenv("SKIP_COUNTIES", "")
+    
+    active = dict(COUNTIES)
+    if counties_env:
+        only = [c.strip() for c in counties_env.split(",")]
+        active = {k: v for k, v in active.items() if k in only}
+    if skip_env:
+        skip = [c.strip() for c in skip_env.split(",")]
+        active = {k: v for k, v in active.items() if k not in skip}
+    
     log.info(f"=== PublicSearch Universal Scraper ===")
-    log.info(f"Counties: {list(COUNTIES.keys())}")
+    log.info(f"Counties: {list(active.keys())}")
     
     all_records = []
     
@@ -157,7 +170,7 @@ async def main():
         )
         page = await context.new_page()
         
-        for county, (base_url, dept) in COUNTIES.items():
+        for county, (base_url, dept) in active.items():
             recs = await scrape_county(page, county, base_url, dept, cutoff, now)
             all_records.extend(recs)
         
