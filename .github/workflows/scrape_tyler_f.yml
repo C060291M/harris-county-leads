@@ -100,7 +100,7 @@ jobs:
         run: python3 scraper/push_to_db.py
   donley:
     runs-on: ubuntu-22.04
-    timeout-minutes: 150
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -142,7 +142,7 @@ jobs:
         run: python3 scraper/push_to_db.py
   waller:
     runs-on: ubuntu-22.04
-    timeout-minutes: 180
+    timeout-minutes: 210
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
