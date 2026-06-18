@@ -581,8 +581,7 @@ jobs:
           JSON_GLOB: "dashboard/howard_records.json"
         if: always()
 
-  wichita:
-    runs-on: ubuntu-22.04
+  runs-on: ubuntu-22.04
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
