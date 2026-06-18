@@ -194,7 +194,7 @@ async def scrape_bowie(start_dt, end_dt):
 
             try:
 
-                await page.goto(f"{BASE_URL}/search/DOCSEARCH144S1", wait_until="networkidle", timeout=60000)
+                await page.goto(f"{BASE_URL}/search/DOCSEARCH149S1", wait_until="networkidle", timeout=60000)
 
                 await page.wait_for_timeout(5000)
 
@@ -284,7 +284,7 @@ async def scrape_bowie(start_dt, end_dt):
 
                         "amount": None, "legal": "",
 
-                        "clerk_url": f"{BASE_URL}/search/DOCSEARCH144S1",
+                        "clerk_url": f"{BASE_URL}/search/DOCSEARCH149S1",
 
                         "county": "Bowie",
 

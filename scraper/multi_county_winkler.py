@@ -2,7 +2,7 @@
 
 StackIQ — Winkler County Scraper (Tyler iDS)
 
-Portal: winklercauotx-web.tylerhost.net
+Portal: winklercountytx-web.tylerhost.net
 
 Optimized: single date-range search, client-side doc type filtering
 
@@ -26,7 +26,7 @@ LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "3"))
 
 MAX_PAGES     = int(os.getenv("MAX_PAGES", "3"))
 
-BASE_URL      = "https://winklercauotx-web.tylerhost.net/web"
+BASE_URL      = "https://winklercountytx-web.tylerhost.net/web"
 
 
 

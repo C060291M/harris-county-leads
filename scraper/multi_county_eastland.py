@@ -2,7 +2,7 @@
 
 StackIQ — Eastland County Scraper (Tyler iDS)
 
-Portal: eastlandcotx-web.tylerhost.net
+Portal: eastlandcountytx-web.tylerhost.net
 
 Optimized: single date-range search, client-side doc type filtering
 
@@ -26,7 +26,7 @@ LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "3"))
 
 MAX_PAGES     = int(os.getenv("MAX_PAGES", "3"))
 
-BASE_URL      = "https://eastlandcotx-web.tylerhost.net/web"
+BASE_URL      = "https://eastlandcountytx-web.tylerhost.net/web"
 
 
 
