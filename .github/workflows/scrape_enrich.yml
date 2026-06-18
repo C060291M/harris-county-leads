@@ -16,6 +16,8 @@ jobs:
         run: |
           curl -s -X POST https://api.stackiq.org/api/admin/enrich-esearch?limit=500 \
             -H "Authorization: Bearer ${{ secrets.API_SECRET }}" || true
+          curl -s -X POST "https://api.stackiq.org/api/admin/enrich-cad?limit=500" \
+            -H "Authorization: Bearer ${{ secrets.API_SECRET }}" || true
 
   email-alert:
     runs-on: ubuntu-22.04
