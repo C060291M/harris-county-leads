@@ -6,7 +6,7 @@ from email.mime.multipart import MIMEMultipart
 DB = os.environ.get("DATABASE_URL", "")
 GMAIL_USER = os.environ.get("GMAIL_USER", "")
 GMAIL_PASS = os.environ.get("GMAIL_PASS", "")
-ALERT_EMAIL = "cmunoz@stackiq.org"
+ALERT_EMAIL = os.environ.get("ALERT_EMAIL", "Munoz.HoldCo@gmail.com")
 
 if not DB:
     print("No DATABASE_URL"); exit(0)
