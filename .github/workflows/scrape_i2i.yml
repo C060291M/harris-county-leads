@@ -1,4 +1,4 @@
-name: StackIQ i2i USLandRecords
+﻿name: StackIQ i2i USLandRecords
 
 on:
   schedule:
@@ -16,7 +16,8 @@ jobs:
 
   i2i:
     runs-on: ubuntu-22.04
-    timeout-minutes: 180
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

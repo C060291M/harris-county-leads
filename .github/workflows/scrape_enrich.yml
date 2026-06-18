@@ -1,4 +1,4 @@
-name: StackIQ Enrichment
+﻿name: StackIQ Enrichment
 
 on:
   schedule:
@@ -9,7 +9,7 @@ jobs:
 
   enrich-esearch:
     runs-on: ubuntu-22.04
-    timeout-minutes: 30
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - name: Trigger enrichment
@@ -21,7 +21,7 @@ jobs:
 
   email-alert:
     runs-on: ubuntu-22.04
-    timeout-minutes: 10
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

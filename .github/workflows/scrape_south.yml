@@ -1,4 +1,4 @@
-name: StackIQ South Texas Scrapers
+﻿name: StackIQ South Texas Scrapers
 
 on:
   schedule:
@@ -16,7 +16,8 @@ jobs:
 
   south-texas:
     runs-on: ubuntu-22.04
-    timeout-minutes: 210
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -38,7 +39,8 @@ jobs:
 
   gulf-coast:
     runs-on: ubuntu-22.04
-    timeout-minutes: 150
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -60,7 +62,8 @@ jobs:
 
   central-texas:
     runs-on: ubuntu-22.04
-    timeout-minutes: 150
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -82,7 +85,8 @@ jobs:
 
   multi6:
     runs-on: ubuntu-22.04
-    timeout-minutes: 180
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -104,7 +108,8 @@ jobs:
 
   multi7:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -126,7 +131,8 @@ jobs:
 
   multi8:
     runs-on: ubuntu-22.04
-    timeout-minutes: 180
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -148,7 +154,8 @@ jobs:
 
   multi9:
     runs-on: ubuntu-22.04
-    timeout-minutes: 180
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -170,7 +177,8 @@ jobs:
 
   multi10:
     runs-on: ubuntu-22.04
-    timeout-minutes: 180
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -192,7 +200,8 @@ jobs:
 
   multi11:
     runs-on: ubuntu-22.04
-    timeout-minutes: 150
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -214,7 +223,8 @@ jobs:
 
   multi12:
     runs-on: ubuntu-22.04
-    timeout-minutes: 180
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -236,7 +246,8 @@ jobs:
 
   multi13:
     runs-on: ubuntu-22.04
-    timeout-minutes: 180
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -258,7 +269,8 @@ jobs:
 
   multi14:
     runs-on: ubuntu-22.04
-    timeout-minutes: 180
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -280,7 +292,8 @@ jobs:
 
   multi15:
     runs-on: ubuntu-22.04
-    timeout-minutes: 150
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

@@ -1,4 +1,4 @@
-name: StackIQ Tyler iDS Group D
+﻿name: StackIQ Tyler iDS Group D
 
 on:
   schedule:
@@ -15,7 +15,8 @@ on:
 jobs:
   potter:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -37,7 +38,8 @@ jobs:
 
   andrews:
     runs-on: ubuntu-22.04
-    timeout-minutes: 150
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -59,7 +61,8 @@ jobs:
 
   palopinto:
     runs-on: ubuntu-22.04
-    timeout-minutes: 150
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -81,7 +84,8 @@ jobs:
 
   wise:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -103,7 +107,8 @@ jobs:
 
   bowie:
     runs-on: ubuntu-22.04
-    timeout-minutes: 180
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -125,7 +130,8 @@ jobs:
 
   polk:
     runs-on: ubuntu-22.04
-    timeout-minutes: 150
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -147,7 +153,8 @@ jobs:
 
   winkler:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -169,7 +176,8 @@ jobs:
 
   yoakum:
     runs-on: ubuntu-22.04
-    timeout-minutes: 150
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -191,7 +199,8 @@ jobs:
 
   somervell:
     runs-on: ubuntu-22.04
-    timeout-minutes: 150
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -213,7 +222,8 @@ jobs:
 
   hamilton:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -235,7 +245,8 @@ jobs:
 
   mills:
     runs-on: ubuntu-22.04
-    timeout-minutes: 150
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -257,7 +268,8 @@ jobs:
 
   mclennan:
     runs-on: ubuntu-22.04
-    timeout-minutes: 150
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

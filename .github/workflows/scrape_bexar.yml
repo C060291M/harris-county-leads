@@ -1,4 +1,4 @@
-name: StackIQ Bexar Scraper
+﻿name: StackIQ Bexar Scraper
 
 on:
   schedule:
@@ -16,7 +16,8 @@ jobs:
 
   bexar:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

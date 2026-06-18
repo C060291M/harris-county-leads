@@ -1,4 +1,4 @@
-name: StackIQ PublicSearch Scraper
+﻿name: StackIQ PublicSearch Scraper
 
 on:
   schedule:
@@ -8,7 +8,8 @@ on:
 jobs:
   tarrant:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -29,7 +30,8 @@ jobs:
 
   dallas:
     runs-on: ubuntu-22.04
-    timeout-minutes: 120
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -50,7 +52,8 @@ jobs:
 
   other-pubsearch:
     runs-on: ubuntu-22.04
-    timeout-minutes: 180
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

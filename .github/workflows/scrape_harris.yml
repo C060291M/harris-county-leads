@@ -1,4 +1,4 @@
-name: StackIQ Harris Scraper
+﻿name: StackIQ Harris Scraper
 
 on:
   schedule:
@@ -16,7 +16,8 @@ jobs:
 
   harris:
     runs-on: ubuntu-22.04
-    timeout-minutes: 45
+    timeout-minutes: 90
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
