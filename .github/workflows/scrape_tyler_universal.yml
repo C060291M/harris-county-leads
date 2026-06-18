@@ -1,0 +1,1007 @@
+name: StackIQ Tyler Universal Scraper
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  henderson:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Henderson
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Henderson"
+          BASE_URL: "https://hendersoncountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/henderson_records.json"
+        if: always()
+
+  hood:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Hood
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Hood"
+          BASE_URL: "https://hoodcountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/hood_records.json"
+        if: always()
+
+  lamar:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Lamar
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Lamar"
+          BASE_URL: "https://lamarcountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/lamar_records.json"
+        if: always()
+
+  lavaca:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Lavaca
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Lavaca"
+          BASE_URL: "https://lavacacountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/lavaca_records.json"
+        if: always()
+
+  liberty:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Liberty
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Liberty"
+          BASE_URL: "https://libertycountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/liberty_records.json"
+        if: always()
+
+  wood:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Wood
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Wood"
+          BASE_URL: "https://woodcountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/wood_records.json"
+        if: always()
+
+  vanzandt:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape VanZandt
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "VanZandt"
+          BASE_URL: "https://vanzandtcountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/vanzandt_records.json"
+        if: always()
+
+  kaufman:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Kaufman
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Kaufman"
+          BASE_URL: "https://kaufmancountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/kaufman_records.json"
+        if: always()
+
+  gregg:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Gregg
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Gregg"
+          BASE_URL: "https://greggcountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/gregg_records.json"
+        if: always()
+
+  harrison:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Harrison
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Harrison"
+          BASE_URL: "https://harrisoncountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/harrison_records.json"
+        if: always()
+
+  upshur:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Upshur
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Upshur"
+          BASE_URL: "https://upshurcountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/upshur_records.json"
+        if: always()
+
+  andrews:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Andrews
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Andrews"
+          BASE_URL: "https://andrewscountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/andrews_records.json"
+        if: always()
+
+  wise:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Wise
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Wise"
+          BASE_URL: "https://wisecountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/wise_records.json"
+        if: always()
+
+  polk:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Polk
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Polk"
+          BASE_URL: "https://polkcountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/polk_records.json"
+        if: always()
+
+  somervell:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Somervell
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Somervell"
+          BASE_URL: "https://somervellcountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/somervell_records.json"
+        if: always()
+
+  randall:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Randall
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Randall"
+          BASE_URL: "https://randallcountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/randall_records.json"
+        if: always()
+
+  waller:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Waller
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Waller"
+          BASE_URL: "https://wallercountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/waller_records.json"
+        if: always()
+
+  orange:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Orange
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Orange"
+          BASE_URL: "https://orangecountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/orange_records.json"
+        if: always()
+
+  hardin:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Hardin
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Hardin"
+          BASE_URL: "https://hardincountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/hardin_records.json"
+        if: always()
+
+  jasper:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Jasper
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Jasper"
+          BASE_URL: "https://jaspercountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/jasper_records.json"
+        if: always()
+
+  panola:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Panola
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Panola"
+          BASE_URL: "https://panolacountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/panola_records.json"
+        if: always()
+
+  karnes:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Karnes
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Karnes"
+          BASE_URL: "https://karnescountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/karnes_records.json"
+        if: always()
+
+  howard:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Howard
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Howard"
+          BASE_URL: "https://howardcountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/howard_records.json"
+        if: always()
+
+  wichita:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Wichita
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Wichita"
+          BASE_URL: "https://wichitacountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/wichita_records.json"
+        if: always()
+
+  bastrop:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Bastrop
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Bastrop"
+          BASE_URL: "https://bastroptx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/bastrop_records.json"
+        if: always()
+
+  hays:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Hays
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Hays"
+          BASE_URL: "https://hayscountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/hays_records.json"
+        if: always()
+
+  comal:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Comal
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Comal"
+          BASE_URL: "https://comalcountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/comal_records.json"
+        if: always()
+
+  guadalupe:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Guadalupe
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Guadalupe"
+          BASE_URL: "https://guadalupecountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/guadalupe_records.json"
+        if: always()
+
+  hamilton:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Hamilton
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Hamilton"
+          BASE_URL: "https://hamiltoncountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/hamilton_records.json"
+        if: always()
+
+  eastland:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Eastland
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Eastland"
+          BASE_URL: "https://eastlandcountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/eastland_records.json"
+        if: always()
+
+  erath:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Erath
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Erath"
+          BASE_URL: "https://erathcountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/erath_records.json"
+        if: always()
+
+  gonzales:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Gonzales
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Gonzales"
+          BASE_URL: "https://gonzalescountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/gonzales_records.json"
+        if: always()
+
+  calhoun:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Calhoun
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Calhoun"
+          BASE_URL: "https://calhouncountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/calhoun_records.json"
+        if: always()
+
+  carson:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Carson
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Carson"
+          BASE_URL: "https://carsoncountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/carson_records.json"
+        if: always()
+
+  dallam:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Dallam
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Dallam"
+          BASE_URL: "https://dallamcountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/dallam_records.json"
+        if: always()
+
+  donley:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Donley
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Donley"
+          BASE_URL: "https://donleycountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/donley_records.json"
+        if: always()
+
+  winkler:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Winkler
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Winkler"
+          BASE_URL: "https://winklercountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/winkler_records.json"
+        if: always()
+
+  yoakum:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Yoakum
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Yoakum"
+          BASE_URL: "https://yoakumcountytx-selfservice.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/yoakum_records.json"
+        if: always()
+
+  palopinto:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape PaloPinto
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "PaloPinto"
+          BASE_URL: "https://palopintocountytx-selfservice.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/palopinto_records.json"
+        if: always()
+
+  aransas:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - name: Scrape Aransas
+        run: python scraper/tyler_universal.py
+        env:
+          COUNTY_NAME: "Aransas"
+          BASE_URL: "https://aransascountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+      - name: Push to DB
+        run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JSON_GLOB: "dashboard/aransas_records.json"
+        if: always()
