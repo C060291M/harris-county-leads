@@ -14,7 +14,7 @@ log = logging.getLogger("i2i")
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "3"))
 MAX_PAGES     = int(os.getenv("MAX_PAGES", "3"))
 
-COUNTIES = {
+_ALL_COUNTIES = {
     "Angelina":   "https://i2i.uslandrecords.com/TX/Angelina/D/",
     "Bandera":    "https://i2i.uslandrecords.com/TX/Bandera/D/",
     "Castro":     "https://i2i.uslandrecords.com/TX/Castro/D/",
@@ -28,6 +28,13 @@ COUNTIES = {
     "Leon":       "https://i2i.uslandrecords.com/TX/Leon/D/",
     "Madison":    "https://i2i.uslandrecords.com/TX/Madison/D/",
 }
+# Allow workflow to pass COUNTIES=Angelina,Cherokee,... to run a subset
+_env_counties = os.getenv("COUNTIES", "")
+if _env_counties.strip():
+    _filter = {c.strip() for c in _env_counties.split(",")}
+    COUNTIES = {k: v for k, v in _ALL_COUNTIES.items() if k in _filter}
+else:
+    COUNTIES = _ALL_COUNTIES
 
 KEEP_DOC_TYPES = {
     "LIS PENDENS","LIS PEN","TAX DEED","ABSTRACT OF JUDGMENT",
@@ -258,4 +265,5 @@ def main():
     asyncio.run(main_async())
 
 if __name__ == "__main__":
-    main()
+    main()
+
