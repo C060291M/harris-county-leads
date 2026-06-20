@@ -171,7 +171,7 @@ async def scrape_county(page, county, base_url, dept, start_dt, end_dt):
 
             await page.goto(url, timeout=30000, wait_until="networkidle")
 
-            await page.wait_for_timeout(5000)
+            await page.wait_for_timeout(2000)
 
             
 

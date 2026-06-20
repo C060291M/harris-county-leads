@@ -99,7 +99,7 @@ async def scrape_i2i_county(page, county_name, base_url, start_dt, end_dt):
     log.info(f"{county_name}: searching {start_str} to {end_str}")
 
     try:
-        await page.goto(base_url, wait_until="networkidle", timeout=60000)
+        await page.goto(base_url, wait_until="domcontentloaded", timeout=30000)
         await page.wait_for_timeout(2000)
 
         # Accept disclaimer if present

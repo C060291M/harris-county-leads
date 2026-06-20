@@ -174,7 +174,7 @@ async def scrape_waller(start_dt, end_dt):
 
         try:
 
-            await page.goto(BASE_URL + "/user/disclaimer", wait_until="networkidle", timeout=60000)
+            await page.goto(BASE_URL + "/user/disclaimer", wait_until="domcontentloaded", timeout=30000)
 
             await page.wait_for_timeout(2000)
 
@@ -196,9 +196,9 @@ async def scrape_waller(start_dt, end_dt):
 
             try:
 
-                await page.goto(f"{BASE_URL}/search/DOCSEARCH144S1", wait_until="networkidle", timeout=60000)
+                await page.goto(f"{BASE_URL}/search/DOCSEARCH144S1", wait_until="domcontentloaded", timeout=30000)
 
-                await page.wait_for_timeout(5000)
+                await page.wait_for_timeout(2000)
 
 
 
@@ -220,7 +220,7 @@ async def scrape_waller(start_dt, end_dt):
 
                     await search_link.click()
 
-                    await page.wait_for_timeout(6000)
+                    await page.wait_for_timeout(3000)
 
 
 

@@ -87,7 +87,7 @@ async def scrape_webb(start_dt, end_dt):
 
         # Step 1: Login as Public
         log.info("Webb: logging in as public...")
-        await page.goto(LOGIN_URL, wait_until="networkidle", timeout=60000)
+        await page.goto(LOGIN_URL, wait_until="domcontentloaded", timeout=30000)
         await page.wait_for_timeout(2000)
         login_btn = await page.query_selector("input[value='Login as Public'], button:has-text('Login as Public')")
         if login_btn:
@@ -138,7 +138,7 @@ async def scrape_webb(start_dt, end_dt):
             search_btn = await page.query_selector("input[value='Search'], img[alt='Search'], a:has-text('Search')")
             if search_btn:
                 await search_btn.click()
-                await page.wait_for_timeout(4000)
+                await page.wait_for_timeout(2000)
                 log.info("Webb: search submitted for %s to %s", start_str, end_str)
 
         except Exception as e:
@@ -289,4 +289,5 @@ def main():
     asyncio.run(main_async())
 
 if __name__ == "__main__":
-    main()
+    main()
+
