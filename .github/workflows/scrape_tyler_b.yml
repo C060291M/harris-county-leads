@@ -1,16 +1,9 @@
-﻿name: StackIQ Tyler iDS Group B
+name: StackIQ Tyler iDS Group B
 
 on:
   schedule:
-    - cron: "30 3 * * *"
-  workflow_dispatch:
-    inputs:
-      lookback_days:
-        description: 'Days to look back'
-        default: '3'
-      max_pages:
-        description: 'Max pages per doc type'
-        default: '5'
+    - cron: "30 8 * * *"
+  workflow_dispatch: {}
 
 jobs:
 
@@ -27,16 +20,18 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run gregg scraper
-        run: python scraper/multi_county_gregg.py
+      - name: Scrape Gregg
+        run: python scraper/tyler_scraper_universal.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
+          COUNTY: "Gregg"
+          LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          MAX_RECORDS: "500"
+          WALL_MINUTES: "75"
       - name: Push to DB
+        run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python3 scraper/push_to_db.py
-
   harrison:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -50,16 +45,18 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run harrison scraper
-        run: python scraper/multi_county_harrison.py
+      - name: Scrape Harrison
+        run: python scraper/tyler_scraper_universal.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
+          COUNTY: "Harrison"
+          LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          MAX_RECORDS: "500"
+          WALL_MINUTES: "75"
       - name: Push to DB
+        run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python3 scraper/push_to_db.py
-
   upshur:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -73,16 +70,18 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run upshur scraper
-        run: python scraper/multi_county_upshur.py
+      - name: Scrape Upshur
+        run: python scraper/tyler_scraper_universal.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
+          COUNTY: "Upshur"
+          LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          MAX_RECORDS: "500"
+          WALL_MINUTES: "75"
       - name: Push to DB
+        run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python3 scraper/push_to_db.py
-
   wood:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -96,16 +95,18 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run wood scraper
-        run: python scraper/multi_county_wood.py
+      - name: Scrape Wood
+        run: python scraper/tyler_scraper_universal.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
+          COUNTY: "Wood"
+          LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          MAX_RECORDS: "500"
+          WALL_MINUTES: "75"
       - name: Push to DB
+        run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python3 scraper/push_to_db.py
-
   eastland:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -119,16 +120,18 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run eastland scraper
-        run: python scraper/multi_county_eastland.py
+      - name: Scrape Eastland
+        run: python scraper/tyler_scraper_universal.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
+          COUNTY: "Eastland"
+          LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          MAX_RECORDS: "500"
+          WALL_MINUTES: "75"
       - name: Push to DB
+        run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python3 scraper/push_to_db.py
-
   erath:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -142,16 +145,18 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run erath scraper
-        run: python scraper/multi_county_erath.py
+      - name: Scrape Erath
+        run: python scraper/tyler_scraper_universal.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
+          COUNTY: "Erath"
+          LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          MAX_RECORDS: "500"
+          WALL_MINUTES: "75"
       - name: Push to DB
+        run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python3 scraper/push_to_db.py
-
   liberty:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -165,16 +170,18 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run liberty scraper
-        run: python scraper/multi_county_liberty.py
+      - name: Scrape Liberty
+        run: python scraper/tyler_scraper_universal.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
+          COUNTY: "Liberty"
+          LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          MAX_RECORDS: "500"
+          WALL_MINUTES: "75"
       - name: Push to DB
+        run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python3 scraper/push_to_db.py
-
   hardin:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -188,16 +195,18 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run hardin scraper
-        run: python scraper/multi_county_hardin.py
+      - name: Scrape Hardin
+        run: python scraper/tyler_scraper_universal.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
+          COUNTY: "Hardin"
+          LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          MAX_RECORDS: "500"
+          WALL_MINUTES: "75"
       - name: Push to DB
+        run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python3 scraper/push_to_db.py
-
   orange:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -211,16 +220,18 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run orange scraper
-        run: python scraper/multi_county_orange.py
+      - name: Scrape Orange
+        run: python scraper/tyler_scraper_universal.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
+          COUNTY: "Orange"
+          LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          MAX_RECORDS: "500"
+          WALL_MINUTES: "75"
       - name: Push to DB
+        run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python3 scraper/push_to_db.py
-
   jasper:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -234,12 +245,15 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Run jasper scraper
-        run: python scraper/multi_county_jasper.py
+      - name: Scrape Jasper
+        run: python scraper/tyler_scraper_universal.py
         env:
-          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
+          COUNTY: "Jasper"
+          LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          MAX_RECORDS: "500"
+          WALL_MINUTES: "75"
       - name: Push to DB
+        run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python3 scraper/push_to_db.py
