@@ -34,6 +34,9 @@ MAX_PAGES     = int(os.getenv("MAX_PAGES", "3"))
 
 COUNTIES = {
     "Tarrant":     ("https://tarrant.tx.publicsearch.us",     "RP"),
+    "Denton":      ("https://denton.tx.publicsearch.us",      "RP"),
+    "Collin":      ("https://collin.tx.publicsearch.us",      "RP"),
+    "Johnson":     ("https://johnson.tx.publicsearch.us",     "RP"),
     "Dallas":      ("https://dallas.tx.publicsearch.us",      "RP"),
     "Bexar":       ("https://bexar.tx.publicsearch.us",       "RP"),
     "Smith":       ("https://smith.tx.publicsearch.us",       "RP"),
