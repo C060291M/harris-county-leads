@@ -37,6 +37,7 @@ COUNTIES = {
     "Denton":      ("https://denton.tx.publicsearch.us",      "RP"),
     "Collin":      ("https://collin.tx.publicsearch.us",      "RP"),
     "Johnson":     ("https://johnson.tx.publicsearch.us",     "RP"),
+    "Nueces":      ("https://nueces.tx.publicsearch.us",      "RP"),
     "Dallas":      ("https://dallas.tx.publicsearch.us",      "RP"),
     "Bexar":       ("https://bexar.tx.publicsearch.us",       "RP"),
     "Smith":       ("https://smith.tx.publicsearch.us",       "RP"),
