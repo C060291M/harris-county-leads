@@ -1,82 +1,155 @@
-import json, glob, psycopg2, os, sys, time
-from datetime import datetime
+﻿import json, glob, psycopg2, os, sys, re
+from datetime import datetime, timezone
+from psycopg2.extras import execute_values
 
 DB = os.environ.get("DATABASE_URL","")
 if not DB:
-    print("No DATABASE_URL")
-    sys.exit(0)
+    print("ERROR: DATABASE_URL not set"); sys.exit(1)
 
-SQL = ("INSERT INTO lead_records "
-       "(doc_num,owner,cat,cat_label,doc_type,filed,amount,legal,clerk_url,"
-       "prop_address,prop_city,prop_state,prop_zip,mail_address,mail_city,"
-       "mail_state,mail_zip,score,flags,county) "
-       "VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) "
-       "ON CONFLICT (doc_num) DO UPDATE SET "
-       "score=EXCLUDED.score,flags=EXCLUDED.flags,"
-       "prop_address=COALESCE(NULLIF(EXCLUDED.prop_address,''),lead_records.prop_address),"
-       "county=EXCLUDED.county")
-LOG_SQL = ("INSERT INTO scraper_runs (job_name, county, run_at, leads_pushed, status, error_msg) "
-           "VALUES (%s,%s,%s,%s,%s,%s)")
+DASHBOARD_DIR = os.path.join(os.path.dirname(__file__), "..", "dashboard")
+JSON_GLOB = os.environ.get("JSON_GLOB", "")
 
-pattern = os.environ.get("JSON_GLOB", "dashboard/*_records.json")
-all_files = glob.glob(pattern)
+def clean(val):
+    if not isinstance(val, str): return str(val).strip() if val is not None else None
+    val = val.replace("\ufeff","").replace("\u00a0"," ").replace("\u200b","")
+    bullet = re.compile(r'[\u2022\u00b7]\s*')
+    if bullet.search(val):
+        val = bullet.split(val)[0]
+    return re.sub(r'\s+',' ',val).strip() or None
 
-# Only push files modified in the last 2 hours (current run)
-cutoff = time.time() - 7200
-files = [f for f in all_files if os.path.getmtime(f) > cutoff]
+def extract_doc_type(val):
+    if not isinstance(val, str): return None
+    parts = re.split(r'[\u2022\u00b7]\s*', val, maxsplit=1)
+    return re.sub(r'\s+',' ',parts[1]).strip() if len(parts)==2 else None
 
-# Also pick up Harris records.json if fresh
-harris_file = "dashboard/records.json"
-if os.path.exists(harris_file) and harris_file not in files:
-    if os.path.getmtime(harris_file) > cutoff:
-        files.append(harris_file)
+def parse_amount(val):
+    if not val: return None
+    try: return float(str(val).replace("$","").replace(",","").strip()) or None
+    except: return None
 
-if not files:
-    print(f"No fresh JSON files found (checked {len(all_files)} total, none modified in last 2h)")
-    sys.exit(0)
+def parse_date(val):
+    if not val: return None
+    val = str(val).strip().split("T")[0]
+    for fmt in ("%Y-%m-%d","%m/%d/%Y","%m-%d-%Y","%Y/%m/%d"):
+        try: return datetime.strptime(val,fmt).strftime("%Y-%m-%d")
+        except: pass
+    return val[:10]
 
-print(f"Pushing {len(files)} fresh files (skipping {len(all_files)-len(files)} stale)")
+def normalize(raw, source_county=None):
+    r = {k.lower().strip():v for k,v in raw.items()}
+    out = {}
 
-for f in files:
+    FIELD_MAP = {
+        "doc_num":   ["doc_num","document_number","instrument_number","inst_num","recordnumber"],
+        "owner":     ["owner","grantor","grantor_name","owner_name","grantorname","party1name"],
+        "prop_address":["prop_address","property_address","address","situs_address","site_address"],
+        "filed":     ["filed","recorded_date","recording_date","file_date","filedate","recordeddate"],
+        "doc_type":  ["doc_type","document_type","doctype","instrument_type","type","record_type"],
+        "amount":    ["amount","consideration","sale_price","saleprice","price"],
+        "county":    ["county","county_name"],
+        "clerk_url": ["clerk_url","url","document_url","doc_url","link"],
+        "cat":       ["cat"],
+        "cat_label": ["cat_label"],
+        "beds":      ["beds","bedrooms"],
+        "full_baths":["full_baths","bathrooms","baths"],
+        "sqft":      ["sqft","square_feet","living_area"],
+        "yr_built":  ["yr_built","year_built","yearbuilt"],
+    }
+
+    for canonical, aliases in FIELD_MAP.items():
+        for alias in aliases:
+            v = r.get(alias)
+            if v not in (None,"","N/A","n/a","null","NULL"):
+                out[canonical] = str(v).strip()
+                break
+
+    # Clean doc_num — strip embedded bullet+doc_type
+    if out.get("doc_num"):
+        raw_dn = out["doc_num"]
+        out["doc_num"] = clean(raw_dn)
+        if not out.get("doc_type"):
+            recovered = extract_doc_type(raw_dn)
+            if recovered: out["doc_type"] = recovered
+
+    # Fix duplicate doc_num==doc_type (Tyler bug)
+    if out.get("doc_num") and out.get("doc_type") and out["doc_num"] == out["doc_type"]:
+        raw_val = out["doc_num"]
+        out["doc_num"] = clean(raw_val)
+        recovered = extract_doc_type(raw_val)
+        if recovered: out["doc_type"] = recovered
+        else: out.pop("doc_type",None)
+
+    if not out.get("doc_num"): return None
+
+    if not out.get("county") and source_county:
+        out["county"] = source_county.lower().replace(" county","").replace(" ","_")
+    if out.get("county"):
+        out["county"] = out["county"].lower().replace(" county","").replace(" ","_").strip()
+
+    if out.get("filed"): out["filed"] = parse_date(out["filed"])
+    if out.get("amount"): out["amount"] = parse_amount(out["amount"])
+    out["scraped_at"] = datetime.now(timezone.utc).isoformat()
+    return out
+
+COLS = ["doc_num","owner","prop_address","filed","doc_type","amount",
+        "county","clerk_url","beds","full_baths","sqft","yr_built",
+        "cat","cat_label","scraped_at"]
+
+UPSERT = """
+INSERT INTO lead_records ({cols})
+VALUES %s
+ON CONFLICT (doc_num) DO UPDATE SET
+    owner=COALESCE(EXCLUDED.owner,lead_records.owner),
+    prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
+    filed=COALESCE(EXCLUDED.filed,lead_records.filed),
+    doc_type=COALESCE(EXCLUDED.doc_type,lead_records.doc_type),
+    amount=COALESCE(EXCLUDED.amount,lead_records.amount),
+    county=COALESCE(EXCLUDED.county,lead_records.county),
+    clerk_url=COALESCE(EXCLUDED.clerk_url,lead_records.clerk_url),
+    beds=COALESCE(EXCLUDED.beds,lead_records.beds),
+    full_baths=COALESCE(EXCLUDED.full_baths,lead_records.full_baths),
+    sqft=COALESCE(EXCLUDED.sqft,lead_records.sqft),
+    yr_built=COALESCE(EXCLUDED.yr_built,lead_records.yr_built),
+    cat=COALESCE(EXCLUDED.cat,lead_records.cat),
+    cat_label=COALESCE(EXCLUDED.cat_label,lead_records.cat_label),
+    scraped_at=EXCLUDED.scraped_at
+WHERE lead_records.scraped_at < NOW() - INTERVAL '2 hours' OR lead_records.scraped_at IS NULL
+""".format(cols=",".join(COLS))
+
+def process_file(path, conn):
+    county = os.path.basename(path).replace("_records.json","").replace("pubsearch_","")
     try:
-        payload = json.load(open(f))
-        recs = payload.get("records", payload) if isinstance(payload, dict) else payload
-        job_name = os.path.basename(f).replace("_records.json","")
-        run_at = datetime.utcnow()
-        county_counts = {}
-        for r in recs:
-            c = r.get("county","unknown")
-            county_counts[c] = county_counts.get(c, 0) + 1
-        conn = psycopg2.connect(DB, connect_timeout=30)
-        cur = conn.cursor()
-        ins = 0
-        for r in recs:
-            try:
-                cur.execute(SQL, (
-                    r.get("doc_num",""), r.get("owner",""), r.get("cat",""),
-                    r.get("cat_label",""), r.get("doc_type",""), r.get("filed"),
-                    r.get("amount"), r.get("legal",""), r.get("clerk_url",""),
-                    r.get("prop_address",""), r.get("prop_city",""),
-                    r.get("prop_state","TX"), r.get("prop_zip",""),
-                    r.get("mail_address",""), r.get("mail_city",""),
-                    r.get("mail_state","TX"), r.get("mail_zip",""),
-                    r.get("score",0), json.dumps(r.get("flags",[])), r.get("county","")
-                ))
-                ins += 1
-            except: pass
-        for county, count in county_counts.items():
-            try:
-                cur.execute(LOG_SQL, (job_name, county, run_at, count, "success", None))
-            except: pass
-        conn.commit()
-        conn.close()
-        print(f"{f}: {ins} inserted across {list(county_counts.keys())}")
+        data = json.loads(open(path, encoding="utf-8-sig").read())
+        raws = data.get("records") or data.get("leads") or (data if isinstance(data,list) else [])
+        rows = []
+        for raw in raws:
+            rec = normalize(raw, source_county=county)
+            if rec:
+                rows.append(tuple(rec.get(c) for c in COLS))
+        if rows:
+            with conn.cursor() as cur:
+                execute_values(cur, UPSERT, rows, page_size=500)
+            conn.commit()
+        print(f"  {os.path.basename(path)}: {len(rows)} upserted")
+        return len(rows)
     except Exception as e:
-        print(f"Error {f}: {e}")
-        try:
-            conn2 = psycopg2.connect(DB, connect_timeout=30)
-            cur2 = conn2.cursor()
-            cur2.execute(LOG_SQL, (os.path.basename(f), "unknown", datetime.utcnow(), 0, "error", str(e)))
-            conn2.commit()
-            conn2.close()
-        except: pass
+        print(f"  ERROR {os.path.basename(path)}: {e}")
+        return 0
+
+def main():
+    if JSON_GLOB:
+        pattern = os.path.join(os.path.dirname(__file__), "..", JSON_GLOB)
+        files = glob.glob(pattern)
+    else:
+        files = glob.glob(os.path.join(DASHBOARD_DIR, "*.json"))
+
+    if not files:
+        print("No JSON files found"); return
+
+    conn = psycopg2.connect(DB)
+    total = sum(process_file(f, conn) for f in sorted(files))
+    conn.close()
+    print(f"TOTAL: {total} records upserted from {len(files)} files")
+
+if __name__=="__main__":
+    main()
