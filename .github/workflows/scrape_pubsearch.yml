@@ -103,7 +103,7 @@ jobs:
       - run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: "3"
-          COUNTIES: "Hidalgo,El Paso"
+          COUNTIES: "Hidalgo"
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -143,7 +143,7 @@ jobs:
       - run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: "3"
-          COUNTIES: "Midland,Grayson"
+          COUNTIES: "Midland"
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -163,7 +163,7 @@ jobs:
       - run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: "3"
-          COUNTIES: "Montgomery,Bell"
+          COUNTIES: "Montgomery"
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -183,7 +183,7 @@ jobs:
       - run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: "3"
-          COUNTIES: "Wilson,Milam,Bee"
+          COUNTIES: "Wilson"
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -203,7 +203,7 @@ jobs:
       - run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: "3"
-          COUNTIES: "Chambers,Walker,Madison"
+          COUNTIES: "Chambers"
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -223,7 +223,7 @@ jobs:
       - run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: "3"
-          COUNTIES: "Zapata,Medina,Coleman"
+          COUNTIES: "Zapata"
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -243,7 +243,7 @@ jobs:
       - run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: "3"
-          COUNTIES: "Rusk,Panola,Brewster"
+          COUNTIES: "Rusk"
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -263,7 +263,7 @@ jobs:
       - run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: "3"
-          COUNTIES: "Victoria,Calhoun,Bosque,Coryell"
+          COUNTIES: "Victoria"
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -283,7 +283,7 @@ jobs:
       - run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: "3"
-          COUNTIES: "Anderson,Nacogdoches,Grimes"
+          COUNTIES: "Anderson"
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -303,7 +303,7 @@ jobs:
       - run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: "3"
-          COUNTIES: "Guadalupe,Kendall,Matagorda"
+          COUNTIES: "Guadalupe"
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -323,7 +323,7 @@ jobs:
       - run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: "3"
-          COUNTIES: "Jim Wells,Starr,San Patricio,Freestone"
+          COUNTIES: "Jim Wells"
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -343,7 +343,7 @@ jobs:
       - run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: "3"
-          COUNTIES: "Reeves,Potter,Burleson"
+          COUNTIES: "Reeves"
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -363,7 +363,7 @@ jobs:
       - run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: "3"
-          COUNTIES: "Hockley,Refugio,Goliad,Red River"
+          COUNTIES: "Hockley"
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
