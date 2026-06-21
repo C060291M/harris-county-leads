@@ -190,16 +190,19 @@ async def scrape_county(page, county, base_url, dept, start_dt, end_dt):
 
             url = f"{base_url}/results?department={dept}&keywordSearch=false&recordedDateRange={date_param}&searchOcrText=false&searchType=quickSearch&searchValue={quote(doc_type)}"
 
-            await page.goto(url, timeout=30000, wait_until="networkidle")
+            await page.goto(url, timeout=30000, wait_until="domcontentloaded")
 
             await page.wait_for_timeout(2000)
 
             
 
             text = await page.evaluate("document.body.innerText")
-
+            if ("No Results Found" in text or "Error with search" in text) and date_param != "L1M":
+                _url2 = url.replace(date_param, "L1M")
+                await page.goto(_url2, timeout=30000, wait_until="domcontentloaded")
+                await page.wait_for_timeout(2000)
+                text = await page.evaluate("document.body.innerText")
             if "Error with search" in text or "No Results Found" in text:
-
                 continue
 
             
