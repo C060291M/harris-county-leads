@@ -2,11 +2,12 @@
 
 on:
   schedule:
-    - cron: "30 3 * * *"
+    - cron: "30 8 * * *"
   workflow_dispatch: {}
 
 jobs:
-  tarrant:
+
+  pubsearch-1:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     continue-on-error: true
@@ -19,16 +20,14 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
-      - run: COUNTIES=Tarrant python scraper/multi_county_pubsearch.py
+      - run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: "3"
           COUNTIES: "Tarrant"
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/pubsearch_records.json"
-
-  dallas:
+  pubsearch-2:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     continue-on-error: true
@@ -48,9 +47,7 @@ jobs:
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/pubsearch_records.json"
-
-  other-pubsearch:
+  pubsearch-3:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     continue-on-error: true
@@ -66,13 +63,11 @@ jobs:
       - run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: "3"
-          SKIP_COUNTIES: "Tarrant,Dallas,Smith"
+          COUNTIES: "Bexar"
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/pubsearch_records.json"
-
-  smith:
+  pubsearch-4:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     continue-on-error: true
@@ -92,4 +87,303 @@ jobs:
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/pubsearch_records.json"
+  pubsearch-5:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - run: python scraper/multi_county_pubsearch.py
+        env:
+          LOOKBACK_DAYS: "3"
+          COUNTIES: "Hidalgo,El Paso"
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  pubsearch-6:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - run: python scraper/multi_county_pubsearch.py
+        env:
+          LOOKBACK_DAYS: "3"
+          COUNTIES: "Brazos"
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  pubsearch-7:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - run: python scraper/multi_county_pubsearch.py
+        env:
+          LOOKBACK_DAYS: "3"
+          COUNTIES: "Midland,Grayson"
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  pubsearch-8:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - run: python scraper/multi_county_pubsearch.py
+        env:
+          LOOKBACK_DAYS: "3"
+          COUNTIES: "Montgomery,Bell"
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  pubsearch-9:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - run: python scraper/multi_county_pubsearch.py
+        env:
+          LOOKBACK_DAYS: "3"
+          COUNTIES: "Wilson,Milam,Bee"
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  pubsearch-10:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - run: python scraper/multi_county_pubsearch.py
+        env:
+          LOOKBACK_DAYS: "3"
+          COUNTIES: "Chambers,Walker,Madison"
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  pubsearch-11:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - run: python scraper/multi_county_pubsearch.py
+        env:
+          LOOKBACK_DAYS: "3"
+          COUNTIES: "Zapata,Medina,Coleman"
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  pubsearch-12:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - run: python scraper/multi_county_pubsearch.py
+        env:
+          LOOKBACK_DAYS: "3"
+          COUNTIES: "Rusk,Panola,Brewster"
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  pubsearch-13:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - run: python scraper/multi_county_pubsearch.py
+        env:
+          LOOKBACK_DAYS: "3"
+          COUNTIES: "Victoria,Calhoun,Bosque,Coryell"
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  pubsearch-14:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - run: python scraper/multi_county_pubsearch.py
+        env:
+          LOOKBACK_DAYS: "3"
+          COUNTIES: "Anderson,Nacogdoches,Grimes"
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  pubsearch-15:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - run: python scraper/multi_county_pubsearch.py
+        env:
+          LOOKBACK_DAYS: "3"
+          COUNTIES: "Guadalupe,Kendall,Matagorda"
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  pubsearch-16:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - run: python scraper/multi_county_pubsearch.py
+        env:
+          LOOKBACK_DAYS: "3"
+          COUNTIES: "Jim Wells,Starr,San Patricio,Freestone"
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  pubsearch-17:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - run: python scraper/multi_county_pubsearch.py
+        env:
+          LOOKBACK_DAYS: "3"
+          COUNTIES: "Reeves,Potter,Burleson"
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  pubsearch-18:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - run: python scraper/multi_county_pubsearch.py
+        env:
+          LOOKBACK_DAYS: "3"
+          COUNTIES: "Hockley,Refugio,Goliad,Red River"
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  pubsearch-19:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - run: python scraper/multi_county_pubsearch.py
+        env:
+          LOOKBACK_DAYS: "3"
+          COUNTIES: "Jim Hogg"
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
