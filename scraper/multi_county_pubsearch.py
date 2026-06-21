@@ -1,4 +1,4 @@
-"""
+﻿"""
 
 StackIQ - Universal PublicSearch.us Scraper
 
@@ -87,13 +87,8 @@ COUNTIES = {
 
 
 DOC_TYPES = [
-
     "Lis Pendens", "Tax Deed", "Abstract of Judgment",
-
-    "Federal Tax Lien", "State Tax Lien", "Mechanic Lien",
-
-    "Probate", "Divorce", "Judgment", "Notice of Foreclosure",
-
+    "Federal Tax Lien", "Mechanic Lien", "Probate",
 ]
 
 
@@ -440,4 +435,5 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
