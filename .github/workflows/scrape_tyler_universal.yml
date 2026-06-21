@@ -1,8 +1,8 @@
-﻿name: StackIQ Tyler Universal Scraper
+name: StackIQ Tyler Universal Scraper
 
 on:
   schedule:
-    - cron: "0 4 * * *"
+    - cron: "0 9 * * *"
   workflow_dispatch: {}
 
 jobs:
@@ -24,13 +24,12 @@ jobs:
         env:
           COUNTY: "Henderson"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/henderson_records.json"
-        if: always()
-
   hood:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -49,13 +48,12 @@ jobs:
         env:
           COUNTY: "Hood"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/hood_records.json"
-        if: always()
-
   lamar:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -74,13 +72,12 @@ jobs:
         env:
           COUNTY: "Lamar"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/lamar_records.json"
-        if: always()
-
   lavaca:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -99,13 +96,12 @@ jobs:
         env:
           COUNTY: "Lavaca"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/lavaca_records.json"
-        if: always()
-
   liberty:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -124,13 +120,12 @@ jobs:
         env:
           COUNTY: "Liberty"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/liberty_records.json"
-        if: always()
-
   wood:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -149,13 +144,12 @@ jobs:
         env:
           COUNTY: "Wood"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/wood_records.json"
-        if: always()
-
   vanzandt:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -174,13 +168,12 @@ jobs:
         env:
           COUNTY: "VanZandt"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/vanzandt_records.json"
-        if: always()
-
   kaufman:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -199,13 +192,12 @@ jobs:
         env:
           COUNTY: "Kaufman"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/kaufman_records.json"
-        if: always()
-
   gregg:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -224,13 +216,12 @@ jobs:
         env:
           COUNTY: "Gregg"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/gregg_records.json"
-        if: always()
-
   harrison:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -249,13 +240,12 @@ jobs:
         env:
           COUNTY: "Harrison"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/harrison_records.json"
-        if: always()
-
   upshur:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -274,13 +264,12 @@ jobs:
         env:
           COUNTY: "Upshur"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/upshur_records.json"
-        if: always()
-
   andrews:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -299,13 +288,12 @@ jobs:
         env:
           COUNTY: "Andrews"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/andrews_records.json"
-        if: always()
-
   wise:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -324,13 +312,12 @@ jobs:
         env:
           COUNTY: "Wise"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/wise_records.json"
-        if: always()
-
   polk:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -349,13 +336,12 @@ jobs:
         env:
           COUNTY: "Polk"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/polk_records.json"
-        if: always()
-
   somervell:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -374,13 +360,12 @@ jobs:
         env:
           COUNTY: "Somervell"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/somervell_records.json"
-        if: always()
-
   randall:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -399,13 +384,12 @@ jobs:
         env:
           COUNTY: "Randall"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/randall_records.json"
-        if: always()
-
   waller:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -424,13 +408,12 @@ jobs:
         env:
           COUNTY: "Waller"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/waller_records.json"
-        if: always()
-
   orange:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -449,13 +432,12 @@ jobs:
         env:
           COUNTY: "Orange"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/orange_records.json"
-        if: always()
-
   hardin:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -474,13 +456,12 @@ jobs:
         env:
           COUNTY: "Hardin"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/hardin_records.json"
-        if: always()
-
   jasper:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -499,13 +480,12 @@ jobs:
         env:
           COUNTY: "Jasper"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/jasper_records.json"
-        if: always()
-
   panola:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -524,13 +504,12 @@ jobs:
         env:
           COUNTY: "Panola"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/panola_records.json"
-        if: always()
-
   karnes:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -549,13 +528,12 @@ jobs:
         env:
           COUNTY: "Karnes"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/karnes_records.json"
-        if: always()
-
   howard:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -574,14 +552,14 @@ jobs:
         env:
           COUNTY: "Howard"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/howard_records.json"
-        if: always()
-
-  runs-on: ubuntu-22.04
+  wichita:
+    runs-on: ubuntu-22.04
     timeout-minutes: 90
     continue-on-error: true
     steps:
@@ -598,13 +576,12 @@ jobs:
         env:
           COUNTY: "Wichita"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/wichita_records.json"
-        if: always()
-
   bastrop:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -623,13 +600,12 @@ jobs:
         env:
           COUNTY: "Bastrop"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/bastrop_records.json"
-        if: always()
-
   hays:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -648,13 +624,12 @@ jobs:
         env:
           COUNTY: "Hays"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/hays_records.json"
-        if: always()
-
   comal:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -673,13 +648,12 @@ jobs:
         env:
           COUNTY: "Comal"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/comal_records.json"
-        if: always()
-
   guadalupe:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -698,13 +672,12 @@ jobs:
         env:
           COUNTY: "Guadalupe"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/guadalupe_records.json"
-        if: always()
-
   hamilton:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -723,13 +696,12 @@ jobs:
         env:
           COUNTY: "Hamilton"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/hamilton_records.json"
-        if: always()
-
   eastland:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -748,13 +720,12 @@ jobs:
         env:
           COUNTY: "Eastland"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/eastland_records.json"
-        if: always()
-
   erath:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -773,13 +744,12 @@ jobs:
         env:
           COUNTY: "Erath"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/erath_records.json"
-        if: always()
-
   gonzales:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -798,13 +768,12 @@ jobs:
         env:
           COUNTY: "Gonzales"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/gonzales_records.json"
-        if: always()
-
   calhoun:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -823,13 +792,12 @@ jobs:
         env:
           COUNTY: "Calhoun"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/calhoun_records.json"
-        if: always()
-
   carson:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -848,13 +816,12 @@ jobs:
         env:
           COUNTY: "Carson"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/carson_records.json"
-        if: always()
-
   dallam:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -873,13 +840,12 @@ jobs:
         env:
           COUNTY: "Dallam"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/dallam_records.json"
-        if: always()
-
   donley:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -898,13 +864,12 @@ jobs:
         env:
           COUNTY: "Donley"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/donley_records.json"
-        if: always()
-
   winkler:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -923,13 +888,12 @@ jobs:
         env:
           COUNTY: "Winkler"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/winkler_records.json"
-        if: always()
-
   yoakum:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -948,13 +912,12 @@ jobs:
         env:
           COUNTY: "Yoakum"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/yoakum_records.json"
-        if: always()
-
   palopinto:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -973,13 +936,12 @@ jobs:
         env:
           COUNTY: "PaloPinto"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/palopinto_records.json"
-        if: always()
-
   aransas:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
@@ -998,11 +960,9 @@ jobs:
         env:
           COUNTY: "Aransas"
           LOOKBACK_DAYS: "3"
+          MAX_PAGES: "5"
+          WALL_MINUTES: "75"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JSON_GLOB: "dashboard/aransas_records.json"
-        if: always()
-
-
