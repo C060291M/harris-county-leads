@@ -20,11 +20,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Henderson
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Henderson"
-          BASE_URL: "https://hendersoncountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Henderson"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -46,11 +45,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Hood
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Hood"
-          BASE_URL: "https://hoodcountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Hood"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -72,11 +70,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Lamar
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Lamar"
-          BASE_URL: "https://lamarcountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Lamar"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -98,11 +95,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Lavaca
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Lavaca"
-          BASE_URL: "https://lavacacountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Lavaca"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -124,11 +120,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Liberty
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Liberty"
-          BASE_URL: "https://libertycountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Liberty"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -150,11 +145,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Wood
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Wood"
-          BASE_URL: "https://woodcountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Wood"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -176,11 +170,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape VanZandt
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "VanZandt"
-          BASE_URL: "https://vanzandtcountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "VanZandt"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -202,11 +195,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Kaufman
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Kaufman"
-          BASE_URL: "https://kaufmancountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Kaufman"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -228,11 +220,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Gregg
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Gregg"
-          BASE_URL: "https://greggcountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Gregg"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -254,11 +245,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Harrison
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Harrison"
-          BASE_URL: "https://harrisoncountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Harrison"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -280,11 +270,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Upshur
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Upshur"
-          BASE_URL: "https://upshurcountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Upshur"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -306,11 +295,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Andrews
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Andrews"
-          BASE_URL: "https://andrewscountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Andrews"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -332,11 +320,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Wise
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Wise"
-          BASE_URL: "https://wisecountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Wise"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -358,11 +345,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Polk
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Polk"
-          BASE_URL: "https://polkcountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Polk"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -384,11 +370,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Somervell
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Somervell"
-          BASE_URL: "https://somervellcountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Somervell"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -410,11 +395,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Randall
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Randall"
-          BASE_URL: "https://randallcountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Randall"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -436,11 +420,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Waller
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Waller"
-          BASE_URL: "https://wallercountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Waller"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -462,11 +445,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Orange
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Orange"
-          BASE_URL: "https://orangecountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Orange"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -488,11 +470,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Hardin
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Hardin"
-          BASE_URL: "https://hardincountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Hardin"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -514,11 +495,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Jasper
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Jasper"
-          BASE_URL: "https://jaspercountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Jasper"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -540,11 +520,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Panola
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Panola"
-          BASE_URL: "https://panolacountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Panola"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -566,11 +545,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Karnes
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Karnes"
-          BASE_URL: "https://karnescountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Karnes"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -592,11 +570,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Howard
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Howard"
-          BASE_URL: "https://howardcountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Howard"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -617,11 +594,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Wichita
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Wichita"
-          BASE_URL: "https://wichitacountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Wichita"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -643,11 +619,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Bastrop
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Bastrop"
-          BASE_URL: "https://bastroptx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Bastrop"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -669,11 +644,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Hays
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Hays"
-          BASE_URL: "https://hayscountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Hays"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -695,11 +669,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Comal
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Comal"
-          BASE_URL: "https://comalcountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Comal"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -721,11 +694,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Guadalupe
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Guadalupe"
-          BASE_URL: "https://guadalupecountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Guadalupe"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -747,11 +719,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Hamilton
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Hamilton"
-          BASE_URL: "https://hamiltoncountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Hamilton"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -773,11 +744,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Eastland
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Eastland"
-          BASE_URL: "https://eastlandcountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Eastland"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -799,11 +769,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Erath
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Erath"
-          BASE_URL: "https://erathcountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Erath"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -825,11 +794,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Gonzales
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Gonzales"
-          BASE_URL: "https://gonzalescountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Gonzales"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -851,11 +819,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Calhoun
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Calhoun"
-          BASE_URL: "https://calhouncountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Calhoun"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -877,11 +844,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Carson
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Carson"
-          BASE_URL: "https://carsoncountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Carson"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -903,11 +869,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Dallam
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Dallam"
-          BASE_URL: "https://dallamcountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Dallam"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -929,11 +894,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Donley
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Donley"
-          BASE_URL: "https://donleycountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Donley"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -955,11 +919,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Winkler
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Winkler"
-          BASE_URL: "https://winklercountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Winkler"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -981,11 +944,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Yoakum
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Yoakum"
-          BASE_URL: "https://yoakumcountytx-selfservice.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Yoakum"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -1007,11 +969,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape PaloPinto
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "PaloPinto"
-          BASE_URL: "https://palopintocountytx-selfservice.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "PaloPinto"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -1033,14 +994,14 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: playwright install chromium --with-deps
       - name: Scrape Aransas
-        run: python scraper/tyler_universal.py
+        run: python scraper/tyler_scraper_universal.py
         env:
-          COUNTY_NAME: "Aransas"
-          BASE_URL: "https://aransascountytx-web.tylerhost.net/web"
-          LOOKBACK_DAYS: "3"
+          COUNTY: "Aransas"
+                    LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           JSON_GLOB: "dashboard/aransas_records.json"
         if: always()
+
