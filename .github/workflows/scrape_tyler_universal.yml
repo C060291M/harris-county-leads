@@ -23,7 +23,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Henderson"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -48,7 +48,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Hood"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -73,7 +73,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Lamar"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -98,7 +98,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Lavaca"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -123,7 +123,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Liberty"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -148,7 +148,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Wood"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -173,7 +173,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "VanZandt"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -198,7 +198,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Kaufman"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -223,7 +223,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Gregg"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -248,7 +248,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Harrison"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -273,7 +273,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Upshur"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -298,7 +298,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Andrews"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -323,7 +323,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Wise"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -348,7 +348,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Polk"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -373,7 +373,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Somervell"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -398,7 +398,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Randall"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -423,7 +423,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Waller"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -448,7 +448,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Orange"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -473,7 +473,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Hardin"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -498,7 +498,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Jasper"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -523,7 +523,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Panola"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -548,7 +548,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Karnes"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -573,7 +573,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Howard"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -597,7 +597,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Wichita"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -622,7 +622,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Bastrop"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -647,7 +647,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Hays"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -672,7 +672,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Comal"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -697,7 +697,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Guadalupe"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -722,7 +722,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Hamilton"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -747,7 +747,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Eastland"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -772,7 +772,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Erath"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -797,7 +797,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Gonzales"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -822,7 +822,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Calhoun"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -847,7 +847,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Carson"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -872,7 +872,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Dallam"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -897,7 +897,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Donley"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -922,7 +922,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Winkler"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -947,7 +947,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Yoakum"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -972,7 +972,7 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "PaloPinto"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -997,11 +997,12 @@ jobs:
         run: python scraper/tyler_scraper_universal.py
         env:
           COUNTY: "Aransas"
-                    LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "3"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           JSON_GLOB: "dashboard/aransas_records.json"
         if: always()
+
 
