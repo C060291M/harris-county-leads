@@ -1,6 +1,6 @@
-"""
+﻿"""
 
-StackIQ — Tyler EagleWeb Scraper
+StackIQ â€” Tyler EagleWeb Scraper
 
 Covers: Crane, Loving, and any other TX county on countygovernmentrecords.com
 
@@ -174,7 +174,13 @@ async def scrape_eagleweb_county(page, county_name, base_url, path_prefix, start
 
         search_url = f"{base}/{path_prefix}/eagleweb/docSearch.jsp"
 
-        await page.goto(search_url, wait_until="domcontentloaded", timeout=30000)
+        # Click OPR tab to filter to real property records only
+        opr_link = await page.query_selector("a:has-text('OPR')")
+        if opr_link:
+            await opr_link.evaluate('el => el.click()')
+            await page.wait_for_timeout(2000)
+            log.info('Tom Green: clicked OPR tab, URL: %s', page.url)
+        # await page.goto(search_url, wait_until="domcontentloaded", timeout=30000) -- removed, OPR tab already navigated
 
         await page.wait_for_timeout(2000)
 
@@ -182,11 +188,11 @@ async def scrape_eagleweb_county(page, county_name, base_url, path_prefix, start
 
         # Fill start date
 
-        start_input = await page.query_selector("input[name='startDate'], input[id='startDate']")
+        start_input = await page.query_selector("input[name='RecDateIDStart'], input[id='RecDateIDStart']")
 
         if start_input:
 
-            await start_input.triple_click()
+            await start_input.click(click_count=3)
 
             await start_input.fill(start_str)
 
@@ -194,11 +200,11 @@ async def scrape_eagleweb_county(page, county_name, base_url, path_prefix, start
 
         # Fill end date
 
-        end_input = await page.query_selector("input[name='endDate'], input[id='endDate']")
+        end_input = await page.query_selector("input[name='RecDateIDEnd'], input[id='RecDateIDEnd']")
 
         if end_input:
 
-            await end_input.triple_click()
+            await end_input.click(click_count=3)
 
             await end_input.fill(end_str)
 
@@ -226,7 +232,7 @@ async def scrape_eagleweb_county(page, county_name, base_url, path_prefix, start
 
             await search_btn.evaluate("el => el.click()")
 
-            await page.wait_for_timeout(3000)
+            await page.wait_for_timeout(8000)
 
 
 
@@ -445,4 +451,5 @@ def main():
 if __name__ == "__main__":
 
     main()
+
 
