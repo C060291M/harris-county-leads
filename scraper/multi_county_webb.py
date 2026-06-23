@@ -14,7 +14,7 @@ log = logging.getLogger("webb")
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "3"))
 MAX_PAGES     = int(os.getenv("MAX_PAGES", "8"))
 BASE_URL      = "https://countyfusion13.govos.com/countyweb"
-LOGIN_URL     = "https://webbcountytx.gov/CountyClerk/PropertyRecords/"
+LOGIN_URL     = "https://countyfusion13.govos.com/countyweb/loginDisplay.action?countyname=WebbTX"
 
 # Doc types to keep from "All Document Types" search
 KEEP_DOC_TYPES = {
@@ -90,11 +90,10 @@ async def scrape_webb(start_dt, end_dt):
         log.info("Webb: logging in as public...")
         await page.goto(LOGIN_URL, wait_until="domcontentloaded", timeout=30000)
         await page.wait_for_timeout(2000)
-        login_btn = await page.query_selector("input[value='Login as Public'], button:has-text('Login as Public')")
-        if login_btn:
-            await login_btn.evaluate("el => el.click()")
-            await page.wait_for_timeout(3000)
-
+        # Call doGuestLogin JS function directly
+        await page.evaluate("doGuestLogin(true)")
+        await page.wait_for_timeout(4000)
+        log.info("Webb: logged in, URL: %s", page.url)
         # Step 2: Accept disclaimer
         accept_btn = await page.query_selector("input[value='Accept'], button:has-text('Accept')")
         if accept_btn:
