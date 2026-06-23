@@ -1,4 +1,4 @@
-﻿"""
+"""
 
 StackIQ - Universal PublicSearch.us Scraper
 
@@ -52,10 +52,10 @@ COUNTIES = {
     "Chambers":    ("https://chambers.tx.publicsearch.us",    "RP"),
     "Walker":      ("https://walker.tx.publicsearch.us",      "RP"),
     "Madison":     ("https://madison.tx.publicsearch.us",     "RP"),
-    "Zapata":      ("https://zapata.tx.publicsearch.us",
-    "Young":     ("https://young.tx.publicsearch.us",
-    "Reagan":     ("https://reagan.tx.publicsearch.us",
-    "Llano":     ("https://llano.tx.publicsearch.us",
+    "Zapata":      ("https://zapata.tx.publicsearch.us",      "RP"),
+    "Young":     ("https://young.tx.publicsearch.us",      "RP"),
+    "Reagan":     ("https://reagan.tx.publicsearch.us",      "RP"),
+    "Llano":     ("https://llano.tx.publicsearch.us",      "RP"),
     "Gillespie":     ("https://gillespie.tx.publicsearch.us",      "RP"),
     "Medina":      ("https://medina.tx.publicsearch.us",      "RP"),
     "Grayson":     ("https://grayson.tx.publicsearch.us",     "RP"),
