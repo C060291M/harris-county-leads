@@ -27,6 +27,7 @@ COUNTY_REGISTRY = {
     "Delta":       ("https://deltacountytx-web.tylerhost.net/web",             "DOCSEARCH144S1"),
     "Donley":      ("https://donleycountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
     "Eastland":    ("https://eastlandcountytx-web.tylerhost.net/web",          "DOCSEARCH144S1"),
+    "Erath":       ("https://erathcountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
     "Ector":       ("https://ectorcountytx-web.tylerhost.net/web",             "DOCSEARCH144S1"),
     "Fort Bend":   ("https://fortbendcountytx-web.tylerhost.net/web",          "DOCSEARCH144S1"),
     "Gonzales":    ("https://gonzalescountytx-web.tylerhost.net/web",          "DOCSEARCH782S3"),

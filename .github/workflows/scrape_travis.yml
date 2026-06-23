@@ -24,5 +24,7 @@ jobs:
           LOOKBACK_DAYS: "3"
           MAX_PAGES: "10"
       - run: python scraper/push_to_db.py
+        continue-on-error: true
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
