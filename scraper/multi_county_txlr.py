@@ -198,7 +198,7 @@ async def scrape_county(page, county_name, county_code, start_dt, end_dt):
 
         if search_btn:
 
-            await search_btn.click()
+            await search_btn.evaluate("el => el.click()")
 
             await page.wait_for_timeout(2000)
 

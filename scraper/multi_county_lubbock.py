@@ -192,7 +192,7 @@ async def scrape_lubbock(start_dt, end_dt):
 
             if pub:
 
-                await pub.click()
+                await pub.evaluate("el => el.click()")
 
                 await page.wait_for_timeout(2000)
 
@@ -218,7 +218,7 @@ async def scrape_lubbock(start_dt, end_dt):
 
                     if all_types and await all_types.is_checked():
 
-                        await all_types.click()
+                        await all_types.evaluate("el => el.click()")
 
                         await page.wait_for_timeout(300)
 

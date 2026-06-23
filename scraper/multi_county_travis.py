@@ -109,7 +109,7 @@ async def scrape():
         await page.wait_for_timeout(2000)
         link = await page.query_selector("a:has-text('Click here')")
         if link:
-            await link.click()
+            await link.evaluate("el => el.click()")
             await page.wait_for_timeout(2000)
         
         await page.goto("https://www.tccsearch.org/RealEstate/SearchEntry.aspx",
@@ -146,7 +146,7 @@ async def scrape():
             
             next_btn = await page.query_selector("a:has-text('Next')")
             if not next_btn: break
-            await next_btn.click()
+            await next_btn.evaluate("el => el.click()")
             await page.wait_for_timeout(3000)
         
         await browser.close()

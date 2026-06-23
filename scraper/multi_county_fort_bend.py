@@ -160,13 +160,21 @@ async def scrape_fort_bend(start_dt, end_dt):
 
 
 
-                # Fill date range
-
-                await page.fill("input[id*='DateFiledFrom'], input[name*='DateFiledFrom']", start_str)
-
-                await page.fill("input[id*='DateFiledTo'], input[name*='DateFiledTo']", end_str)
-
-                await page.wait_for_timeout(500)
+                # Fill date range using Infragistics date picker
+                from_inp = await page.query_selector("#cphNoMargin_f_ddcDateFiledFrom input[type='text']")
+                to_inp   = await page.query_selector("#cphNoMargin_f_ddcDateFiledTo input[type='text']")
+                if from_inp and to_inp:
+                    await from_inp.click(click_count=3)
+                    await from_inp.type(start_str)
+                    await page.keyboard.press('Tab')
+                    await page.wait_for_timeout(300)
+                    await to_inp.click(click_count=3)
+                    await to_inp.type(end_str)
+                    await page.keyboard.press('Tab')
+                    await page.wait_for_timeout(500)
+                else:
+                    log.warning('Fort Bend: date inputs not found')
+                    continue
 
 
 
@@ -272,7 +280,7 @@ async def scrape_fort_bend(start_dt, end_dt):
 
                             break
 
-                        await next_btn.click()
+                        await next_btn.evaluate("el => el.click()")
 
                         await page.wait_for_timeout(3000)
 

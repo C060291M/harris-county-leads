@@ -150,7 +150,7 @@ async def scrape_eagleweb_county(page, county_name, base_url, path_prefix, start
 
         if ack:
 
-            await ack.click()
+            await ack.evaluate("el => el.click()")
 
             await page.wait_for_timeout(2000)
 
@@ -162,7 +162,7 @@ async def scrape_eagleweb_county(page, county_name, base_url, path_prefix, start
 
         if pub:
 
-            await pub.click()
+            await pub.evaluate("el => el.click()")
 
             await page.wait_for_timeout(2000)
 
@@ -214,7 +214,7 @@ async def scrape_eagleweb_county(page, county_name, base_url, path_prefix, start
 
             if not is_checked:
 
-                await all_types.click()
+                await all_types.evaluate("el => el.click()")
 
 
 
@@ -224,7 +224,7 @@ async def scrape_eagleweb_county(page, county_name, base_url, path_prefix, start
 
         if search_btn:
 
-            await search_btn.click()
+            await search_btn.evaluate("el => el.click()")
 
             await page.wait_for_timeout(3000)
 

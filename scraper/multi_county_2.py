@@ -516,7 +516,7 @@ async def _scrape_day(name, host, start_dt, end_dt):
 
                     if option:
 
-                        await option.click()
+                        await option.evaluate("el => el.click()")
 
                         await page.wait_for_timeout(500)
 
@@ -566,7 +566,7 @@ async def _scrape_day(name, host, start_dt, end_dt):
 
                                 break
 
-                            await next_btn.click()
+                            await next_btn.evaluate("el => el.click()")
 
                             await page.wait_for_timeout(3000)
 

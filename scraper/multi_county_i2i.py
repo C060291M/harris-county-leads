@@ -107,7 +107,7 @@ async def scrape_i2i_county(page, county_name, base_url, start_dt, end_dt):
             try:
                 btn = await page.query_selector(selector)
                 if btn:
-                    await btn.click()
+                    await btn.evaluate("el => el.click()")
                     await page.wait_for_timeout(1000)
                     break
             except: pass
@@ -117,7 +117,7 @@ async def scrape_i2i_county(page, county_name, base_url, start_dt, end_dt):
             try:
                 btn = await page.query_selector(selector)
                 if btn:
-                    await btn.click()
+                    await btn.evaluate("el => el.click()")
                     await page.wait_for_timeout(1000)
                     break
             except: pass
@@ -146,7 +146,7 @@ async def scrape_i2i_county(page, county_name, base_url, start_dt, end_dt):
                     try:
                         btn = await page.query_selector(sel)
                         if btn:
-                            await btn.click()
+                            await btn.evaluate("el => el.click()")
                             await page.wait_for_timeout(3000)
                             break
                     except: pass
@@ -200,7 +200,7 @@ async def scrape_i2i_county(page, county_name, base_url, start_dt, end_dt):
                 # Next page
                 next_btn = await page.query_selector("a:has-text('Next'), .next, #btnNext")
                 if not next_btn: break
-                await next_btn.click()
+                await next_btn.evaluate("el => el.click()")
                 await page.wait_for_timeout(2000)
 
             except Exception as e:

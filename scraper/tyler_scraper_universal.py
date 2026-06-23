@@ -168,7 +168,7 @@ async def navigate_to_search(page, base_url, docsearch):
     for link in links:
         text = (await link.inner_text()).strip().lower()
         if "official" in text or "record" in text or "public" in text:
-            await link.click()
+            await link.evaluate("el => el.click()")
             await page.wait_for_timeout(2000)
             break
     # Now find DOCSEARCH link
@@ -178,7 +178,7 @@ async def navigate_to_search(page, base_url, docsearch):
         if "official" in text or "real estate" in text or "record" in text or "search" in text:
             href = await link.get_attribute("href") or ""
             actual_id = href.split("/")[-1]
-            await link.click()
+            await link.evaluate("el => el.click()")
             await page.wait_for_timeout(2000)
             log.info("Found search via navigation: %s", actual_id)
             return actual_id
@@ -275,7 +275,7 @@ async def scrape_county(county_name, base_url, docsearch, start_dt, end_dt):
                 log.error("[%s] No search button", county_name)
                 await browser.close()
                 return records
-            await search_btn.click()
+            await search_btn.evaluate("el => el.click()")
             await page.wait_for_timeout(2500)
         except Exception as e:
             log.error("[%s] Search setup failed: %s", county_name, e)

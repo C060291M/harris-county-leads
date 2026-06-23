@@ -216,7 +216,7 @@ async def scrape_hays(start_dt, end_dt):
 
                 if search_link:
 
-                    await search_link.click()
+                    await search_link.evaluate("el => el.click()")
 
                     await page.wait_for_timeout(3000)
 
@@ -312,7 +312,7 @@ async def scrape_hays(start_dt, end_dt):
 
                 if not next_btn: break
 
-                await next_btn.click()
+                await next_btn.evaluate("el => el.click()")
 
                 await page.wait_for_timeout(2000)
 

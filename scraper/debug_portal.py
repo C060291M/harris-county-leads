@@ -71,7 +71,7 @@ async def main():
         try:
             option = await page.wait_for_selector("[class*='option'], [role='option']", timeout=3000)
             if option:
-                await option.click()
+                await option.evaluate("el => el.click()")
                 await page.wait_for_timeout(500)
         except Exception as e:
             log.info("Option select error: %s", e)
@@ -124,4 +124,5 @@ async def main():
 
         await browser.close()
 
-asyncio.run(main())
+asyncio.run(main())
+

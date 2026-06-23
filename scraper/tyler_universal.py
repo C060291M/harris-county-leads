@@ -132,7 +132,7 @@ async def scrape_county(county, base_url, start_str, end_str):
                 await page.wait_for_timeout(500)
                 search_link = await page.query_selector("a[href*='searchResults']")
                 if search_link:
-                    await search_link.click()
+                    await search_link.evaluate("el => el.click()")
                     await page.wait_for_timeout(6000)
                 
                 soup = BeautifulSoup(await page.content(), "lxml")

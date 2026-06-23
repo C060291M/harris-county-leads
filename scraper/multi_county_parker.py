@@ -194,7 +194,7 @@ async def scrape_galveston(start_dt, end_dt):
 
             if start_input:
 
-                await start_input.click()
+                await start_input.evaluate("el => el.click()")
 
                 await start_input.fill(start_str)
 
@@ -214,7 +214,7 @@ async def scrape_galveston(start_dt, end_dt):
 
             if len(inputs) >= 2:
 
-                await inputs[1].click()
+                await inputs[1].evaluate("el => el.click()")
 
                 await inputs[1].fill(end_str)
 
@@ -234,7 +234,7 @@ async def scrape_galveston(start_dt, end_dt):
 
             if search_btn:
 
-                await search_btn.click()
+                await search_btn.evaluate("el => el.click()")
 
                 log.info("Galveston: search submitted %s to %s", start_str, end_str)
 

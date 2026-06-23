@@ -84,6 +84,7 @@ async def scrape_webb(start_dt, end_dt):
             viewport={"width": 1280, "height": 900}
         )
         page = await context.new_page()
+        await page.set_viewport_size({"width": 1920, "height": 1080})
 
         # Step 1: Login as Public
         log.info("Webb: logging in as public...")
@@ -91,13 +92,13 @@ async def scrape_webb(start_dt, end_dt):
         await page.wait_for_timeout(2000)
         login_btn = await page.query_selector("input[value='Login as Public'], button:has-text('Login as Public')")
         if login_btn:
-            await login_btn.click()
+            await login_btn.evaluate("el => el.click()")
             await page.wait_for_timeout(3000)
 
         # Step 2: Accept disclaimer
         accept_btn = await page.query_selector("input[value='Accept'], button:has-text('Accept')")
         if accept_btn:
-            await accept_btn.click()
+            await accept_btn.evaluate("el => el.click()")
             await page.wait_for_timeout(2000)
             log.info("Webb: accepted disclaimer")
 
@@ -105,14 +106,14 @@ async def scrape_webb(start_dt, end_dt):
         try:
             close_btn = await page.query_selector("input[value='Close'], button:has-text('Close'), .close-btn")
             if close_btn:
-                await close_btn.click()
+                await close_btn.evaluate("el => el.click()")
                 await page.wait_for_timeout(1000)
         except: pass
 
         # Step 4: Navigate to search
         search_link = await page.query_selector("a:has-text('Search Public Records')")
         if search_link:
-            await search_link.click()
+            await search_link.evaluate("el => el.click()")
             await page.wait_for_timeout(2000)
 
         # Step 5: Fill date range and search all doc types
@@ -137,7 +138,7 @@ async def scrape_webb(start_dt, end_dt):
             # Click Search
             search_btn = await page.query_selector("input[value='Search'], img[alt='Search'], a:has-text('Search')")
             if search_btn:
-                await search_btn.click()
+                await search_btn.evaluate("el => el.click()")
                 await page.wait_for_timeout(2000)
                 log.info("Webb: search submitted for %s to %s", start_str, end_str)
 
@@ -160,7 +161,7 @@ async def scrape_webb(start_dt, end_dt):
                     # Try the arrow button
                     next_btn = await page.query_selector("input[type='image'][src*='next'], input[type='image'][src*='arrow']")
                 if next_btn:
-                    await next_btn.click()
+                    await next_btn.evaluate("el => el.click()")
                     await page.wait_for_timeout(3000)
             except:
                 break
