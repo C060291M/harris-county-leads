@@ -1,6 +1,6 @@
-"""
+﻿"""
 
-StackIQ — Galveston County Scraper (Fidlar AVA Web)
+StackIQ â€” Galveston County Scraper (Fidlar AVA Web)
 
 Portal: ava.fidlar.com/TXGalveston/AvaWeb/#/search
 
@@ -33,13 +33,17 @@ BASE_URL      = "https://ava.fidlar.com/TXGalveston/AvaWeb/#/search"
 
 
 KEEP_DOC_TYPES = {
-
-    "LIS PENDENS", "FORECLOSURE FILED", "LIEN AFFD", "CC DIVORCE",
-
-    "ABSTRACT", "JUDGMENT", "MECHANIC", "FED LIEN", "FEDERAL",
-
-    "IRS", "HOA", "STATE LIEN", "TAX DEED", "PROBATE", "NOTICE"
-
+    "LIS PENDENS", "LIS P", "LIS PEN",
+    "FORECLOSURE", "FORECLOSURE FILED",
+    "LIEN", "LIEN AFFD", "HOA", "HOA LIEN",
+    "DIVORCE", "CC DIVORCE",
+    "ABSTRACT", "JUDGMENT", "A OF J", "JUDG",
+    "MECHANIC", "MECH LIEN",
+    "FED LIEN", "FEDERAL", "FED TAX", "IRS",
+    "STATE LIEN", "ST TAX", "STATE TAX",
+    "TAX DEED", "TAX LIEN",
+    "PROBATE", "PROB",
+    "NOTICE",
 }
 
 
@@ -238,7 +242,7 @@ async def scrape_galveston(start_dt, end_dt):
 
                 log.info("Galveston: search submitted %s to %s", start_str, end_str)
 
-                await page.wait_for_timeout(2000)  # Wait for SPA to load results
+                await page.wait_for_timeout(6000)  # Wait for SPA to load results
 
         except Exception as e:
 
@@ -248,7 +252,7 @@ async def scrape_galveston(start_dt, end_dt):
 
         # Parse results
 
-        content = await page.content()
+        content = await page.evaluate("document.body.innerText")
 
         records = parse_results(content)
 
@@ -262,131 +266,70 @@ async def scrape_galveston(start_dt, end_dt):
 
 
 
-def parse_results(html):
-
-    from bs4 import BeautifulSoup
-
+def parse_results(page_text):
+    """Parse Galveston AvaWeb results from page innerText"""
+    import re
     records = []
-
-    soup = BeautifulSoup(html, "lxml")
-
-
-
-    # Find results table
-
-    for table in soup.find_all("table"):
-
-        rows = table.find_all("tr")
-
-        if len(rows) < 2: continue
-
-        hdrs = [td.get_text(" ", strip=True).lower() for td in rows[0].find_all(["th","td"])]
-
-        if not any("document" in h for h in hdrs): continue
-
-
-
-        for row in rows[1:]:
-
-            cells = row.find_all("td")
-
-            if len(cells) < 4: continue
-
-            try:
-
-                doc_num   = cells[0].get_text(" ", strip=True) if len(cells) > 0 else ""
-
-                doc_type  = cells[1].get_text(" ", strip=True) if len(cells) > 1 else ""
-
-                recorded  = cells[2].get_text(" ", strip=True) if len(cells) > 2 else ""
-
-                party1    = cells[3].get_text(" ", strip=True) if len(cells) > 3 else ""
-
-                party2    = cells[4].get_text(" ", strip=True) if len(cells) > 4 else ""
-
-                legals    = cells[5].get_text(" ", strip=True) if len(cells) > 5 else ""
-
-
-
-                if not doc_num or not doc_type: continue
-
-
-
-                # Filter to distress doc types
-
-                dt_upper = doc_type.upper()
-
-                if not any(k in dt_upper for k in KEEP_DOC_TYPES):
-
+    
+    # Doc number pattern: 2026XXXXXX
+    # Format in text: doc_num\ndoc_type\ndate\n...
+    lines = [l.strip() for l in page_text.split("\n") if l.strip()]
+    
+    i = 0
+    while i < len(lines):
+        # Look for document number (year + 6 digits)
+        if re.match(r"^20\d{8}$", lines[i]):
+            doc_num = lines[i]
+            doc_type = lines[i+1] if i+1 < len(lines) else ""
+            date_raw = lines[i+2] if i+2 < len(lines) else ""
+            party1 = ""
+            party2 = ""
+            
+            # Skip UNOFFICIAL markers
+            j = i + 1
+            while j < len(lines) and j < i + 10:
+                if lines[j] == doc_num:
+                    j += 1
                     continue
-
-
-
+                if lines[j] == "UNOFFICIAL":
+                    j += 1
+                    continue
+                if re.match(r"^\d{1,2}/\d{1,2}/\d{4}", lines[j]):
+                    date_raw = lines[j]
+                    j += 1
+                    continue
+                if lines[j] in ("Page Count:", "Parties", "Legals", "Additional"):
+                    break
+                if not doc_type or doc_type == doc_num:
+                    doc_type = lines[j]
+                elif not party1 and lines[j] not in ("Party 1:", "Party 2:"):
+                    party1 = lines[j]
+                elif not party2 and lines[j] not in ("Party 1:", "Party 2:"):
+                    party2 = lines[j]
+                j += 1
+            
+            # Filter to distress types
+            dt_upper = doc_type.upper()
+            if any(k in dt_upper for k in KEEP_DOC_TYPES):
                 cat, cat_label = cat_from_doc_type(doc_type)
-
-                filed = norm_date(recorded)
-
-
-
-                # Extract subdivision/address from legals
-
-                prop_addr = ""
-
-                if legals:
-
-                    sub_match = re.search(r'Sub:\s*(.+)', legals)
-
-                    if sub_match:
-
-                        prop_addr = sub_match.group(1).strip()
-
-
-
                 records.append({
-
                     "doc_num": doc_num,
-
                     "doc_type": doc_type,
-
-                    "cat": cat, "cat_label": cat_label,
-
-                    "filed": filed,
-
+                    "cat": cat,
+                    "cat_label": cat_label,
+                    "filed": norm_date(date_raw),
                     "owner": party1,
-
                     "grantee": party2,
-
                     "amount": None,
-
-                    "legal": legals,
-
-                    "clerk_url": f"https://ava.fidlar.com/TXGalveston/AvaWeb/#/docdetail/{doc_num}",
-
-                    "county": "Galveston",
-
-                    "prop_address": prop_addr,
-
-                    "prop_city": "",
-
-                    "prop_state": "TX",
-
-                    "prop_zip": "",
-
-                    "mail_address":"","mail_city":"","mail_state":"TX","mail_zip":"",
-
-                    "score": 0, "flags": [],
-
+                    "county": "galveston",
+                    "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+                    "prop_address": "", "score": 0, "flags": [],
                 })
-
-            except: continue
-
-        if records: break
-
-
-
+            i = j
+        else:
+            i += 1
+    
     return records
-
-
 
 async def main_async():
 
@@ -481,4 +424,5 @@ def main():
 if __name__ == "__main__":
 
     main()
+
 
