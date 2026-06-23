@@ -1,0 +1,64 @@
+{
+  "fetched_at": "2026-06-23T15:49:11.481957",
+  "source": "Tom Green County Clerk (EagleWeb)",
+  "date_range": {
+    "start": "2026-05-24",
+    "end": "2026-06-23"
+  },
+  "total": 2,
+  "counties": [
+    "Tom Green"
+  ],
+  "records": [
+    {
+      "doc_num": "2026",
+      "doc_type": "C/C OF PROBATE",
+      "cat": "PRO",
+      "cat_label": "Probate",
+      "filed": "2026-05-27",
+      "owner": "SCHINDLER EDGAR",
+      "grantee": "SCHINDLER EDGAR DAVID",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://tomgreentx.countygovernmentrecords.com/TomGreenTXRecorder/TomGreenTXRecorder/eagleweb/docSearch.jsp",
+      "county": "Tom Green",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 25,
+      "flags": [
+        "Probate"
+      ]
+    },
+    {
+      "doc_num": "202606841",
+      "doc_type": "LIEN",
+      "cat": "LN",
+      "cat_label": "Lien",
+      "filed": "2026-05-27",
+      "owner": "CITIBANK NA",
+      "grantee": "CASTRO EVA",
+      "amount": null,
+      "legal": "",
+      "clerk_url": "https://tomgreentx.countygovernmentrecords.com/TomGreenTXRecorder/TomGreenTXRecorder/eagleweb/docSearch.jsp",
+      "county": "Tom Green",
+      "prop_address": "",
+      "prop_city": "",
+      "prop_state": "TX",
+      "prop_zip": "",
+      "mail_address": "",
+      "mail_city": "",
+      "mail_state": "TX",
+      "mail_zip": "",
+      "score": 20,
+      "flags": [
+        "Lien"
+      ]
+    }
+  ]
+}

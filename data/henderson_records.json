@@ -1,9 +1,9 @@
 {
-  "fetched_at": "2026-06-13T17:50:36.368973",
+  "fetched_at": "2026-06-17T21:08:34.276138",
   "source": "Henderson County Clerk (Tyler iDS)",
   "date_range": {
-    "start": "2026-06-10",
-    "end": "2026-06-13"
+    "start": "2026-05-18",
+    "end": "2026-06-17"
   },
   "total": 0,
   "counties": [

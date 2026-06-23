@@ -1,0 +1,227 @@
+{
+  "hill": {
+    "docsearch": "DOCSEARCH100427S1",
+    "base_url": "https://hillcountytx-web.tylerhost.net/web",
+    "status": "direct"
+  },
+  "hunt": {
+    "docsearch": "DOCSEARCH149S1",
+    "base_url": "https://huntcountytx-web.tylerhost.net/web",
+    "status": "direct"
+  },
+  "henderson": {
+    "docsearch": null,
+    "base_url": "https://hendersoncountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "hood": {
+    "docsearch": null,
+    "base_url": "https://hoodcountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "lamar": {
+    "docsearch": null,
+    "base_url": "https://lamarcountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "lavaca": {
+    "docsearch": null,
+    "base_url": "https://lavacacountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "liberty": {
+    "docsearch": null,
+    "base_url": "https://libertycountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "gregg": {
+    "docsearch": null,
+    "base_url": "https://greggcountytx-web.tylerhost.net/web",
+    "status": "Page.goto: net::ERR_NAME_NOT_RESOLVED at https://g"
+  },
+  "harrison": {
+    "docsearch": null,
+    "base_url": "https://harrisoncountytx-web.tylerhost.net/web",
+    "status": "Page.goto: net::ERR_NAME_NOT_RESOLVED at https://h"
+  },
+  "wood": {
+    "docsearch": null,
+    "base_url": "https://woodcountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "upshur": {
+    "docsearch": "DOCSEARCH149S1",
+    "base_url": "https://upshurcountytx-web.tylerhost.net/web",
+    "status": "direct"
+  },
+  "vanzandt": {
+    "docsearch": null,
+    "base_url": "https://vanzandtcountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "kaufman": {
+    "docsearch": null,
+    "base_url": "https://kaufmancountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "rockwall": {
+    "docsearch": null,
+    "base_url": "https://rockwalltx-web.tylerhost.net/web",
+    "status": "HTTP error"
+  },
+  "bastrop": {
+    "docsearch": null,
+    "base_url": "https://bastroptx-web.tylerhost.net/web",
+    "status": "Page.goto: net::ERR_NAME_NOT_RESOLVED at https://b"
+  },
+  "hays": {
+    "docsearch": null,
+    "base_url": "https://hayscountytx-web.tylerhost.net/web",
+    "status": "Page.goto: net::ERR_NAME_NOT_RESOLVED at https://h"
+  },
+  "comal": {
+    "docsearch": null,
+    "base_url": "https://comalcountytx-web.tylerhost.net/web",
+    "status": "Page.goto: net::ERR_NAME_NOT_RESOLVED at https://c"
+  },
+  "guadalupe": {
+    "docsearch": null,
+    "base_url": "https://guadalupecountytx-web.tylerhost.net/web",
+    "status": "Page.goto: net::ERR_NAME_NOT_RESOLVED at https://g"
+  },
+  "gonzales": {
+    "docsearch": "DOCSEARCH782S3",
+    "base_url": "https://gonzalescountytx-web.tylerhost.net/web",
+    "status": "direct"
+  },
+  "karnes": {
+    "docsearch": null,
+    "base_url": "https://karnescountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "wichita": {
+    "docsearch": null,
+    "base_url": "https://wichitacountytx-web.tylerhost.net/web",
+    "status": "HTTP error"
+  },
+  "howard": {
+    "docsearch": null,
+    "base_url": "https://howardcountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "andrews": {
+    "docsearch": null,
+    "base_url": "https://andrewscountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "wise": {
+    "docsearch": null,
+    "base_url": "https://wisecountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "bowie": {
+    "docsearch": "DOCSEARCH149S1",
+    "base_url": "https://bowiecountytx-web.tylerhost.net/web",
+    "status": "direct"
+  },
+  "polk": {
+    "docsearch": null,
+    "base_url": "https://polkcountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "somervell": {
+    "docsearch": null,
+    "base_url": "https://somervellcountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "hamilton": {
+    "docsearch": null,
+    "base_url": "https://hamiltoncountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "mills": {
+    "docsearch": "DOCSEARCH419S1",
+    "base_url": "https://millscountytx-web.tylerhost.net/web",
+    "status": "direct"
+  },
+  "mclennan": {
+    "docsearch": "DOCSEARCH402S1",
+    "base_url": "https://mclennancountytx-web.tylerhost.net/web",
+    "status": "direct"
+  },
+  "orange": {
+    "docsearch": null,
+    "base_url": "https://orangecountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "hardin": {
+    "docsearch": null,
+    "base_url": "https://hardincountytx-web.tylerhost.net/web",
+    "status": "Page.goto: net::ERR_NAME_NOT_RESOLVED at https://h"
+  },
+  "jasper": {
+    "docsearch": null,
+    "base_url": "https://jaspercountytx-web.tylerhost.net/web",
+    "status": "Page.goto: net::ERR_NAME_NOT_RESOLVED at https://j"
+  },
+  "panola": {
+    "docsearch": null,
+    "base_url": "https://panolacountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "kimble": {
+    "docsearch": "DOCSEARCH419S1",
+    "base_url": "https://kimblecountytx-web.tylerhost.net/web",
+    "status": "direct"
+  },
+  "randall": {
+    "docsearch": null,
+    "base_url": "https://randallcountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "waller": {
+    "docsearch": null,
+    "base_url": "https://wallercountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "yoakum": {
+    "docsearch": null,
+    "base_url": "https://yoakumcountytx-selfservice.tylerhost.net/web",
+    "status": "not found"
+  },
+  "palopinto": {
+    "docsearch": null,
+    "base_url": "https://palopintocountytx-selfservice.tylerhost.net/web",
+    "status": "not found"
+  },
+  "eastland": {
+    "docsearch": null,
+    "base_url": "https://eastlandcountytx-web.tylerhost.net/web",
+    "status": "Page.goto: net::ERR_NAME_NOT_RESOLVED at https://e"
+  },
+  "aransas": {
+    "docsearch": null,
+    "base_url": "https://aransascountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "carson": {
+    "docsearch": null,
+    "base_url": "https://carsoncountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "dallam": {
+    "docsearch": null,
+    "base_url": "https://dallamcountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "donley": {
+    "docsearch": null,
+    "base_url": "https://donleycountytx-web.tylerhost.net/web",
+    "status": "not found"
+  },
+  "winkler": {
+    "docsearch": null,
+    "base_url": "https://winklercountytx-web.tylerhost.net/web",
+    "status": "Page.goto: net::ERR_NAME_NOT_RESOLVED at https://w"
+  }
+}

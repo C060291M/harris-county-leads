@@ -1,0 +1,80 @@
+﻿$yml = @"
+name: StackIQ i2i USLandRecords
+
+on:
+  schedule:
+    - cron: "30 3 * * *"
+  workflow_dispatch: {}
+
+jobs:
+
+  i2i-a:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - run: python scraper/multi_county_i2i.py
+        env:
+          LOOKBACK_DAYS: "3"
+          MAX_PAGES: "3"
+          COUNTIES: "Angelina,Cherokee,Cooke,Leon"
+      - run: python3 scraper/push_to_db.py
+        env:
+          DATABASE_URL: `${{ secrets.DATABASE_URL }}
+
+  i2i-b:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - run: python scraper/multi_county_i2i.py
+        env:
+          LOOKBACK_DAYS: "3"
+          MAX_PAGES: "3"
+          COUNTIES: "Bandera,Castro,Edwards,Falls"
+      - run: python3 scraper/push_to_db.py
+        env:
+          DATABASE_URL: `${{ secrets.DATABASE_URL }}
+
+  i2i-c:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - run: python scraper/multi_county_i2i.py
+        env:
+          LOOKBACK_DAYS: "3"
+          MAX_PAGES: "3"
+          COUNTIES: "Cochran,Duval,Hutchinson,Madison"
+      - run: python3 scraper/push_to_db.py
+        env:
+          DATABASE_URL: `${{ secrets.DATABASE_URL }}
+"@
+
+[System.IO.File]::WriteAllText(".github\workflows\scrape_i2i.yml", $yml, [System.Text.Encoding]::UTF8)
+Write-Host "scrape_i2i.yml rewritten with 3 parallel jobs"
+Get-Content ".github\workflows\scrape_i2i.yml" | Select-Object -First 10
