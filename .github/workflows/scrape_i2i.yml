@@ -68,7 +68,7 @@ jobs:
         env:
           LOOKBACK_DAYS: "3"
           MAX_PAGES: "3"
-          COUNTIES: "Cochran,Duval,Hutchinson,Madison"
+          COUNTIES: "Cochran,Duval,Hutchinson,Madison,LiveOak,Marion"
       - run: python3 scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
