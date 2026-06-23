@@ -68,7 +68,7 @@ COUNTY_REGISTRY = {
     "Waller":      ("https://wallercountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
     "Washington":  ("https://washingtoncountytx-web.tylerhost.net/web",        "DOCSEARCH144S1"),
     "Wichita":     ("https://wichitacountytx-web.tylerhost.net/web",           "DOCSEARCH144S1"),
-    "Williamson":  ("https://williamsoncountytx-web.tylerhost.net/web",        "DOCSEARCH144S1"),
+    "Williamson":  ("https://williamsoncountytx-web.tylerhost.net/williamsonweb",        "DOCSEARCH149S1"),
     "Winkler":     ("https://winklercountytx-web.tylerhost.net/web",           "DOCSEARCH144S1"),
     "Wise":        ("https://wisecountytx-web.tylerhost.net/web",              "DOCSEARCH144S1"),
     "Wood":        ("https://woodcountytx-web.tylerhost.net/web",              "DOCSEARCH144S1"),
@@ -87,6 +87,8 @@ DATE_FIELD_VARIANTS = [
     ("field_RecDateID_DOT_StartDate",       "field_RecDateID_DOT_EndDate"),
     ("field_RecordedDateID_DOT_StartDate",  "field_RecordedDateID_DOT_EndDate"),
     ("field_FilingDateID_DOT_StartDate",    "field_FilingDateID_DOT_EndDate"),
+    ("field_ClerkDateID_DOT_StartDate",     "field_ClerkDateID_DOT_EndDate"),
+    ("field_InstrumentDateID_DOT_StartDate","field_InstrumentDateID_DOT_EndDate"),
 ]
 
 def norm_date(raw):
@@ -345,4 +347,8 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+
+
+
 
