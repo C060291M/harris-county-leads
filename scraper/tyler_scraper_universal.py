@@ -36,7 +36,7 @@ COUNTY_REGISTRY = {
     "Hamilton":    ("https://hamiltoncountytx-web.tylerhost.net/web",          "DOCSEARCH144S1"),
     "Hardin":      ("https://hardincountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
     "Harrison":    ("https://harrisoncountytx-web.tylerhost.net/web",          "DOCSEARCH144S1"),
-    "Hays":        ("https://hayscountytx-web.tylerhost.net/web",              "DOCSEARCH144S1"),
+    "Hays":        ("https://erss.co.hays.tx.us/web",              "DOCSEARCH144S1"),
     "Henderson":   ("https://hendersoncountytx-web.tylerhost.net/web",         "DOCSEARCH144S1"),
     "Hill":        ("https://hillcountytx-web.tylerhost.net/web",              "DOCSEARCH100427S1"),
     "Hood":        ("https://hoodcountytx-web.tylerhost.net/web",              "DOCSEARCH144S1"),
@@ -68,7 +68,7 @@ COUNTY_REGISTRY = {
     "VanZandt":    ("https://vanzandtcountytx-web.tylerhost.net/web",          "DOCSEARCH144S1"),
     "Waller":      ("https://wallercountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
     "Washington":  ("https://washingtoncountytx-web.tylerhost.net/web",        "DOCSEARCH144S1"),
-    "Wichita":     ("https://wichitacountytx-web.tylerhost.net/web",           "DOCSEARCH144S1"),
+    "Wichita":     ("https://wichitacountytx-recorder.tylerhost.net/recorder",           "DOCSEARCH144S1"),
     "Williamson":  ("https://williamsoncountytx-web.tylerhost.net/williamsonweb",        "DOCSEARCH149S1"),
     "Winkler":     ("https://winklercountytx-web.tylerhost.net/web",           "DOCSEARCH144S1"),
     "Wise":        ("https://wisecountytx-web.tylerhost.net/web",              "DOCSEARCH144S1"),
@@ -272,10 +272,18 @@ async def scrape_county(county_name, base_url, docsearch, start_dt, end_dt):
                 await page.query_selector("input[type='submit']")
             )
             if not search_btn:
-                log.error("[%s] No search button", county_name)
-                await browser.close()
-                return records
-            await search_btn.evaluate("el => el.click()")
+                # Fallback: try executeSearch() JS function (used by newer Tyler portals)
+                try:
+                    await page.evaluate('executeSearch()')
+                    log.info('[%s] Used executeSearch() JS fallback', county_name)
+                    await page.wait_for_timeout(2500)
+                except Exception as js_e:
+                    log.error('[%s] No search button and executeSearch() failed: %s', county_name, js_e)
+                    await browser.close()
+                    return records
+            else:
+                await search_btn.evaluate('el => el.click()')
+                await page.wait_for_timeout(2500)
             await page.wait_for_timeout(2500)
         except Exception as e:
             log.error("[%s] Search setup failed: %s", county_name, e)
