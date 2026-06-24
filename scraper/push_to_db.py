@@ -118,6 +118,9 @@ WHERE lead_records.scraped_at < NOW() - INTERVAL '2 hours' OR lead_records.scrap
 
 def process_file(path, conn):
     county = os.path.basename(path).replace("_records.json","").replace("pubsearch_","")
+    # Special case: records.json = harris
+    if county in ("records", "records.json", ""):
+        county = "harris"
     try:
         data = json.loads(open(path, encoding="utf-8-sig").read())
         raws = data.get("records") or data.get("leads") or (data if isinstance(data,list) else [])
