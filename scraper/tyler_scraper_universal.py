@@ -42,11 +42,11 @@ COUNTY_REGISTRY = {
     "Hood":        ("https://hoodcountytx-web.tylerhost.net/web",              "DOCSEARCH144S1"),
     "Howard":      ("https://howardcountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
     "Hunt":        ("https://huntcountytx-web.tylerhost.net/web",              "DOCSEARCH149S1"),
-    "Jasper":      ("https://jaspercountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
+    # "Jasper": broken/DNS fail - needs URL fix
     "Karnes":      ("https://karnescountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
     "Kaufman":     ("https://kaufmancountytx-web.tylerhost.net/web",           "DOCSEARCH144S1"),
     "Kimble":      ("https://kimblecountytx-web.tylerhost.net/web",            "DOCSEARCH419S1"),
-    "Lamar":       ("https://lamarcountytx-web.tylerhost.net/web",             "DOCSEARCH144S1"),
+    "Lamar":       ("https://lamarcountytx-web.tylerhost.net/web",             "DOCSEARCH1307S1"),
     "Lavaca":      ("https://lavacacountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
     "Liberty":     ("https://libertycountytx-web.tylerhost.net/web",           "DOCSEARCH144S1"),
     "McLennan":    ("https://mclennancountytx-web.tylerhost.net/web",          "DOCSEARCH402S1"),
@@ -57,14 +57,14 @@ COUNTY_REGISTRY = {
     "PaloPinto":   ("https://palopintocountytx-selfservice.tylerhost.net/web", "DOCSEARCH144S1"),
     "Panola":      ("https://panolacountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
     "Pecos":       ("https://pecoscountytx-web.tylerhost.net/web",             "DOCSEARCH144S1"),
-    "Polk":        ("https://polkcountytx-web.tylerhost.net/web",              "DOCSEARCH144S1"),
+    # "Polk": broken/DNS fail - needs URL fix
     "Potter":      ("https://pottercountytx-web.tylerhost.net/web",            "DOCSEARCH422S2"),
     "Randall":     ("https://randallcountytx-web.tylerhost.net/web",           "DOCSEARCH144S1"),
     "Rockwall":    ("https://rockwalltx-web.tylerhost.net/web",                "DOCSEARCH144S1"),
-    "Scurry":      ("https://scurrycountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
+    # "Scurry": broken/DNS fail - needs URL fix
     "Somervell":   ("https://somervellcountytx-web.tylerhost.net/web",         "DOCSEARCH144S1"),
     "Taylor":      ("https://taylorcountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
-    "Upshur":      ("https://upshurcountytx-web.tylerhost.net/web",            "DOCSEARCH149S1"),
+    # "Upshur": broken/DNS fail - needs URL fix
     "VanZandt":    ("https://vanzandtcountytx-web.tylerhost.net/web",          "DOCSEARCH144S1"),
     "Waller":      ("https://wallercountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
     "Washington":  ("https://washingtoncountytx-web.tylerhost.net/web",        "DOCSEARCH144S1"),
