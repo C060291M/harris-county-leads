@@ -1,6 +1,8 @@
 ﻿name: StackIQ South Texas Scrapers
 
 on:
+  schedule:
+    - cron: "0 7 * * *"
   workflow_dispatch:
     inputs:
       lookback_days:
