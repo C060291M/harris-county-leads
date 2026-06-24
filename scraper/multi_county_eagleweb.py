@@ -33,6 +33,7 @@ COUNTIES = {
     "Crane":  ("https://cranetx.countygovernmentrecords.com/CraneTX/web/", "CraneTX"),
 
     "Loving": ("https://lovingtx.countygovernmentrecords.com/LovingTXRecorder/web/", "LovingTXRecorder"),
+    "Wichita": ("https://wichitacountytx-recorder.tylerhost.net/recorder", ""),
 
 }
 
@@ -184,24 +185,22 @@ async def scrape_eagleweb_county(page, county_name, base_url, path_prefix, start
 
         # Fill start date
 
-        start_input = await page.query_selector("input[name='startDate'], input[id='startDate']")
+        start_input = await page.query_selector("input[name='startDate'], input[id='startDate'], input[name='RecDateIDStart'], input[id='RecDateIDStart']")
 
         if start_input:
 
-            await start_input.triple_click()
-
+            
             await start_input.fill(start_str)
 
 
 
         # Fill end date
 
-        end_input = await page.query_selector("input[name='endDate'], input[id='endDate']")
+        end_input = await page.query_selector("input[name='endDate'], input[id='endDate'], input[name='RecDateIDEnd'], input[id='RecDateIDEnd']")
 
         if end_input:
 
-            await end_input.triple_click()
-
+            
             await end_input.fill(end_str)
 
 
