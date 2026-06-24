@@ -1,0 +1,38 @@
+﻿name: Import CAD Data
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 17 * * *"  # noon CDT (5pm UTC) - well after scrapers finish
+jobs:
+  import-cad:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: pip install psycopg2-binary requests
+      - name: Import Grayson CAD
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/admin/import-grayson-cad" \
+            -H "Content-Type: application/json" --max-time 600 || echo "Grayson failed"
+      - name: Wait between imports
+        run: sleep 60
+      - name: Import Johnson CAD
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/admin/import-johnson-cad" \
+            -H "Content-Type: application/json" --max-time 600 || echo "Johnson failed"
+      - name: Wait between imports
+        run: sleep 60
+      - name: Import Midland CAD
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/admin/import-midland-cad" \
+            -H "Content-Type: application/json" --max-time 600 || echo "Midland failed"
+      - name: Enrich Midland from CAD
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: pip install psycopg2-binary && python scraper/enrich_midland.py
+      - name: Final rescore
+        run: |
+          sleep 30
+          curl -s -X POST "https://api.stackiq.org/api/admin/rescore" \
+            -H "Content-Type: application/json" --max-time 270 || echo "rescore failed"
