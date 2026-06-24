@@ -116,9 +116,22 @@ async def scrape():
                        wait_until="domcontentloaded", timeout=30000)
         await page.wait_for_timeout(2000)
         
-        # Set dates
-        from_inp = await page.query_selector("#cphNoMargin_f_ddcDateFiledFrom input[type='text']")
-        to_inp   = await page.query_selector("#cphNoMargin_f_ddcDateFiledTo input[type='text']")
+        # Set dates - try multiple selectors for Infragistics date picker
+        from_inp = (
+            await page.query_selector("#cphNoMargin_f_ddcDateFiledFrom input[type='text']") or
+            await page.query_selector("input[id*='DateFiledFrom']") or
+            await page.query_selector("input[id*='DateFrom']")
+        )
+        to_inp = (
+            await page.query_selector("#cphNoMargin_f_ddcDateFiledTo input[type='text']") or
+            await page.query_selector("input[id*='DateFiledTo']") or
+            await page.query_selector("input[id*='DateTo']")
+        )
+        if not from_inp or not to_inp:
+            import logging
+            logging.getLogger("travis").error("Date inputs not found on Travis portal")
+            await browser.close()
+            return []
         await from_inp.click(click_count=3)
         await from_inp.type(start_str)
         await page.keyboard.press("Tab")
