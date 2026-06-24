@@ -28,10 +28,11 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
       - name: Run tarrant scraper
-        run: python scraper/multi_county_tarrant.py
+        run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
           MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
+          COUNTIES: "Tarrant"
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
