@@ -336,17 +336,17 @@ def parse_results_page(html, cat, cat_label):
 
             try:
 
-                # Col structure: #, Image, checkbox, Instrument#, Date Filed, Doc Type, Name/Assoc Name, Legal, Status
+                # Col structure: #, Image, blank, Instrument#, Book-Page, InstNum, Book, Page, Date Filed, Doc Type, Name
 
                 doc_num  = cells[3].get_text(" ", strip=True) if len(cells) > 3 else ""
 
-                filed    = norm_date(cells[4].get_text(" ", strip=True)) if len(cells) > 4 else ""
+                filed    = norm_date(cells[8].get_text(" ", strip=True)) if len(cells) > 8 else ""
 
-                doc_type = cells[5].get_text(" ", strip=True) if len(cells) > 5 else ""
+                doc_type = cells[9].get_text(" ", strip=True) if len(cells) > 9 else ""
 
-                name_cell = cells[6].get_text(" ", strip=True) if len(cells) > 6 else ""
+                name_cell = cells[10].get_text(" ", strip=True) if len(cells) > 10 else ""
 
-                legal    = cells[7].get_text(" ", strip=True) if len(cells) > 7 else ""
+                legal    = cells[11].get_text(" ", strip=True) if len(cells) > 11 else ""
 
 
 
