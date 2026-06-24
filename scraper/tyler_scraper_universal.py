@@ -52,8 +52,8 @@ COUNTY_REGISTRY = {
     "McLennan":    ("https://mclennancountytx-web.tylerhost.net/web",          "DOCSEARCH402S1"),
     "Mills":       ("https://millscountytx-web.tylerhost.net/web",             "DOCSEARCH419S1"),
     "Montgomery":  ("https://montgomerycountytx-web.tylerhost.net/web",        "DOCSEARCH144S1"),
-    "Navarro":     ("https://navarrocountytx-web.tylerhost.net/web",           "DOCSEARCH144S1"),
-    "Orange":      ("https://orangecountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
+    "Navarro":     ("https://navarrocountytx-web.tylerhost.net/web",    "DOCSEARCH144S1"),
+    "Orange":      ("https://orangecountytx-web.tylerhost.net/web",     "DOCSEARCH144S1"),
     "PaloPinto":   ("https://palopintocountytx-selfservice.tylerhost.net/web", "DOCSEARCH144S1"),
     "Panola":      ("https://panolacountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
     "Pecos":       ("https://pecoscountytx-web.tylerhost.net/web",             "DOCSEARCH144S1"),
@@ -187,10 +187,13 @@ async def navigate_to_search(page, base_url, docsearch):
 async def fill_dates(page, start_str, end_str):
     """Try multiple date field name variants."""
     for start_field, end_field in DATE_FIELD_VARIANTS:
-        el = await page.query_selector(f"input[name='{start_field}']")
+        # Try name= first, then id= (newer SelfService portals use id)
+        el = await page.query_selector(f"input[name='{start_field}']") or              await page.query_selector(f"input[id='{start_field}']")
         if el:
-            await page.fill(f"input[name='{start_field}']", start_str)
-            await page.fill(f"input[name='{end_field}']",   end_str)
+            s_sel = f"input[name='{start_field}'],input[id='{start_field}']"
+            e_sel = f"input[name='{end_field}'],input[id='{end_field}']"
+            await page.fill(s_sel, start_str)
+            await page.fill(e_sel, end_str)
             log.info("Date fields: %s", start_field)
             return True
     # Fallback: any input with date in name
