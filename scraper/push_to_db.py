@@ -86,7 +86,11 @@ def normalize(raw, source_county=None):
     if out.get("county"):
         out["county"] = out["county"].lower().replace(" county","").replace(" ","_").strip()
 
-    if out.get("filed"): out["filed"] = parse_date(out["filed"])
+    if out.get("filed"): 
+        out["filed"] = parse_date(out["filed"])
+        # Reject records older than Jan 2025
+        if out["filed"] and out["filed"] < "2025-01-01":
+            return None
     if out.get("amount"): out["amount"] = parse_amount(out["amount"])
     out["scraped_at"] = datetime.now(timezone.utc).isoformat()
     return out
