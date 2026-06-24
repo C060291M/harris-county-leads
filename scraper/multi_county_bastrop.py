@@ -7,6 +7,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 log = logging.getLogger("bastrop")
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "3"))
+FLOOR_DATE = "2025-01-01"  # Never pull records older than this
 MAX_PAGES     = int(os.getenv("MAX_PAGES", "5"))
 COUNTY        = "bastrop"
 BASE_URL      = "https://cc.co.bastrop.tx.us"
