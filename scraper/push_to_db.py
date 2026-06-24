@@ -80,6 +80,19 @@ def normalize(raw, source_county=None):
         else: out.pop("doc_type",None)
 
     if not out.get("doc_num"): return None
+    
+    # Reject resolved/release records — not distress leads
+    RESOLVED_CATS = {"RELLP","REL","RELP","RELJ","RELN","SATLIEN","SATJUD","DISCH","WITHD","CANCEL","VOID"}
+    RESOLVED_KEYWORDS = ("release","satisfaction","discharge","withdrawal","cancellation","vacated","dismissed")
+    cat = (out.get("cat") or "").upper()
+    doc_type = (out.get("doc_type") or "").lower()
+    cat_label = (out.get("cat_label") or "").lower()
+    if cat in RESOLVED_CATS:
+        return None
+    if any(k in doc_type for k in RESOLVED_KEYWORDS):
+        return None
+    if any(k in cat_label for k in RESOLVED_KEYWORDS):
+        return None
 
     if not out.get("county") and source_county:
         out["county"] = source_county.lower().replace(" county","").replace(" ","_")
