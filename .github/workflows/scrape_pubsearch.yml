@@ -1097,3 +1097,24 @@ jobs:
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+  montgomery:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: playwright install chromium --with-deps
+      - run: python scraper/multi_county_pubsearch.py
+        env:
+          LOOKBACK_DAYS: "3"
+          COUNTIES: "Montgomery"
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
