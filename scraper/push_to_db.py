@@ -122,9 +122,15 @@ def process_file(path, conn):
         data = json.loads(open(path, encoding="utf-8-sig").read())
         raws = data.get("records") or data.get("leads") or (data if isinstance(data,list) else [])
         rows = []
+        seen_doc_nums = set()
         for raw in raws:
             rec = normalize(raw, source_county=county)
             if rec:
+                doc_num = rec.get("doc_num")
+                if doc_num and doc_num in seen_doc_nums:
+                    continue  # skip duplicates within same batch
+                if doc_num:
+                    seen_doc_nums.add(doc_num)
                 rows.append(tuple(rec.get(c) for c in COLS))
         if rows:
             with conn.cursor() as cur:
@@ -133,6 +139,7 @@ def process_file(path, conn):
         print(f"  {os.path.basename(path)}: {len(rows)} upserted")
         return len(rows)
     except Exception as e:
+        conn.rollback()  # CRITICAL: reset aborted transaction so next file can proceed
         print(f"  ERROR {os.path.basename(path)}: {e}")
         return 0
 
