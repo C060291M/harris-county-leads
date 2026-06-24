@@ -1,6 +1,8 @@
 ﻿name: StackIQ DFW Scrapers
 
 on:
+  schedule:
+    - cron: "0 9 * * *"
   workflow_dispatch:
     inputs:
       lookback_days:
@@ -8,13 +10,13 @@ on:
         default: '3'
       max_pages:
         description: 'Max pages per doc type'
-        default: '5'
+        default: '3'
 
 jobs:
 
   collin:
     runs-on: ubuntu-22.04
-    timeout-minutes: 90
+    timeout-minutes: 110
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +39,7 @@ jobs:
 
   denton-group:
     runs-on: ubuntu-22.04
-    timeout-minutes: 90
+    timeout-minutes: 110
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -60,7 +62,7 @@ jobs:
 
   travis:
     runs-on: ubuntu-22.04
-    timeout-minutes: 90
+    timeout-minutes: 110
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -80,3 +82,4 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: python3 scraper/push_to_db.py
+

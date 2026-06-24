@@ -1,6 +1,7 @@
 ﻿name: StackIQ Dallas Scraper
-
 on:
+  schedule:
+    - cron: "30 8 * * *"
   workflow_dispatch:
     inputs:
       lookback_days:
@@ -8,13 +9,11 @@ on:
         default: '3'
       max_pages:
         description: 'Max pages per doc type'
-        default: '5'
-
+        default: '3'
 jobs:
-
   dallas:
     runs-on: ubuntu-22.04
-    timeout-minutes: 90
+    timeout-minutes: 110
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -29,7 +28,7 @@ jobs:
         run: python scraper/multi_county_dallas.py
         env:
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_PAGES: ${{ github.event.inputs.max_pages || '5' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages || '3' }}
       - name: Push to DB
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
