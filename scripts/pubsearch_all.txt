@@ -1,0 +1,14 @@
+anderson: https://anderson.tx.publicsearch.us
+bee: https://bee.tx.publicsearch.us
+bell: https://bell.tx.publicsearch.us
+bexar: https://bexar.tx.publicsearch.us
+blanco: https://blanco.tx.publicsearch.us
+brazos: https://brazos.tx.publicsearch.us
+brewster: https://brewster.tx.publicsearch.us
+burleson: https://burleson.tx.publicsearch.us
+cameron: https://cameron.tx.publicsearch.us
+chambers: https://chambers.tx.publicsearch.us
+coleman: https://coleman.tx.publicsearch.us
+collin: https://collin.tx.publicsearch.us
+dallas: https://dallas.tx.publicsearch.us
+denton: https://denton.tx.publicsearch.us

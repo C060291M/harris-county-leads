@@ -1,0 +1,15 @@
+{
+  "fetched_at": "2026-06-24T16:33:55.024098",
+  "source": "Tyler EagleWeb (countygovernmentrecords.com)",
+  "date_range": {
+    "start": "2026-04-25",
+    "end": "2026-06-24"
+  },
+  "total": 0,
+  "counties": [
+    "Crane",
+    "Loving",
+    "Wichita"
+  ],
+  "records": []
+}

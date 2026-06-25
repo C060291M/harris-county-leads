@@ -1,0 +1,24 @@
+{
+  "fetched_at": "2026-06-23T17:47:52.263094",
+  "source": "Texas Land Records (texaslandrecords.com)",
+  "date_range": {
+    "start": "2026-06-16",
+    "end": "2026-06-23"
+  },
+  "total": 0,
+  "counties": [
+    "Angelina",
+    "Cherokee",
+    "Cooke",
+    "Fannin",
+    "Rusk",
+    "SanJacinto",
+    "SanAugustine",
+    "Scurry",
+    "Upton",
+    "ValVerde",
+    "Wilbarger",
+    "LiveOak"
+  ],
+  "records": []
+}

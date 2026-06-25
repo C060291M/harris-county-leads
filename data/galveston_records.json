@@ -1,21 +1,39 @@
 {
-  "fetched_at": "2026-06-23T14:11:55.770605",
+  "fetched_at": "2026-06-24T16:02:02.249164",
   "source": "Galveston County Clerk (Fidlar AVA Web)",
   "date_range": {
-    "start": "2026-05-24",
-    "end": "2026-06-23"
+    "start": "2025-12-26",
+    "end": "2026-06-24"
   },
-  "total": 23,
+  "total": 43,
   "counties": [
     "Galveston"
   ],
   "records": [
     {
-      "doc_num": "2026029543",
+      "doc_num": "2026029860",
+      "doc_type": "CC JUDGMENT",
+      "cat": "JUD",
+      "cat_label": "Abstract of Judgment",
+      "filed": "2026-06-24",
+      "owner": "CC JUDGMENT",
+      "grantee": "CC JUDGMENT",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 45,
+      "flags": [
+        "Judgment Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029841",
       "doc_type": "A OF J",
       "cat": "LN",
       "cat_label": "A OF J",
-      "filed": "2026-06-23",
+      "filed": "2026-06-24",
       "owner": "A OF J",
       "grantee": "A OF J",
       "amount": null,
@@ -29,65 +47,11 @@
       ]
     },
     {
-      "doc_num": "2026029554",
-      "doc_type": "LIS PENDENS",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-06-23",
-      "owner": "LIS PENDENS",
-      "grantee": "LIS PENDENS",
-      "amount": null,
-      "county": "galveston",
-      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
-      "prop_address": "",
-      "score": 30,
-      "flags": [
-        "Lis Pendens",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026029539",
-      "doc_type": "A OF J",
-      "cat": "LN",
-      "cat_label": "A OF J",
-      "filed": "2026-06-23",
-      "owner": "A OF J",
-      "grantee": "A OF J",
-      "amount": null,
-      "county": "galveston",
-      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
-      "prop_address": "",
-      "score": 30,
-      "flags": [
-        "Lien",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026029541",
-      "doc_type": "A OF J",
-      "cat": "LN",
-      "cat_label": "A OF J",
-      "filed": "2026-06-23",
-      "owner": "A OF J",
-      "grantee": "A OF J",
-      "amount": null,
-      "county": "galveston",
-      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
-      "prop_address": "",
-      "score": 30,
-      "flags": [
-        "Lien",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026029531",
+      "doc_num": "2026029829",
       "doc_type": "NOTICE/PUR",
       "cat": "NOFC",
       "cat_label": "Notice",
-      "filed": "2026-06-23",
+      "filed": "2026-06-24",
       "owner": "NOTICE/PUR",
       "grantee": "NOTICE/PUR",
       "amount": null,
@@ -101,13 +65,121 @@
       ]
     },
     {
-      "doc_num": "2026029479",
-      "doc_type": "LIEN AFFD",
+      "doc_num": "2026029823",
+      "doc_type": "A OF J",
+      "cat": "LN",
+      "cat_label": "A OF J",
+      "filed": "2026-06-24",
+      "owner": "A OF J",
+      "grantee": "A OF J",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029798",
+      "doc_type": "NOTICE/PUR",
+      "cat": "NOFC",
+      "cat_label": "Notice",
+      "filed": "2026-06-24",
+      "owner": "NOTICE/PUR",
+      "grantee": "NOTICE/PUR",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lis Pendens",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029797",
+      "doc_type": "NOTICE/PUR",
+      "cat": "NOFC",
+      "cat_label": "Notice",
+      "filed": "2026-06-24",
+      "owner": "NOTICE/PUR",
+      "grantee": "NOTICE/PUR",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lis Pendens",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029793",
+      "doc_type": "A OF J",
+      "cat": "LN",
+      "cat_label": "A OF J",
+      "filed": "2026-06-24",
+      "owner": "A OF J",
+      "grantee": "A OF J",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029789",
+      "doc_type": "A OF J",
+      "cat": "LN",
+      "cat_label": "A OF J",
+      "filed": "2026-06-24",
+      "owner": "A OF J",
+      "grantee": "A OF J",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029776",
+      "doc_type": "A OF J",
+      "cat": "LN",
+      "cat_label": "A OF J",
+      "filed": "2026-06-24",
+      "owner": "A OF J",
+      "grantee": "A OF J",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029753",
+      "doc_type": "M & M LIEN",
       "cat": "LN",
       "cat_label": "Lien",
-      "filed": "2026-06-23",
-      "owner": "LIEN AFFD",
-      "grantee": "LIEN AFFD",
+      "filed": "2026-06-24",
+      "owner": "M & M LIEN",
+      "grantee": "M & M LIEN",
       "amount": null,
       "county": "galveston",
       "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
@@ -119,11 +191,11 @@
       ]
     },
     {
-      "doc_num": "2026029422",
+      "doc_num": "2026029742",
       "doc_type": "NOTICE/PUR",
       "cat": "NOFC",
       "cat_label": "Notice",
-      "filed": "2026-06-23",
+      "filed": "2026-06-24",
       "owner": "NOTICE/PUR",
       "grantee": "NOTICE/PUR",
       "amount": null,
@@ -137,11 +209,11 @@
       ]
     },
     {
-      "doc_num": "2026029421",
+      "doc_num": "2026029738",
       "doc_type": "NOTICE/PUR",
       "cat": "NOFC",
       "cat_label": "Notice",
-      "filed": "2026-06-23",
+      "filed": "2026-06-24",
       "owner": "NOTICE/PUR",
       "grantee": "NOTICE/PUR",
       "amount": null,
@@ -155,11 +227,11 @@
       ]
     },
     {
-      "doc_num": "2026029411",
+      "doc_num": "2026029737",
       "doc_type": "NOTICE/PUR",
       "cat": "NOFC",
       "cat_label": "Notice",
-      "filed": "2026-06-23",
+      "filed": "2026-06-24",
       "owner": "NOTICE/PUR",
       "grantee": "NOTICE/PUR",
       "amount": null,
@@ -173,13 +245,13 @@
       ]
     },
     {
-      "doc_num": "2026029396",
-      "doc_type": "LIS PENDENS",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-06-23",
-      "owner": "LIS PENDENS",
-      "grantee": "LIS PENDENS",
+      "doc_num": "2026029731",
+      "doc_type": "NOTICE/PUR",
+      "cat": "NOFC",
+      "cat_label": "Notice",
+      "filed": "2026-06-24",
+      "owner": "NOTICE/PUR",
+      "grantee": "NOTICE/PUR",
       "amount": null,
       "county": "galveston",
       "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
@@ -191,13 +263,13 @@
       ]
     },
     {
-      "doc_num": "2026029395",
-      "doc_type": "LIS PENDENS",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-06-23",
-      "owner": "LIS PENDENS",
-      "grantee": "LIS PENDENS",
+      "doc_num": "2026029725",
+      "doc_type": "NOTICE/PUR",
+      "cat": "NOFC",
+      "cat_label": "Notice",
+      "filed": "2026-06-24",
+      "owner": "NOTICE/PUR",
+      "grantee": "NOTICE/PUR",
       "amount": null,
       "county": "galveston",
       "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
@@ -209,13 +281,13 @@
       ]
     },
     {
-      "doc_num": "2026029394",
-      "doc_type": "LIS PENDENS",
-      "cat": "LP",
-      "cat_label": "Lis Pendens",
-      "filed": "2026-06-23",
-      "owner": "LIS PENDENS",
-      "grantee": "LIS PENDENS",
+      "doc_num": "2026029724",
+      "doc_type": "NOTICE/PUR",
+      "cat": "NOFC",
+      "cat_label": "Notice",
+      "filed": "2026-06-24",
+      "owner": "NOTICE/PUR",
+      "grantee": "NOTICE/PUR",
       "amount": null,
       "county": "galveston",
       "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
@@ -227,13 +299,31 @@
       ]
     },
     {
-      "doc_num": "2026029402",
-      "doc_type": "LIEN AFFD",
+      "doc_num": "2026029718",
+      "doc_type": "NOTICE/PUR",
+      "cat": "NOFC",
+      "cat_label": "Notice",
+      "filed": "2026-06-24",
+      "owner": "NOTICE/PUR",
+      "grantee": "NOTICE/PUR",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lis Pendens",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029705",
+      "doc_type": "FED TAX LN RELEASE",
       "cat": "LN",
-      "cat_label": "Lien",
-      "filed": "2026-06-23",
-      "owner": "LIEN AFFD",
-      "grantee": "LIEN AFFD",
+      "cat_label": "FED TAX LN RELEASE",
+      "filed": "2026-06-24",
+      "owner": "FED TAX LN RELEASE",
+      "grantee": "FED TAX LN RELEASE",
       "amount": null,
       "county": "galveston",
       "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
@@ -245,49 +335,13 @@
       ]
     },
     {
-      "doc_num": "2026029391",
-      "doc_type": "NOTICE/PUR",
-      "cat": "NOFC",
-      "cat_label": "Notice",
-      "filed": "2026-06-23",
-      "owner": "NOTICE/PUR",
-      "grantee": "NOTICE/PUR",
-      "amount": null,
-      "county": "galveston",
-      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
-      "prop_address": "",
-      "score": 30,
-      "flags": [
-        "Lis Pendens",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026029390",
-      "doc_type": "NOTICE/PUR",
-      "cat": "NOFC",
-      "cat_label": "Notice",
-      "filed": "2026-06-23",
-      "owner": "NOTICE/PUR",
-      "grantee": "NOTICE/PUR",
-      "amount": null,
-      "county": "galveston",
-      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
-      "prop_address": "",
-      "score": 30,
-      "flags": [
-        "Lis Pendens",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026029341",
-      "doc_type": "A OF J",
+      "doc_num": "2026029704",
+      "doc_type": "FED TAX LN",
       "cat": "LN",
-      "cat_label": "A OF J",
-      "filed": "2026-06-23",
-      "owner": "A OF J",
-      "grantee": "A OF J",
+      "cat_label": "FED TAX LN",
+      "filed": "2026-06-24",
+      "owner": "FED TAX LN",
+      "grantee": "FED TAX LN",
       "amount": null,
       "county": "galveston",
       "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
@@ -299,11 +353,101 @@
       ]
     },
     {
-      "doc_num": "2026029379",
+      "doc_num": "2026029703",
+      "doc_type": "FED TAX LN",
+      "cat": "LN",
+      "cat_label": "FED TAX LN",
+      "filed": "2026-06-24",
+      "owner": "FED TAX LN",
+      "grantee": "FED TAX LN",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029702",
+      "doc_type": "FED TAX LN",
+      "cat": "LN",
+      "cat_label": "FED TAX LN",
+      "filed": "2026-06-24",
+      "owner": "FED TAX LN",
+      "grantee": "FED TAX LN",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029701",
+      "doc_type": "FED TAX LN",
+      "cat": "LN",
+      "cat_label": "FED TAX LN",
+      "filed": "2026-06-24",
+      "owner": "FED TAX LN",
+      "grantee": "FED TAX LN",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029700",
+      "doc_type": "FED TAX LN",
+      "cat": "LN",
+      "cat_label": "FED TAX LN",
+      "filed": "2026-06-24",
+      "owner": "FED TAX LN",
+      "grantee": "FED TAX LN",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029699",
+      "doc_type": "FED TAX LN",
+      "cat": "LN",
+      "cat_label": "FED TAX LN",
+      "filed": "2026-06-24",
+      "owner": "FED TAX LN",
+      "grantee": "FED TAX LN",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029708",
       "doc_type": "NOTICE/PUR",
       "cat": "NOFC",
       "cat_label": "Notice",
-      "filed": "2026-06-23",
+      "filed": "2026-06-24",
       "owner": "NOTICE/PUR",
       "grantee": "NOTICE/PUR",
       "amount": null,
@@ -317,47 +461,11 @@
       ]
     },
     {
-      "doc_num": "2026029376",
-      "doc_type": "NOTICE/PUR",
-      "cat": "NOFC",
-      "cat_label": "Notice",
-      "filed": "2026-06-23",
-      "owner": "NOTICE/PUR",
-      "grantee": "NOTICE/PUR",
-      "amount": null,
-      "county": "galveston",
-      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
-      "prop_address": "",
-      "score": 30,
-      "flags": [
-        "Lis Pendens",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026029375",
-      "doc_type": "NOTICE/PUR",
-      "cat": "NOFC",
-      "cat_label": "Notice",
-      "filed": "2026-06-23",
-      "owner": "NOTICE/PUR",
-      "grantee": "NOTICE/PUR",
-      "amount": null,
-      "county": "galveston",
-      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
-      "prop_address": "",
-      "score": 30,
-      "flags": [
-        "Lis Pendens",
-        "New this week"
-      ]
-    },
-    {
-      "doc_num": "2026029371",
+      "doc_num": "2026029683",
       "doc_type": "NOTICE",
       "cat": "NOFC",
       "cat_label": "Notice",
-      "filed": "2026-06-23",
+      "filed": "2026-06-24",
       "owner": "NOTICE",
       "grantee": "NOTICE",
       "amount": null,
@@ -371,13 +479,49 @@
       ]
     },
     {
-      "doc_num": "2026029328",
-      "doc_type": "NOTICE/PUR",
-      "cat": "NOFC",
-      "cat_label": "Notice",
-      "filed": "2026-06-22",
-      "owner": "NOTICE/PUR",
-      "grantee": "HUNT ASHLEY P",
+      "doc_num": "2026029680",
+      "doc_type": "ST TAX LIEN",
+      "cat": "LN",
+      "cat_label": "Lien",
+      "filed": "2026-06-24",
+      "owner": "ST TAX LIEN",
+      "grantee": "ST TAX LIEN",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029677",
+      "doc_type": "ST TAX LIEN",
+      "cat": "LN",
+      "cat_label": "Lien",
+      "filed": "2026-06-24",
+      "owner": "ST TAX LIEN",
+      "grantee": "ST TAX LIEN",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029675",
+      "doc_type": "LIS PENDENS",
+      "cat": "LP",
+      "cat_label": "Lis Pendens",
+      "filed": "2026-06-24",
+      "owner": "LIS PENDENS",
+      "grantee": "LIS PENDENS",
       "amount": null,
       "county": "galveston",
       "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
@@ -389,13 +533,139 @@
       ]
     },
     {
-      "doc_num": "2026029309",
+      "doc_num": "2026029676",
+      "doc_type": "STATE TAX RELEASE",
+      "cat": "LN",
+      "cat_label": "STATE TAX RELEASE",
+      "filed": "2026-06-24",
+      "owner": "STATE TAX RELEASE",
+      "grantee": "STATE TAX RELEASE",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029669",
+      "doc_type": "ST TAX LIEN",
+      "cat": "LN",
+      "cat_label": "Lien",
+      "filed": "2026-06-24",
+      "owner": "ST TAX LIEN",
+      "grantee": "ST TAX LIEN",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029668",
+      "doc_type": "ST TAX LIEN",
+      "cat": "LN",
+      "cat_label": "Lien",
+      "filed": "2026-06-24",
+      "owner": "ST TAX LIEN",
+      "grantee": "ST TAX LIEN",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029667",
+      "doc_type": "A OF J",
+      "cat": "LN",
+      "cat_label": "A OF J",
+      "filed": "2026-06-24",
+      "owner": "A OF J",
+      "grantee": "A OF J",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029663",
+      "doc_type": "A OF J",
+      "cat": "LN",
+      "cat_label": "A OF J",
+      "filed": "2026-06-24",
+      "owner": "A OF J",
+      "grantee": "A OF J",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029662",
+      "doc_type": "A OF J",
+      "cat": "LN",
+      "cat_label": "A OF J",
+      "filed": "2026-06-24",
+      "owner": "A OF J",
+      "grantee": "A OF J",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029656",
+      "doc_type": "A OF J",
+      "cat": "LN",
+      "cat_label": "A OF J",
+      "filed": "2026-06-24",
+      "owner": "A OF J",
+      "grantee": "A OF J",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lien",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029652",
       "doc_type": "NOTICE/PUR",
       "cat": "NOFC",
       "cat_label": "Notice",
-      "filed": "2026-06-22",
+      "filed": "2026-06-24",
       "owner": "NOTICE/PUR",
-      "grantee": "CARTER SHARON LYNN",
+      "grantee": "NOTICE/PUR",
       "amount": null,
       "county": "galveston",
       "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
@@ -407,13 +677,103 @@
       ]
     },
     {
-      "doc_num": "2026029306",
+      "doc_num": "2026029648",
       "doc_type": "NOTICE/PUR",
       "cat": "NOFC",
       "cat_label": "Notice",
-      "filed": "2026-06-22",
+      "filed": "2026-06-24",
       "owner": "NOTICE/PUR",
-      "grantee": "PULTE HOMES OF TEXAS LP",
+      "grantee": "NOTICE/PUR",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lis Pendens",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029647",
+      "doc_type": "NOTICE/PUR",
+      "cat": "NOFC",
+      "cat_label": "Notice",
+      "filed": "2026-06-24",
+      "owner": "NOTICE/PUR",
+      "grantee": "NOTICE/PUR",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lis Pendens",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029631",
+      "doc_type": "NOTICE",
+      "cat": "NOFC",
+      "cat_label": "Notice",
+      "filed": "2026-06-24",
+      "owner": "NOTICE",
+      "grantee": "NOTICE",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lis Pendens",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029573",
+      "doc_type": "NOTICE/PUR",
+      "cat": "NOFC",
+      "cat_label": "Notice",
+      "filed": "2026-06-23",
+      "owner": "NOTICE/PUR",
+      "grantee": "HW SW PHASE 1 LLC",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lis Pendens",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029572",
+      "doc_type": "NOTICE/PUR",
+      "cat": "NOFC",
+      "cat_label": "Notice",
+      "filed": "2026-06-23",
+      "owner": "NOTICE/PUR",
+      "grantee": "HW SW PHASE 1 LLC",
+      "amount": null,
+      "county": "galveston",
+      "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
+      "prop_address": "",
+      "score": 30,
+      "flags": [
+        "Lis Pendens",
+        "New this week"
+      ]
+    },
+    {
+      "doc_num": "2026029571",
+      "doc_type": "NOTICE/PUR",
+      "cat": "NOFC",
+      "cat_label": "Notice",
+      "filed": "2026-06-23",
+      "owner": "NOTICE/PUR",
+      "grantee": "HW SW PHASE 1 LLC",
       "amount": null,
       "county": "galveston",
       "clerk_url": "https://ava.fidlar.com/TXGalveston/AvaWeb/",
