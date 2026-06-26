@@ -128,6 +128,11 @@ async def scrape():
             await page.query_selector("input[id*='DateFiledTo']") or
             await page.query_selector("input[id*='DateTo']")
         )
+        # Debug: log all inputs found on page
+        all_inputs = await page.query_selector_all("input[type='text']")
+        for inp in all_inputs:
+            inp_id = await inp.get_attribute("id")
+            log.info("[Travis] Found input: %s", inp_id)
         if not from_inp or not to_inp:
             import logging
             logging.getLogger("travis").error("Date inputs not found on Travis portal")
@@ -188,3 +193,4 @@ async def scrape():
 
 if __name__ == "__main__":
     asyncio.run(scrape())
+
