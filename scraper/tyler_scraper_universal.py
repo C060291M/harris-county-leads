@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from playwright.async_api import async_playwright
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S")
+WAIT_MULT = 3 if os.getenv("DECODO_USER","") else 1
+
 log = logging.getLogger("tyler")
 
 COUNTY        = os.getenv("COUNTY", "").strip()
