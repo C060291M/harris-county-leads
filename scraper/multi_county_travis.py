@@ -115,14 +115,18 @@ def scrape():
         r = client.get(BASE)
         log.info("[Travis] Homepage: %s", r.status_code)
 
-        # Step 2 — click disclaimer
+        # Step 2 — click disclaimer via POST
         soup = BeautifulSoup(r.text, "lxml")
-        disc_link = soup.find("a", string=re.compile(r"Click here", re.I))
-        if disc_link and disc_link.get("href"):
-            href = disc_link["href"]
-            if not href.startswith("http"): href = BASE + href
-            r = client.get(href)
-            log.info("[Travis] Disclaimer clicked: %s", r.status_code)
+        hidden = get_hidden(soup)
+        disc_data = {
+            **hidden,
+            "__EVENTTARGET": "ctl00$cph1$lnkAccept",
+            "__EVENTARGUMENT": "",
+        }
+        r = client.post(BASE, data=disc_data,
+                       headers={**HEADERS, "Referer": BASE,
+                                "Content-Type": "application/x-www-form-urlencoded"})
+        log.info("[Travis] Disclaimer POST: %s", r.status_code)
 
         # Step 3 — load search page
         r = client.get(SEARCH_URL)
@@ -216,6 +220,7 @@ def scrape():
 
 if __name__ == "__main__":
     scrape()
+
 
 
 
