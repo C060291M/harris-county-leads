@@ -1,15 +1,22 @@
-﻿import asyncio, os, re, json, logging
+﻿import os, re, json, logging, httpx
 from datetime import datetime, timedelta
-from playwright.async_api import async_playwright
 from bs4 import BeautifulSoup
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger("travis")
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "3"))
-FLOOR_DATE = "2025-01-01"  # Never pull records older than this
 MAX_PAGES     = int(os.getenv("MAX_PAGES", "5"))
 COUNTY        = "travis"
+BASE_URL      = "https://www.tccsearch.org/RealEstate/SearchEntry.aspx"
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+}
 
 DISTRESS_DOC_TYPES = {
     1:"AJ", 23:"DIVOR", 24:"JUDGMT", 25:"PROB", 51:"FED TAX",
@@ -38,146 +45,122 @@ def norm_date(raw):
     return str(raw).strip()[:10]
 
 def parse_name(raw):
-    """Extract clean name from '[R] SMITH JOHN (+)' format"""
     if not raw: return ""
     raw = re.sub(r'\[.\]', '', raw).strip()
     raw = re.sub(r'\(\+\)', '', raw).strip()
     return re.sub(r'\s+', ' ', raw).strip()
 
 def parse_table(soup):
-    """Find and parse the results table"""
     records = []
-    tables = soup.find_all("table")
-    
-    data_table = None
-    for t in tables:
+    for t in soup.find_all("table"):
         rows = t.find_all("tr")
-        if len(rows) > 5:
-            # Check if first data row has instrument number pattern
-            for row in rows[:3]:
-                cells = [c.get_text(" ", strip=True) for c in row.find_all("td")]
-                if cells and re.match(r'^\d+$', cells[0].strip()) and len(cells) > 8:
-                    data_table = t
-                    break
-            if data_table: break
-    
-    if not data_table:
-        return records
-    
-    rows = data_table.find_all("tr")
-    for row in rows:
-        cells = [c.get_text(" ", strip=True) for c in row.find_all("td")]
-        if not cells or not re.match(r'^\d+$', cells[0].strip()): continue
-        if len(cells) < 20: continue
-        
-        doc_num   = cells[3].strip()  if len(cells) > 3  else ""
-        filed     = norm_date(cells[8]) if len(cells) > 8  else ""
-        doc_type  = cells[9].strip()  if len(cells) > 9  else ""
-        name_raw  = cells[11].strip() if len(cells) > 11 else ""
-        grantor   = parse_name(cells[14]) if len(cells) > 14 else parse_name(name_raw)
-        grantee   = parse_name(cells[18]) if len(cells) > 18 else ""
-        legal     = cells[20].strip() if len(cells) > 20 else ""
-        
-        if not doc_num: continue
-        cat, cat_label = cat_from_doc_type(doc_type)
-        records.append({
-            "doc_num": doc_num, "doc_type": doc_type,
-            "cat": cat, "cat_label": cat_label,
-            "filed": filed, "owner": grantor, "grantee": grantee,
-            "amount": None, "county": COUNTY,
-            "legal": legal,
-            "clerk_url": "https://www.tccsearch.org/RealEstate/SearchEntry.aspx",
-            "prop_address":"","score":0,"flags":[],
-        })
+        if len(rows) < 5: continue
+        for row in rows[:3]:
+            cells = [c.get_text(" ", strip=True) for c in row.find_all("td")]
+            if cells and re.match(r'^\d+$', cells[0].strip()) and len(cells) > 8:
+                for row2 in rows:
+                    cells2 = [c.get_text(" ", strip=True) for c in row2.find_all("td")]
+                    if not cells2 or not re.match(r'^\d+$', cells2[0].strip()): continue
+                    if len(cells2) < 20: continue
+                    doc_num  = cells2[3].strip()  if len(cells2) > 3  else ""
+                    filed    = norm_date(cells2[8]) if len(cells2) > 8  else ""
+                    doc_type = cells2[9].strip()  if len(cells2) > 9  else ""
+                    grantor  = parse_name(cells2[14]) if len(cells2) > 14 else parse_name(cells2[11] if len(cells2) > 11 else "")
+                    grantee  = parse_name(cells2[18]) if len(cells2) > 18 else ""
+                    legal    = cells2[20].strip() if len(cells2) > 20 else ""
+                    if not doc_num: continue
+                    cat, cat_label = cat_from_doc_type(doc_type)
+                    records.append({
+                        "doc_num": doc_num, "doc_type": doc_type,
+                        "cat": cat, "cat_label": cat_label,
+                        "filed": filed, "owner": grantor, "grantee": grantee,
+                        "amount": None, "county": COUNTY, "legal": legal,
+                        "clerk_url": BASE_URL,
+                        "prop_address":"","score":0,"flags":[],
+                    })
+                return records
     return records
 
-async def scrape():
+def get_hidden(soup):
+    vs  = soup.find("input", {"id": "__VIEWSTATE"})
+    evv = soup.find("input", {"id": "__EVENTVALIDATION"})
+    vsg = soup.find("input", {"id": "__VIEWSTATEGENERATOR"})
+    return {
+        "__VIEWSTATE":          vs["value"]  if vs  else "",
+        "__EVENTVALIDATION":    evv["value"] if evv else "",
+        "__VIEWSTATEGENERATOR": vsg["value"] if vsg else "",
+    }
+
+def scrape():
     now    = datetime.now()
     cutoff = now - timedelta(days=LOOKBACK_DAYS)
     start_str = cutoff.strftime("%m/%d/%Y")
     end_str   = now.strftime("%m/%d/%Y")
     log.info("[Travis] Scraping %s to %s", start_str, end_str)
     records = []
-    
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True, args=["--no-sandbox","--disable-dev-shm-usage"])
-        page = await browser.new_page(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122.0.0.0 Safari/537.36",
-            viewport={"width":1280,"height":900}
-        )
-        
-        await page.goto("https://www.tccsearch.org", wait_until="domcontentloaded", timeout=30000)
-        await page.wait_for_timeout(2000)
-        link = await page.query_selector("a:has-text('Click here')")
-        if link:
-            await link.evaluate("el => el.click()")
-            await page.wait_for_timeout(2000)
-        
-        await page.goto("https://www.tccsearch.org/RealEstate/SearchEntry.aspx",
-                       wait_until="domcontentloaded", timeout=30000)
-        await page.wait_for_timeout(2000)
-        
-        # Set dates - try multiple selectors for Infragistics date picker
-        from_inp = (
-            await page.query_selector("#cphNoMargin_f_ddcDateFiledFrom input[type='text']") or
-            await page.query_selector("input[id*='DateFiledFrom']") or
-            await page.query_selector("input[id*='DateFrom']")
-        )
-        to_inp = (
-            await page.query_selector("#cphNoMargin_f_ddcDateFiledTo input[type='text']") or
-            await page.query_selector("input[id*='DateFiledTo']") or
-            await page.query_selector("input[id*='DateTo']")
-        )
-        # Debug: log all inputs found on page
-        all_inputs = await page.query_selector_all("input[type='text']")
-        for inp in all_inputs:
-            inp_id = await inp.get_attribute("id")
-            log.info("[Travis] Found input: %s", inp_id)
-        if not from_inp or not to_inp:
-            import logging
-            logging.getLogger("travis").error("Date inputs not found on Travis portal")
-            await browser.close()
+
+    with httpx.Client(headers=HEADERS, follow_redirects=True, timeout=30) as client:
+        # Step 1 — load homepage to get session cookie
+        r = client.get("https://www.tccsearch.org")
+        log.info("[Travis] Homepage: %s", r.status_code)
+
+        # Step 2 — load search page to get VIEWSTATE
+        r = client.get(BASE_URL)
+        log.info("[Travis] Search page: %s", r.status_code)
+        soup = BeautifulSoup(r.text, "lxml")
+        hidden = get_hidden(soup)
+        log.info("[Travis] VIEWSTATE len=%d", len(hidden["__VIEWSTATE"]))
+
+        if not hidden["__VIEWSTATE"]:
+            log.error("[Travis] No VIEWSTATE found — page may be blocked")
             return []
-        await from_inp.click(click_count=3)
-        await from_inp.type(start_str)
-        await page.keyboard.press("Tab")
-        await page.wait_for_timeout(500)
-        await to_inp.click(click_count=3)
-        await to_inp.type(end_str)
-        await page.keyboard.press("Tab")
-        await page.wait_for_timeout(500)
-        
-        # Check distress doc types
+
+        # Step 3 — build form POST
+        form_data = {
+            "__EVENTTARGET": "",
+            "__EVENTARGUMENT": "",
+            **hidden,
+            "cphNoMargin_f_ddcDateFiledFrom$TextBox1": start_str,
+            "cphNoMargin_f_ddcDateFiledTo$TextBox1":   end_str,
+            "cphNoMargin_SearchButtons1_btnSearch":    "Search",
+        }
+        # Add doc type checkboxes
         for idx in DISTRESS_DOC_TYPES:
-            cb = await page.query_selector(f"#cphNoMargin_f_dclDocType_{idx}")
-            if cb: await cb.check()
-        
-        await page.click("input[id='cphNoMargin_SearchButtons1_btnSearch']")
-        await page.wait_for_timeout(6000)
-        log.info("[Travis] Search submitted, URL: %s", page.url)
-        
+            form_data[f"cphNoMargin_f_dclDocType_{idx}"] = "on"
+
+        r = client.post(BASE_URL, data=form_data,
+                        headers={**HEADERS, "Referer": BASE_URL,
+                                 "Content-Type": "application/x-www-form-urlencoded"})
+        log.info("[Travis] Search POST: %s url=%s", r.status_code, r.url)
+
         for page_num in range(1, MAX_PAGES + 1):
-            soup = BeautifulSoup(await page.content(), "lxml")
+            soup = BeautifulSoup(r.text, "lxml")
             page_recs = parse_table(soup)
             log.info("[Travis] Page %d: %d records", page_num, len(page_recs))
             records.extend(page_recs)
             if not page_recs: break
-            
-            next_btn = await page.query_selector("a:has-text('Next')")
-            if not next_btn: break
-            await next_btn.evaluate("el => el.click()")
-            await page.wait_for_timeout(3000)
-        
-        await browser.close()
-    
+
+            # Pagination — click Next via __EVENTTARGET
+            next_link = soup.find("a", string=re.compile(r"Next", re.I))
+            if not next_link: break
+            hidden = get_hidden(soup)
+            page_data = {
+                "__EVENTTARGET":   next_link.get("href","").replace("javascript:__doPostBack('","").split("'")[0],
+                "__EVENTARGUMENT": "",
+                **hidden,
+            }
+            r = client.post(BASE_URL, data=page_data,
+                            headers={**HEADERS, "Referer": BASE_URL,
+                                     "Content-Type": "application/x-www-form-urlencoded"})
+
     seen, deduped = set(), []
-    for r in records:
-        k = r.get("doc_num","")
+    for rec in records:
+        k = rec.get("doc_num","")
         if k and k not in seen:
-            seen.add(k); deduped.append(r)
-    
+            seen.add(k); deduped.append(rec)
+
     log.info("[Travis] %d unique records", len(deduped))
-    
+
     out_dir  = os.path.join(os.path.dirname(__file__), "..", "dashboard")
     os.makedirs(out_dir, exist_ok=True)
     out_file = os.path.join(out_dir, "travis_records.json")
@@ -192,5 +175,4 @@ async def scrape():
     return deduped
 
 if __name__ == "__main__":
-    asyncio.run(scrape())
-
+    scrape()
