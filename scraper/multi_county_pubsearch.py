@@ -248,6 +248,7 @@ async def scrape_county(page, county, base_url, dept, start_dt, end_dt):
                 # Table format: [empty,empty,empty, GRANTOR, GRANTEE, DOC TYPE, DATE, INST#, BOOK, LEGAL]
 
                 non_empty = [t for t in texts if t.strip()]
+                if county == "Montgomery" and len(non_empty) >= 3: import logging; logging.getLogger("pubsearch").info("Montgomery raw row: %s", non_empty)
 
                 if len(non_empty) < 4: continue
 
