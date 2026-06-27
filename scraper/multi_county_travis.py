@@ -22,23 +22,19 @@ HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 
-DOC_TYPES = [
-    "LIS PENDENS", "ABSTRACT OF JUDGMENT", "TAX DEED",
-    "FEDERAL TAX LIEN", "MECHANIC LIEN", "PROBATE",
-    "STATE TAX LIEN", "NOTICE OF FORECLOSURE",
-]
-
-def cat_from_doc_type(dt):
-    dt = dt.upper()
-    if "LIS PEND" in dt:     return ("LP",      "Lis Pendens")
-    if "FED TAX" in dt:      return ("LNFED",   "Federal Tax Lien")
-    if "STATE TAX" in dt:    return ("LNSTATE", "State Tax Lien")
-    if "ABSTRACT" in dt:     return ("JUD",     "Abstract of Judgment")
-    if "PROB" in dt:         return ("PRO",     "Probate")
-    if "TAX DEED" in dt:     return ("TAXDEED", "Tax Deed")
-    if "MECHANIC" in dt:     return ("LNMECH",  "Mechanic Lien")
-    if "FORECLOSURE" in dt:  return ("NOFC",    "Notice of Foreclosure")
-    return ("LN", dt)
+# Hardcoded from form inspection: checkbox index -> (value, cat, label)
+DOC_TYPES = {
+    63: ("LIS PEND",    "LP",      "Lis Pendens"),
+    1:  ("AJ",          "JUD",     "Abstract of Judgment"),
+    51: ("FED TAX",     "LNFED",   "Federal Tax Lien"),
+    65: ("ML",          "LNMECH",  "Mechanic Lien"),
+    25: ("PROB",        "PRO",     "Probate"),
+    107:("ST TAX LIEN", "LNSTATE", "State Tax Lien"),
+    72: ("FORECLOSURE", "NOFC",    "Notice of Foreclosure"),
+    24: ("JUDGMT",      "JUD",     "Abstract of Judgment"),
+    60: ("JDGMT",       "JUD",     "Abstract of Judgment"),
+    62: ("LIEN",        "LN",      "Lien"),
+}
 
 def norm_date(raw):
     if not raw: return ""
@@ -47,7 +43,7 @@ def norm_date(raw):
         except: pass
     return str(raw).strip()[:10]
 
-def get_viewstate(soup):
+def get_vs(soup):
     out = {}
     for fld in ["__VIEWSTATE","__EVENTVALIDATION","__VIEWSTATEGENERATOR"]:
         el = soup.find("input", {"name": fld})
@@ -58,12 +54,14 @@ def parse_results(soup):
     records = []
     for t in soup.find_all("table"):
         rows = t.find_all("tr")
+        found = False
         for row in rows:
             cells = row.find_all("td")
             if len(cells) < 5: continue
             texts = [c.get_text(" ", strip=True) for c in cells]
-            doc_num  = texts[3].strip() if len(texts) > 3 else ""
+            doc_num = texts[3].strip() if len(texts) > 3 else ""
             if not doc_num or not re.match(r'\d{4}', doc_num): continue
+            found = True
             filed    = norm_date(texts[4]) if len(texts) > 4 else ""
             doc_type = texts[5].strip() if len(texts) > 5 else ""
             name_col = texts[6] if len(texts) > 6 else ""
@@ -74,7 +72,8 @@ def parse_results(soup):
             grantee  = re.sub(r'\s+', ' ', e_match.group(1)).strip() if e_match else ""
             owner    = grantee if grantee else grantor
             if not owner or len(owner) < 3: continue
-            cat, cat_label = cat_from_doc_type(doc_type)
+            cat = "LP" if "PEND" in doc_type.upper() else "JUD" if "JUD" in doc_type.upper() or doc_type in ("AJ","JUDGMT","JDGMT") else "LNFED" if "FED" in doc_type.upper() else "LNMECH" if doc_type == "ML" else "PRO" if "PROB" in doc_type.upper() else "LNSTATE" if "ST TAX" in doc_type.upper() else "NOFC" if "FORE" in doc_type.upper() else "LN"
+            cat_label = {"LP":"Lis Pendens","JUD":"Abstract of Judgment","LNFED":"Federal Tax Lien","LNMECH":"Mechanic Lien","PRO":"Probate","LNSTATE":"State Tax Lien","NOFC":"Notice of Foreclosure","LN":"Lien"}.get(cat, doc_type)
             records.append({
                 "doc_num": doc_num, "doc_type": doc_type,
                 "cat": cat, "cat_label": cat_label,
@@ -84,7 +83,7 @@ def parse_results(soup):
                 "prop_address": "", "prop_city": "", "prop_state": "TX", "prop_zip": "",
                 "score": 0, "flags": [],
             })
-        if records: break
+        if found: break
     return records
 
 def scrape():
@@ -99,88 +98,53 @@ def scrape():
 
     all_records = []
     with httpx.Client(**kwargs) as client:
-        # Step 1 — homepage
+        # Disclaimer
         r = client.get(BASE)
-        log.info("[Travis] Homepage: %s", r.status_code)
-        if r.status_code != 200:
-            log.error("[Travis] Homepage blocked")
-            return []
-
-        # Step 2 — disclaimer POST
         soup = BeautifulSoup(r.text, "lxml")
-        vs = get_viewstate(soup)
-        r = client.post(BASE, data={
-            **vs,
-            "__EVENTTARGET": "ctl00$cph1$lnkAccept",
-            "__EVENTARGUMENT": "",
-        }, headers={**HEADERS, "Referer": BASE, "Content-Type": "application/x-www-form-urlencoded"})
+        vs = get_vs(soup)
+        r = client.post(BASE, data={**vs, "__EVENTTARGET": "ctl00$cph1$lnkAccept", "__EVENTARGUMENT": ""},
+                       headers={**HEADERS, "Referer": BASE, "Content-Type": "application/x-www-form-urlencoded"})
         log.info("[Travis] Disclaimer: %s", r.status_code)
 
-        # Step 3 — load search page
+        # Search page
         r = client.get(SEARCH_URL)
-        log.info("[Travis] Search page: %s", r.status_code)
         soup = BeautifulSoup(r.text, "lxml")
-        vs = get_viewstate(soup)
-        if not vs.get("__VIEWSTATE"):
-            log.error("[Travis] No VIEWSTATE on search page")
-            return []
+        vs = get_vs(soup)
+        log.info("[Travis] Search page: %s VIEWSTATE=%s", r.status_code, bool(vs.get("__VIEWSTATE")))
 
-        # Step 4 — find doc type checkboxes
-        cb_map = {}
-        for cb in soup.find_all("input", {"type": "checkbox"}):
-            name = cb.get("name","")
-            label = cb.find_next_sibling(string=True) or ""
-            parent = cb.parent.get_text(" ", strip=True).upper() if cb.parent else ""
-            cb_map[parent] = name
+        # Submit one search with all distress doc types checked
+        form = {
+            **vs,
+            "__EVENTTARGET": "",
+            "__EVENTARGUMENT": "",
+            "ctl00$cphNoMargin$f$NameSearchMode": "rdoCombine",
+            "ctl00$cphNoMargin$f$drbPartyType": "",
+            "cphNoMargin_f_ddcDateFiledFrom_clientState": f'{{"enabled":true,"emptyMessage":"","validationText":"{cutoff.strftime("%Y-%m-%d")}-00-00-00","valueAsString":"{cutoff.strftime("%Y-%m-%d")}-00-00-00","minDateStr":"1900-01-01-00-00-00","maxDateStr":"9999-12-31-00-00-00","lastSetTextBoxValue":"{start_str}"}}',
+            "cphNoMargin_f_ddcDateFiledTo_clientState": f'{{"enabled":true,"emptyMessage":"","validationText":"{now.strftime("%Y-%m-%d")}-00-00-00","valueAsString":"{now.strftime("%Y-%m-%d")}-00-00-00","minDateStr":"1900-01-01-00-00-00","maxDateStr":"9999-12-31-00-00-00","lastSetTextBoxValue":"{end_str}"}}',
+            "ctl00$cphNoMargin$SearchButtons1$btnSearch": "Search",
+        }
+        # Add all distress checkboxes
+        for idx in DOC_TYPES:
+            form[f"ctl00$cphNoMargin$f$dclDocType${idx}"] = "on"
 
-        log.info("[Travis] Found %d checkboxes", len(cb_map))
-        for lbl, nm in list(cb_map.items())[:20]:
-            log.info("[Travis] CB: %r -> %s", lbl[:50], nm)
+        r = client.post(SEARCH_URL, data=form,
+                       headers={**HEADERS, "Referer": SEARCH_URL, "Content-Type": "application/x-www-form-urlencoded"})
+        log.info("[Travis] Search POST: %s url=%s", r.status_code, r.url)
 
-        # Step 5 — search each doc type
-        for doc_type in DOC_TYPES:
-            cb_name = None
-            for label, name in cb_map.items():
-                if doc_type in label:
-                    cb_name = name
-                    break
-            if not cb_name:
-                log.warning("[Travis] No checkbox for %s", doc_type)
-                continue
-
-            form = {
-                **vs,
-                "__EVENTTARGET": "",
-                "__EVENTARGUMENT": "",
-                "cphNoMargin_f_txtDateFiledFrom": start_str,
-                "cphNoMargin_f_txtDateFiledTo": end_str,
-                cb_name: "on",
-                "cphNoMargin_SearchButtons1_btnSearch": "Search",
-            }
-            r = client.post(SEARCH_URL, data=form,
-                           headers={**HEADERS, "Referer": SEARCH_URL,
-                                    "Content-Type": "application/x-www-form-urlencoded"})
-            log.info("[Travis] %s search: %s", doc_type, r.status_code)
-
-            for page_num in range(1, MAX_PAGES + 1):
-                soup = BeautifulSoup(r.text, "lxml")
-                recs = parse_results(soup)
-                log.info("[Travis] %s page %d: %d records", doc_type, page_num, len(recs))
-            if page_num == 1 and not recs:
-                log.info("[Travis] Sample HTML: %s", str(soup)[:500])
-                all_records.extend(recs)
-                if not recs: break
-                next_btn = soup.find("a", string=re.compile(r"Next", re.I))
-                if not next_btn: break
-                vs2 = get_viewstate(soup)
-                href = next_btn.get("href","")
-                target = re.search(r"'([^']+)'", href)
-                r = client.post(RESULTS_URL, data={
-                    **vs2,
-                    "__EVENTTARGET": target.group(1) if target else "",
-                    "__EVENTARGUMENT": "",
-                }, headers={**HEADERS, "Referer": RESULTS_URL,
-                             "Content-Type": "application/x-www-form-urlencoded"})
+        for page_num in range(1, MAX_PAGES + 1):
+            soup = BeautifulSoup(r.text, "lxml")
+            recs = parse_results(soup)
+            log.info("[Travis] Page %d: %d records", page_num, len(recs))
+            if page_num == 1: log.info("[Travis] HTML sample: %s", r.text[3000:3500])
+            all_records.extend(recs)
+            if not recs: break
+            next_link = soup.find("a", string=re.compile(r"Next", re.I))
+            if not next_link: break
+            vs2 = get_vs(soup)
+            href = next_link.get("href","")
+            target = re.search(r"'([^']+)'", href)
+            r = client.post(RESULTS_URL, data={**vs2, "__EVENTTARGET": target.group(1) if target else "", "__EVENTARGUMENT": ""},
+                           headers={**HEADERS, "Referer": RESULTS_URL, "Content-Type": "application/x-www-form-urlencoded"})
 
     seen, deduped = set(), []
     for rec in all_records:
@@ -203,5 +167,3 @@ def scrape():
 
 if __name__ == "__main__":
     scrape()
-
-
