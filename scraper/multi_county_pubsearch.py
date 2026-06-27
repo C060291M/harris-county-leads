@@ -255,16 +255,13 @@ async def scrape_county(page, county, base_url, dept, start_dt, end_dt):
 
                 
 
-                # Montgomery/PublicSearch column order: [doc_num, dept, doc_type, legal_num, grantor, grantee, N/A, date, ...]
-                doc_num  = texts[0].strip() if len(texts) > 0 else ""
-                dept_col = texts[1].strip() if len(texts) > 1 else ""
-                doc_t    = texts[2].strip() if len(texts) > 2 else doc_type
-                legal    = texts[3].strip() if len(texts) > 3 else ""
-                grantor  = texts[4].strip() if len(texts) > 4 else ""
-                grantee  = texts[5].strip() if len(texts) > 5 else ""
-                filed    = norm_date(texts[7].strip()) if len(texts) > 7 else ""
-                # Skip if no instrument number or looks like header
-                if not re.match(r"^[0-9]{8,12}$", doc_num): continue
+                # PublicSearch column order: [doc_num, dept, doc_type, legal_num, grantor, grantee, N/A, date, ...]
+                doc_num  = non_empty[0].strip() if len(non_empty) > 0 else ""
+                doc_t    = non_empty[2].strip() if len(non_empty) > 2 else doc_type
+                grantor  = non_empty[4].strip() if len(non_empty) > 4 else ""
+                grantee  = non_empty[5].strip() if len(non_empty) > 5 else ""
+                filed    = norm_date(non_empty[7].strip()) if len(non_empty) > 7 else ""
+                if not doc_num or len(doc_num) < 5: continue
 
                 
 
@@ -424,8 +421,8 @@ async def main():
 
     os.makedirs("data", exist_ok=True)
 
-    county_slug = "_".join(sorted(set(r["county"].lower().replace(" ","") for r in deduped))) if deduped else "pubsearch"
-    fname = f"pubsearch_{county_slug}_records.json"
+    county_slug = "_".join(sorted(set(r["county"].lower().replace(" ","") for r in deduped))) if deduped else ""
+    fname = f"pubsearch_{county_slug}_records.json" if county_slug else "pubsearch_records.json"
     with open(f"dashboard/{fname}", "w") as f:
         json.dump(payload, f, indent=2, default=str)
     try:
