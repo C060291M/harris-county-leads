@@ -155,21 +155,21 @@ async def navigate_to_search(page, base_url, docsearch):
     """Navigate to search page, handling ACTIONGROUP redirects."""
     search_url = f"{base_url}/search/{docsearch}"
     await page.goto(search_url, wait_until="domcontentloaded", timeout=30000)
-    await page.wait_for_timeout(1500)
+    await page.wait_for_timeout(1500 * WAIT_MULT)
     current = page.url
     if "DOCSEARCH" in current:
         return current.split("/")[-1]
     log.info("Redirected to %s — navigating via home page", current)
     # Go home first
     await page.goto(base_url + "/", wait_until="domcontentloaded", timeout=30000)
-    await page.wait_for_timeout(1500)
+    await page.wait_for_timeout(1500 * WAIT_MULT)
     # Find and click action group link
     links = await page.query_selector_all("a[href*='ACTIONGROUP']")
     for link in links:
         text = (await link.inner_text()).strip().lower()
         if "official" in text or "record" in text or "public" in text:
             await link.evaluate("el => el.click()")
-            await page.wait_for_timeout(2000)
+            await page.wait_for_timeout(2000 * WAIT_MULT)
             break
     # Now find DOCSEARCH link
     links2 = await page.query_selector_all("a[href*='DOCSEARCH']")
@@ -179,7 +179,7 @@ async def navigate_to_search(page, base_url, docsearch):
             href = await link.get_attribute("href") or ""
             actual_id = href.split("/")[-1]
             await link.evaluate("el => el.click()")
-            await page.wait_for_timeout(2000)
+            await page.wait_for_timeout(2000 * WAIT_MULT)
             log.info("Found search via navigation: %s", actual_id)
             return actual_id
     return docsearch
@@ -231,7 +231,7 @@ async def scrape_county(county_name, base_url, docsearch, start_dt, end_dt):
         # Disclaimer
         try:
             await page.goto(base_url + "/user/disclaimer", wait_until="domcontentloaded", timeout=30000)
-            await page.wait_for_timeout(1500)
+            await page.wait_for_timeout(1500 * WAIT_MULT)
             await page.evaluate("""() => {
                 const btns = document.querySelectorAll('button');
                 for (const b of btns) {
@@ -240,7 +240,7 @@ async def scrape_county(county_name, base_url, docsearch, start_dt, end_dt):
                 }
                 if (btns[0]) btns[0].click();
             }""")
-            await page.wait_for_timeout(2000)
+            await page.wait_for_timeout(2000 * WAIT_MULT)
         except Exception as e:
             log.warning("[%s] Disclaimer: %s", county_name, e)
 
@@ -265,7 +265,7 @@ async def scrape_county(county_name, base_url, docsearch, start_dt, end_dt):
                 log.error("[%s] Could not find date fields", county_name)
                 await browser.close()
                 return records
-            await page.wait_for_timeout(500)
+            await page.wait_for_timeout(500 * WAIT_MULT)
 
             # Click search
             search_btn = (
@@ -279,15 +279,15 @@ async def scrape_county(county_name, base_url, docsearch, start_dt, end_dt):
                 try:
                     await page.evaluate('executeSearch()')
                     log.info('[%s] Used executeSearch() JS fallback', county_name)
-                    await page.wait_for_timeout(2500)
+                    await page.wait_for_timeout(2500 * WAIT_MULT)
                 except Exception as js_e:
                     log.error('[%s] No search button and executeSearch() failed: %s', county_name, js_e)
                     await browser.close()
                     return records
             else:
                 await search_btn.evaluate('el => el.click()')
-                await page.wait_for_timeout(2500)
-            await page.wait_for_timeout(2500)
+                await page.wait_for_timeout(2500 * WAIT_MULT)
+            await page.wait_for_timeout(2500 * WAIT_MULT)
         except Exception as e:
             log.error("[%s] Search setup failed: %s", county_name, e)
             await browser.close()
@@ -318,7 +318,7 @@ async def scrape_county(county_name, base_url, docsearch, start_dt, end_dt):
                 )
                 if not next_btn: break
                 await next_btn.evaluate("el => el.click()")
-                await page.wait_for_timeout(2000)
+                await page.wait_for_timeout(2000 * WAIT_MULT)
             except Exception as e:
                 log.warning("[%s] Page %d error: %s", county_name, page_num, e)
                 break
@@ -359,6 +359,7 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
 
 
