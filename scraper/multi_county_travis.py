@@ -21,7 +21,7 @@ HEADERS = {
 
 PROXY_USER = os.getenv("DECODO_USER", "")
 PROXY_PASS = os.getenv("DECODO_PASS", "")
-PROXY_URL  = f"http://{PROXY_USER}:{PROXY_PASS}@gate.decodo.com:10001" if PROXY_USER else None
+PROXY_URL  = f"http://{PROXY_USER}:{PROXY_PASS}@state.decodo.com:14001" if PROXY_USER else None
 
 DOC_TYPES = [
     "LIS PENDENS", "ABSTRACT OF JUDGMENT", "TAX DEED",
@@ -216,6 +216,8 @@ def scrape():
 
 if __name__ == "__main__":
     scrape()
+
+
 
 
 
