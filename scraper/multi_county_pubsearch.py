@@ -1,4 +1,4 @@
-"""
+﻿"""
 
 StackIQ - Universal PublicSearch.us Scraper
 
@@ -33,6 +33,7 @@ MAX_PAGES     = int(os.getenv("MAX_PAGES", "3"))
 # County -> (base_url, department_code)
 
 COUNTIES = {
+    "Travis":      ("https://travis.tx.publicsearch.us",      "RP"),
     "Tarrant":     ("https://tarrant.tx.publicsearch.us",     "RP"),
     "Denton":      ("https://denton.tx.publicsearch.us",      "RP"),
     "Collin":      ("https://collin.tx.publicsearch.us",      "RP"),
@@ -439,5 +440,6 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
