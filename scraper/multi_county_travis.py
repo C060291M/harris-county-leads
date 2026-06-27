@@ -1,6 +1,5 @@
 ﻿import os, re, json, logging, httpx
 from datetime import datetime, timedelta
-from urllib.parse import quote
 from bs4 import BeautifulSoup
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S")
@@ -22,10 +21,8 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
     "Cache-Control": "max-age=0",
-    "Upgrade-Insecure-Requests": "1",
 }
 
-# Checkbox index -> value (from form inspection)
 DOC_TYPES = {
     63: "LIS PEND",
     1:  "AJ",
@@ -41,13 +38,13 @@ DOC_TYPES = {
 
 def cat_from_val(val):
     v = val.upper()
-    if "LIS" in v:       return ("LP",      "Lis Pendens")
-    if "FED" in v:       return ("LNFED",   "Federal Tax Lien")
-    if "ST TAX" in v:    return ("LNSTATE", "State Tax Lien")
+    if "LIS" in v:        return ("LP",      "Lis Pendens")
+    if "FED" in v:        return ("LNFED",   "Federal Tax Lien")
+    if "ST TAX" in v:     return ("LNSTATE", "State Tax Lien")
     if v in ("AJ","JUDGMT","JDGMT"): return ("JUD", "Abstract of Judgment")
-    if "PROB" in v:      return ("PRO",     "Probate")
-    if "ML" == v:        return ("LNMECH",  "Mechanic Lien")
-    if "FORE" in v:      return ("NOFC",    "Notice of Foreclosure")
+    if "PROB" in v:       return ("PRO",     "Probate")
+    if v == "ML":         return ("LNMECH",  "Mechanic Lien")
+    if "FORE" in v:       return ("NOFC",    "Notice of Foreclosure")
     return ("LN", "Lien")
 
 def norm_date(raw):
@@ -57,6 +54,10 @@ def norm_date(raw):
         except: pass
     return str(raw).strip()[:10]
 
+def make_cs(dt):
+    s = "01%d-%d-%d-0-0-0-0" % (dt.year, dt.month, dt.day)
+    return "|0|" + s + "||[[[[]],[],[]]," + '[{},[]],"' + s + '"]'
+
 def get_vs(soup):
     out = {}
     for fld in ["__VIEWSTATE","__EVENTVALIDATION","__VIEWSTATEGENERATOR"]:
@@ -64,41 +65,33 @@ def get_vs(soup):
         out[fld] = el.get("value","") if el else ""
     return out
 
-def make_date_cs(dt):
-    return f"|0|01{dt.year}-{dt.month}-{dt.day}-0-0-0-0||[[[[]]%2C[]%2C[]]%2C[{{}}%2C[]]%2C\"01{dt.year}-{dt.month}-{dt.day}-0-0-0-0\"]"
-
 def parse_results(html):
     records = []
     soup = BeautifulSoup(html, "lxml")
-    # Find results table - look for table with instrument numbers
     for t in soup.find_all("table"):
         rows = t.find_all("tr")
-        found_data = False
+        found = False
         for row in rows:
             cells = row.find_all("td")
             if len(cells) < 5: continue
             texts = [c.get_text(" ", strip=True) for c in cells]
-            # Instrument number is typically 2026XXXXXX format
             doc_num = ""
             for txt in texts:
                 if re.match(r'^\d{10}$', txt.strip()):
                     doc_num = txt.strip()
                     break
             if not doc_num: continue
-            found_data = True
-            # Find date filed
+            found = True
             filed = ""
             for txt in texts:
                 if re.match(r'\d{2}/\d{2}/\d{4}', txt.strip()):
                     filed = norm_date(txt.strip())
                     break
-            # Find doc type
             doc_type = ""
             for txt in texts:
-                if any(k in txt.upper() for k in ["LIS PEND","JUDGMENT","TAX LIEN","MECHANIC","PROBATE","FORECLOSURE","LIEN"]):
+                if any(k in txt.upper() for k in ["LIS PEND","JUDGMENT","TAX LIEN","MECHANIC","PROBATE","FORECLOSURE","LIEN","AJ","JUDGMT"]):
                     doc_type = txt.strip()
                     break
-            # Parse names
             name_col = " ".join(texts)
             r_match = re.search(r'\[R\]\s*([^\[]+)', name_col)
             e_match = re.search(r'\[E\]\s*([^\[]+)', name_col)
@@ -116,22 +109,19 @@ def parse_results(html):
                 "prop_address": "", "prop_city": "", "prop_state": "TX", "prop_zip": "",
                 "score": 0, "flags": [],
             })
-        if found_data: break
+        if found: break
     return records
 
 def scrape():
     now    = datetime.now()
     cutoff = now - timedelta(days=LOOKBACK_DAYS)
-    start_str = cutoff.strftime("%m/%d/%Y")
-    end_str   = now.strftime("%m/%d/%Y")
-    log.info("[Travis] Scraping %s to %s proxy=%s", start_str, end_str, bool(PROXY_URL))
+    log.info("[Travis] Scraping %s to %s proxy=%s", cutoff.strftime("%m/%d/%Y"), now.strftime("%m/%d/%Y"), bool(PROXY_URL))
 
     kwargs = {"headers": HEADERS, "follow_redirects": True, "timeout": 30}
     if PROXY_URL: kwargs["proxy"] = PROXY_URL
 
     all_records = []
     with httpx.Client(**kwargs) as client:
-        # Disclaimer
         r = client.get(BASE)
         soup = BeautifulSoup(r.text, "lxml")
         vs = get_vs(soup)
@@ -139,22 +129,15 @@ def scrape():
                        headers={**HEADERS, "Referer": BASE, "Content-Type": "application/x-www-form-urlencoded"})
         log.info("[Travis] Disclaimer: %s", r.status_code)
 
-        # Search page
         r = client.get(SEARCH_URL)
         soup = BeautifulSoup(r.text, "lxml")
         vs = get_vs(soup)
-        log.info("[Travis] Search page: %s", r.status_code)
 
-        # Get all clientState values from page
         def get_cs(name):
             el = soup.find("input", {"name": name})
             return el.get("value","") if el else ""
 
-        # Build form with exact clientState format from browser capture
-        from_cs = f"|0|01{cutoff.year}-{cutoff.month}-{cutoff.day}-0-0-0-0||[[[[]]%2C[]%2C[]]%2C[{{}}%2C[]]%2C\"01{cutoff.year}-{cutoff.month}-{cutoff.day}-0-0-0-0\"]"
-        to_cs   = f"|0|01{now.year}-{now.month}-{now.day}-0-0-0-0||[[[[]]%2C[]%2C[]]%2C[{{}}%2C[]]%2C\"01{now.year}-{now.month}-{now.day}-0-0-0-0\"]"
-
-        base_form = {
+        form = {
             **vs,
             "__EVENTTARGET": "ctl00$cphNoMargin$SearchButtons2$btnSearch",
             "__EVENTARGUMENT": "0",
@@ -166,8 +149,8 @@ def scrape():
             "ctl00$cphNoMargin$f$drbPartyType": "",
             "cphNoMargin_f_txtGrantor_clientState": get_cs("cphNoMargin_f_txtGrantor_clientState"),
             "cphNoMargin_f_txtGrantee_clientState": get_cs("cphNoMargin_f_txtGrantee_clientState"),
-            "cphNoMargin_f_ddcDateFiledFrom_clientState": from_cs,
-            "cphNoMargin_f_ddcDateFiledTo_clientState": to_cs,
+            "cphNoMargin_f_ddcDateFiledFrom_clientState": make_cs(cutoff),
+            "cphNoMargin_f_ddcDateFiledTo_clientState": make_cs(now),
             "cphNoMargin_f_txtInstrumentNoFrom_clientState": get_cs("cphNoMargin_f_txtInstrumentNoFrom_clientState"),
             "cphNoMargin_f_txtInstrumentNoFrom": "",
             "cphNoMargin_f_txtInstrumentNoTo_clientState": get_cs("cphNoMargin_f_txtInstrumentNoTo_clientState"),
@@ -202,18 +185,16 @@ def scrape():
             "ctl00$cphNoMargin$SearchButtons2$btnSearch__10": ":0",
         }
 
-        # Add all doc type checkboxes
         for idx, val in DOC_TYPES.items():
-            base_form[f"ctl00$cphNoMargin$f$dclDocType${idx}"] = val
+            form[f"ctl00$cphNoMargin$f$dclDocType${idx}"] = val
 
-        r = client.post(SEARCH_URL, data=base_form,
-                       headers={**HEADERS, "Referer": SEARCH_URL,
-                                "Content-Type": "application/x-www-form-urlencoded"})
+        r = client.post(SEARCH_URL, data=form,
+                       headers={**HEADERS, "Referer": SEARCH_URL, "Content-Type": "application/x-www-form-urlencoded"})
         log.info("[Travis] Search POST: %s url=%s", r.status_code, r.url)
 
         for page_num in range(1, MAX_PAGES + 1):
             recs = parse_results(r.text)
-            log.info("[Travis] Page %d: %d records (url=%s)", page_num, len(recs), r.url)
+            log.info("[Travis] Page %d: %d records", page_num, len(recs))
             all_records.extend(recs)
             if not recs: break
             soup2 = BeautifulSoup(r.text, "lxml")
@@ -225,8 +206,7 @@ def scrape():
             r = client.post(RESULTS_URL, data={**vs2,
                 "__EVENTTARGET": target.group(1) if target else "",
                 "__EVENTARGUMENT": ""},
-                headers={**HEADERS, "Referer": RESULTS_URL,
-                         "Content-Type": "application/x-www-form-urlencoded"})
+                headers={**HEADERS, "Referer": RESULTS_URL, "Content-Type": "application/x-www-form-urlencoded"})
 
     seen, deduped = set(), []
     for rec in all_records:
