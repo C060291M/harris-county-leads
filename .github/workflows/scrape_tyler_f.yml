@@ -196,13 +196,10 @@ jobs:
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
       - name: Scrape Fort Bend
-        run: python scraper/tyler_scraper_universal.py
+        run: python scraper/multi_county_fortbend.py
         env:
-          COUNTY: "Fort Bend"
           LOOKBACK_DAYS: "3"
-          MAX_PAGES: "5"
-          MAX_RECORDS: "500"
-          WALL_MINUTES: "75"
+          MAX_PAGES: "10"
       - name: Push to DB
         run: python scraper/push_to_db.py
         env:
@@ -232,4 +229,5 @@ jobs:
         run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
 

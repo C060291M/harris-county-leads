@@ -1,420 +1,224 @@
-"""
-
-StackIQ — Rockwall County Scraper (Tyler iDS)
-
-Portal: rockwalltx-web.tylerhost.net
-
-Optimized: single date-range search, client-side doc type filtering
-
-"""
-
-import json, logging, re, os, asyncio
-
+﻿import os, re, json, logging, httpx
 from datetime import datetime, timedelta
-
-from playwright.async_api import async_playwright
-
-
+from bs4 import BeautifulSoup
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S")
-
-log = logging.getLogger("ector")
-
-
+log = logging.getLogger("fortbend")
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "3"))
+MAX_PAGES     = int(os.getenv("MAX_PAGES", "10"))
+COUNTY        = "fort bend"
+BASE          = "https://ccweb.co.fort-bend.tx.us"
+SEARCH_URL    = f"{BASE}/RealEstate/SearchEntry.aspx"
+RESULTS_URL   = f"{BASE}/RealEstate/SearchResults.aspx"
 
-MAX_PAGES     = int(os.getenv("MAX_PAGES", "3"))
-
-BASE_URL      = "https://fortbendcountytx-web.tylerhost.net/web"
-
-
-
-KEEP_DOC_TYPES = {
-
-    "LIS PENDENS","TAX DEED","ABSTRACT OF JUDGMENT","MECHANIC LIEN",
-
-    "FEDERAL TAX LIEN","STATE TAX LIEN","HOA LIEN","NOTICE OF FORECLOSURE",
-
-    "IRS TAX LIEN","PROBATE","DIVORCE","FORECLOSURE","JUDGMENT","LIEN"
-
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Cache-Control": "max-age=0",
 }
 
+DOC_TYPES = {
+    "LIS PENDENS": "LP",
+    "ABSTRACT OF JUDGMENT": "JUD",
+    "FEDERAL TAX LIEN": "LNFED",
+    "MECHANIC LIEN": "LNMECH",
+    "STATE TAX LIEN": "LNSTATE",
+    "PROBATE": "PRO",
+    "JUDGMENT": "JUD",
+}
 
+def make_cs(dt):
+    s = "01%d-%d-%d-0-0-0-0" % (dt.year, dt.month, dt.day)
+    return "|0|" + s + "||[[[[]],[],[]]," + '[{},[]],"' + s + '"]'
 
 def norm_date(raw):
-
     if not raw: return ""
-
-    for fmt in ("%m/%d/%Y","%Y-%m-%d","%m-%d-%Y"):
-
+    for fmt in ("%m/%d/%Y", "%Y-%m-%d"):
         try: return datetime.strptime(str(raw).strip()[:10], fmt).strftime("%Y-%m-%d")
-
         except: pass
-
     return str(raw).strip()[:10]
 
+def get_vs(soup):
+    out = {}
+    for fld in ["__VIEWSTATE","__EVENTVALIDATION","__VIEWSTATEGENERATOR"]:
+        el = soup.find("input", {"name": fld})
+        out[fld] = el.get("value","") if el else ""
+    return out
 
-
-def cat_from_doc_type(doc_type):
-
-    dt = doc_type.upper()
-
-    if "LIS PENDENS" in dt:          return ("LP",      "Lis Pendens")
-
-    if "TAX DEED" in dt:             return ("TAXDEED", "Tax Deed")
-
-    if "ABSTRACT" in dt or "JUDGMENT" in dt: return ("JUD","Abstract of Judgment")
-
-    if "MECHANIC" in dt:             return ("LNMECH",  "Mechanic Lien")
-
-    if "FEDERAL" in dt:              return ("LNFED",   "Federal Tax Lien")
-
-    if "STATE TAX" in dt:            return ("LNSTATE", "State Tax Lien")
-
-    if "HOA" in dt:                  return ("LNHOA",   "HOA Lien")
-
-    if "FORECLOSURE" in dt:          return ("NOFC",    "Notice of Foreclosure")
-
-    if "IRS" in dt:                  return ("LNIRS",   "IRS Lien")
-
-    if "PROBATE" in dt:              return ("PRO",     "Probate")
-
-    if "DIVORCE" in dt:              return ("DIV",     "Divorce")
-
-    if "LIEN" in dt:                 return ("LN",      "Lien")
-
-    return ("LN", doc_type)
-
-
-
-def should_keep(doc_type):
-
-    dt = doc_type.upper()
-
-    return any(k in dt for k in KEEP_DOC_TYPES)
-
-
-
-def compute_score(r):
-
-    s, flags = 0, []
-
-    cat = r.get("cat","")
-
-    if cat == "TAXDEED":              flags.append("Tax Deed"); s += 50
-
-    elif cat in ("LNIRS","LNFED"):   flags.append("IRS/Fed Lien"); s += 45
-
-    elif cat == "JUD":               flags.append("Judgment Lien"); s += 35
-
-    elif cat in ("LNHOA","LNMECH"):  flags.append("HOA/Mech Lien"); s += 30
-
-    elif cat == "PRO":               flags.append("Probate"); s += 25
-
-    elif cat in ("LP","NOFC"):       flags.append("Lis Pendens"); s += 20
-
-    elif cat in ("LN","LNSTATE"):    flags.append("Lien"); s += 20
-
-    elif cat == "DIV":               flags.append("Divorce"); s += 15
-
-    else:                            flags.append("Distress signal"); s += 10
-
-    filed_str = r.get("filed","")
-
-    if filed_str:
-
-        try:
-
-            days_ago = (datetime.now() - datetime.strptime(filed_str[:10], "%Y-%m-%d")).days
-
-            if days_ago <= 7:    flags.append("New this week"); s += 10
-
-            elif days_ago <= 30: flags.append("Filed this month"); s += 5
-
-        except: pass
-
-    owner = (r.get("owner") or "").upper()
-
-    if any(k in owner for k in ["LLC","INC","CORP","TRUST","BANK","HOLDINGS"]):
-
-        flags.append("LLC/Corp owner"); s += 10
-
-    return min(s, 100), flags
-
-
-
-async def scrape_ector(start_dt, end_dt):
-
+def parse_results(html):
     records = []
-
-    start_str = start_dt.strftime("%m/%d/%Y")
-
-    end_str   = end_dt.strftime("%m/%d/%Y")
-
-
-
-    async with async_playwright() as p:
-
-        browser = await p.chromium.launch(headless=True, args=["--no-sandbox","--disable-dev-shm-usage"])
-
-        context = await browser.new_context(
-
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122.0.0.0 Safari/537.36",
-
-            viewport={"width": 1280, "height": 900}
-
-        )
-
-        page = await context.new_page()
-
-
-
-        # Accept disclaimer once
-
-        try:
-
-            await page.goto(BASE_URL + "/user/disclaimer", wait_until="domcontentloaded", timeout=30000)
-
-            await page.wait_for_timeout(2000)
-
-            await page.evaluate("(() => { const b = document.querySelector('button'); if(b){ b.removeAttribute('disabled'); b.click(); } })()")
-
-            await page.wait_for_timeout(2000)
-        except Exception as e:
-            log.warning("Fort Bend: disclaimer error: %s", e)
-
-
-
-        # Single search by date range only - no doc type filter
-
-        for page_num in range(1, MAX_PAGES + 1):
-
-            log.info("Fort Bend: page %d of %d (%s to %s)", page_num, MAX_PAGES, start_str, end_str)
-
-            try:
-
-                await page.goto(f"{BASE_URL}/search/DOCSEARCH144S1", wait_until="domcontentloaded", timeout=30000)
-
-                await page.wait_for_timeout(2000)
-
-
-
-                # Fill date range
-
-                await page.fill("input[name='field_RecordingDateID_DOT_StartDate']", start_str)
-
-                await page.fill("input[name='field_RecordingDateID_DOT_EndDate']", end_str)
-
-                await page.wait_for_timeout(500)
-
-
-
-                # Click search
-
-                search_link = await page.query_selector("a[href*='searchResults']")
-
-                if search_link:
-
-                    await search_link.evaluate("el => el.click()")
-
-                    await page.wait_for_timeout(3000)
-
-
-
-                # Parse results - Tyler iDS countytx card layout
-
-                from bs4 import BeautifulSoup as _BS
-
-                import re as _re
-
-                soup = _BS(await page.content(), "lxml")
-
-                items = soup.find_all("li", attrs={"data-documentid": True})
-
-                log.info("Fort Bend: %d raw items", len(items))
-
-                KEEP_TYPES = ["LIS PENDENS","ABSTRACT OF JUDGMENT","FEDERAL TAX LIEN",
-
-                    "MECHANIC","STATE TAX LIEN","JUDGMENT","LIEN",
-
-                    "NOTICE OF TRUSTEE SALE","PROBATE","DIVORCE","HOSPITAL LIEN","FORECLOSURE"]
-
-                page_records = 0
-
-                for item in items:
-
-                    h1 = item.find("h1")
-
-                    if not h1: continue
-
-                    h1_text = h1.get_text(" ", strip=True)
-
-                    h1_clean = " ".join(h1_text.split())
-
-                    if not any(k in h1_clean.upper() for k in KEEP_TYPES): continue
-
-                    parts = re.split(r"[\u2022\xa0\s]{2,}", h1_clean)
-
-                    parts = [p.strip() for p in parts if p.strip()]
-
-                    doc_num = parts[0] if parts else ""
-
-                    doc_type = parts[-1] if len(parts) > 1 else h1_clean
-
-                    full_text = item.get_text(" ", strip=True)
-
-                    date_m = _re.search(r"(\d{2}/\d{2}/\d{4})", full_text)
-
-                    filed = norm_date(date_m.group(1)) if date_m else ""
-
-                    grantor_m = _re.search(r"Grantor\s+([A-Z][^\n]+?)(?:\s{2,}|Grantee|Recording)", full_text)
-
-                    owner = grantor_m.group(1).strip() if grantor_m else ""
-
-                    cat, cat_label = cat_from_doc_type(doc_type)
-
-                    records.append({
-
-                        "doc_num": doc_num, "doc_type": doc_type,
-
-                        "cat": cat, "cat_label": cat_label,
-
-                        "filed": filed, "owner": owner, "grantee": "",
-
-                        "amount": None, "legal": "",
-
-                        "clerk_url": f"{BASE_URL}/search/DOCSEARCH144S1",
-
-                        "county": "Fort Bend",
-
-                        "prop_address":"","prop_city":"","prop_state":"TX","prop_zip":"",
-
-                        "mail_address":"","mail_city":"","mail_state":"TX","mail_zip":"",
-
-                        "score": 0, "flags": [],
-
-                    })
-
-                    page_records += 1
-
-
-
-                log.info("Fort Bend: page %d found %d distress records", page_num, page_records)
-
-                if page_records == 0: break
-
-
-
-                # Try next page
-
-                next_btn = await page.query_selector("a:has-text('Next'), button:has-text('Next'), .next-page")
-
-                if not next_btn: break
-
-                await next_btn.evaluate("el => el.click()")
-
-                await page.wait_for_timeout(2000)
-
-
-
-            except Exception as e:
-
-                log.warning("Fort Bend: page %d error: %s", page_num, e)
-
-                break
-
-
-
-        await browser.close()
-
+    soup = BeautifulSoup(html, "lxml")
+    for t in soup.find_all("table"):
+        rows = t.find_all("tr")
+        found = False
+        for row in rows:
+            cells = row.find_all("td")
+            if len(cells) < 5: continue
+            texts = [c.get_text(" ", strip=True) for c in cells]
+            doc_num = ""
+            for txt in texts:
+                if re.match(r'^\d{10}$', txt.strip()):
+                    doc_num = txt.strip()
+                    break
+            if not doc_num: continue
+            found = True
+            filed = ""
+            for txt in texts:
+                if re.match(r'\d{2}/\d{2}/\d{4}', txt.strip()):
+                    filed = norm_date(txt.strip())
+                    break
+            doc_type = ""
+            for txt in texts:
+                if any(k in txt.upper() for k in ["LIS PEND","JUDGMENT","TAX LIEN","MECHANIC","PROBATE","FORECLOSURE"]):
+                    doc_type = txt.strip()
+                    break
+            name_col = " ".join(texts)
+            r_match = re.search(r'\[R\]\s*([^\[]+)', name_col)
+            e_match = re.search(r'\[E\]\s*([^\[]+)', name_col)
+            grantor = re.sub(r'\s+', ' ', r_match.group(1)).strip() if r_match else ""
+            grantee = re.sub(r'\s+', ' ', e_match.group(1)).strip() if e_match else ""
+            owner = grantee if grantee else grantor
+            if not owner or len(owner) < 3: continue
+            dt = doc_type.upper()
+            if "LIS" in dt: cat,lbl = "LP","Lis Pendens"
+            elif "FED" in dt: cat,lbl = "LNFED","Federal Tax Lien"
+            elif "ST TAX" in dt or "STATE" in dt: cat,lbl = "LNSTATE","State Tax Lien"
+            elif "MECH" in dt: cat,lbl = "LNMECH","Mechanic Lien"
+            elif "PROB" in dt: cat,lbl = "PRO","Probate"
+            elif "JUDG" in dt: cat,lbl = "JUD","Abstract of Judgment"
+            else: cat,lbl = "LN","Lien"
+            records.append({
+                "doc_num": doc_num, "doc_type": doc_type,
+                "cat": cat, "cat_label": lbl,
+                "filed": filed, "owner": owner, "grantee": grantee,
+                "amount": None, "legal": "", "county": COUNTY,
+                "clerk_url": RESULTS_URL,
+                "prop_address": "", "prop_city": "", "prop_state": "TX", "prop_zip": "",
+                "score": 0, "flags": [],
+            })
+        if found: break
     return records
 
-
-
-async def main_async():
-
-    now    = datetime.now()
-
+def scrape():
+    now = datetime.now()
     cutoff = now - timedelta(days=LOOKBACK_DAYS)
+    log.info("[Fort Bend] Scraping %s to %s", cutoff.strftime("%m/%d/%Y"), now.strftime("%m/%d/%Y"))
 
-    log.info("=== Fort Bend County Scraper (Tyler iDS) (optimized) ===")
+    all_records = []
+    with httpx.Client(headers=HEADERS, follow_redirects=True, timeout=30) as client:
+        # Disclaimer
+        r = client.get(BASE)
+        soup = BeautifulSoup(r.text, "lxml")
+        vs = get_vs(soup)
+        r = client.post(BASE, data={**vs, "__EVENTTARGET": "ctl00$cph1$lnkAccept", "__EVENTARGUMENT": ""},
+                       headers={**HEADERS, "Referer": BASE, "Content-Type": "application/x-www-form-urlencoded"})
+        log.info("[Fort Bend] Disclaimer: %s", r.status_code)
 
-    log.info("Date range: %s to %s", cutoff.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d"))
+        # Search page
+        r = client.get(SEARCH_URL)
+        soup = BeautifulSoup(r.text, "lxml")
+        vs = get_vs(soup)
 
+        def get_cs(name):
+            el = soup.find("input", {"name": name})
+            return el.get("value","") if el else ""
 
+        # Search all doc types at once
+        form = {
+            **vs,
+            "__EVENTTARGET": "ctl00$cphNoMargin$SearchButtons2$btnSearch",
+            "__EVENTARGUMENT": "0",
+            "Header1_WebHDS_clientState": "",
+            "Header1_WebDataMenu1_clientState": get_cs("Header1_WebDataMenu1_clientState"),
+            "ctl00$cphNoMargin$f$NameSearchMode": "rdoCombine",
+            "cphNoMargin_f_txtParty_clientState": get_cs("cphNoMargin_f_txtParty_clientState"),
+            "cphNoMargin_f_txtParty": "",
+            "ctl00$cphNoMargin$f$drbPartyType": "",
+            "cphNoMargin_f_txtGrantor_clientState": get_cs("cphNoMargin_f_txtGrantor_clientState"),
+            "cphNoMargin_f_txtGrantee_clientState": get_cs("cphNoMargin_f_txtGrantee_clientState"),
+            "cphNoMargin_f_ddcDateFiledFrom_clientState": make_cs(cutoff),
+            "cphNoMargin_f_ddcDateFiledTo_clientState": make_cs(now),
+            "cphNoMargin_f_txtInstrumentNoFrom_clientState": get_cs("cphNoMargin_f_txtInstrumentNoFrom_clientState"),
+            "cphNoMargin_f_txtInstrumentNoFrom": "",
+            "cphNoMargin_f_txtInstrumentNoTo_clientState": get_cs("cphNoMargin_f_txtInstrumentNoTo_clientState"),
+            "cphNoMargin_f_txtInstrumentNoTo": "",
+            "cphNoMargin_f_txtBook_clientState": get_cs("cphNoMargin_f_txtBook_clientState"),
+            "cphNoMargin_f_txtBook": "",
+            "cphNoMargin_f_txtPage_clientState": get_cs("cphNoMargin_f_txtPage_clientState"),
+            "cphNoMargin_f_txtPage": "",
+            "cphNoMargin_f_DataTextEdit1_clientState": get_cs("cphNoMargin_f_DataTextEdit1_clientState"),
+            "cphNoMargin_f_DataTextEdit1": "",
+            "cphNoMargin_f_txtLDStreetAddress_clientState": get_cs("cphNoMargin_f_txtLDStreetAddress_clientState"),
+            "cphNoMargin_f_txtLDStreetAddress": "",
+            "cphNoMargin_f_txtLDLot_clientState": get_cs("cphNoMargin_f_txtLDLot_clientState"),
+            "cphNoMargin_f_txtLDLot": "",
+            "cphNoMargin_f_txtLDBook_clientState": get_cs("cphNoMargin_f_txtLDBook_clientState"),
+            "cphNoMargin_f_txtLDBook": "",
+            "cphNoMargin_f_txtLDSection_clientState": get_cs("cphNoMargin_f_txtLDSection_clientState"),
+            "cphNoMargin_f_txtLDSection": "",
+            "cphNoMargin_f_txtLDVolume_clientState": get_cs("cphNoMargin_f_txtLDVolume_clientState"),
+            "cphNoMargin_f_txtLDVolume": "",
+            "cphNoMargin_f_txtLDFreeForm_clientState": get_cs("cphNoMargin_f_txtLDFreeForm_clientState"),
+            "cphNoMargin_f_txtLDFreeForm": "",
+            "cphNoMargin_dlgPopup_clientState": get_cs("cphNoMargin_dlgPopup_clientState"),
+            "dlgOptionWindow_clientState": get_cs("dlgOptionWindow_clientState"),
+            "RangeContextMenu_clientState": get_cs("RangeContextMenu_clientState"),
+            "LoginForm1_txtLogonName_clientState": get_cs("LoginForm1_txtLogonName_clientState"),
+            "LoginForm1_txtLogonName": "",
+            "LoginForm1_txtPassword_clientState": get_cs("LoginForm1_txtPassword_clientState"),
+            "LoginForm1_txtPassword": "",
+            "ctl00$LoginForm1$logonType": "rdoPubCpu",
+            "_ig_def_dp_cal_clientState": get_cs("_ig_def_dp_cal_clientState"),
+            "ctl00$cphNoMargin$SearchButtons2$btnSearch__10": ":0",
+        }
 
-    all_records = await scrape_ector(cutoff, now)
+        # Get checkboxes for our doc types
+        for inp in soup.find_all("input", {"type": "checkbox"}):
+            val = inp.get("value","").upper()
+            name = inp.get("name","")
+            if any(k in val for k in ["LIS","ABSTRACT","FEDERAL","MECHANIC","STATE TAX","PROBATE","JUDGMENT"]):
+                form[name] = inp.get("value","")
 
+        r = client.post(SEARCH_URL, data=form,
+                       headers={**HEADERS, "Referer": SEARCH_URL, "Content-Type": "application/x-www-form-urlencoded"})
+        log.info("[Fort Bend] Search: %s url=%s", r.status_code, r.url)
 
+        for page_num in range(1, MAX_PAGES + 1):
+            recs = parse_results(r.text)
+            log.info("[Fort Bend] Page %d: %d records", page_num, len(recs))
+            all_records.extend(recs)
+            if not recs: break
+            soup2 = BeautifulSoup(r.text, "lxml")
+            next_link = soup2.find("a", string=re.compile(r"Next", re.I))
+            if not next_link: break
+            vs2 = get_vs(soup2)
+            href = next_link.get("href","")
+            target = re.search(r"'([^']+)'", href)
+            r = client.post(RESULTS_URL, data={**vs2,
+                "__EVENTTARGET": target.group(1) if target else "",
+                "__EVENTARGUMENT": ""},
+                headers={**HEADERS, "Referer": RESULTS_URL, "Content-Type": "application/x-www-form-urlencoded"})
 
     seen, deduped = set(), []
+    for rec in all_records:
+        k = rec.get("doc_num","")
+        if k and k not in seen:
+            seen.add(k); deduped.append(rec)
 
-    for r in all_records:
-
-        key = f"{r['doc_num']}|{r['filed']}"
-
-        if key not in seen:
-
-            seen.add(key)
-
-            r["score"], r["flags"] = compute_score(r)
-
-            deduped.append(r)
-
-
-
-    deduped.sort(key=lambda x: x.get("score",0), reverse=True)
-
-    log.info("Total unique: %d", len(deduped))
-
-
-
-    payload = {
-
-        "fetched_at": now.isoformat(),
-
-        "source": "Ector County Clerk (Tyler iDS)",
-
-        "date_range": {"start": cutoff.strftime("%Y-%m-%d"), "end": now.strftime("%Y-%m-%d")},
-
-        "total": len(deduped),
-
-        "counties": ["Ector"],
-
-        "records": deduped,
-
-    }
-
-
-
-    os.makedirs("dashboard", exist_ok=True)
-
-    os.makedirs("data", exist_ok=True)
-
-    with open("dashboard/fortbend_records.json","w") as f: json.dump(payload,f,indent=2,default=str)
-
-    with open("data/fortbend_records.json","w") as f: json.dump(payload,f,indent=2,default=str)
-
-    log.info("Saved -> dashboard/fortbend_records.json")
-
-
-
-    hot  = sum(1 for r in deduped if r.get("score",0) >= 70)
-
-    warm = sum(1 for r in deduped if 40 <= r.get("score",0) < 70)
-
-    log.info("=== Summary: Total=%d Hot=%d Warm=%d ===", len(deduped), hot, warm)
-
-
-
-def main():
-
-    asyncio.run(main_async())
-
-
+    log.info("[Fort Bend] %d unique records", len(deduped))
+    out_dir = os.path.join(os.path.dirname(__file__), "..", "dashboard")
+    os.makedirs(out_dir, exist_ok=True)
+    with open(os.path.join(out_dir, "fort_bend_records.json"), "w") as f:
+        json.dump({
+            "fetched_at": datetime.now().isoformat(),
+            "source": "Fort Bend County Clerk",
+            "date_range": {"start": cutoff.strftime("%Y-%m-%d"), "end": now.strftime("%Y-%m-%d")},
+            "total": len(deduped), "counties": [COUNTY], "records": deduped
+        }, f, indent=2, default=str)
+    log.info("[Fort Bend] Done")
+    return deduped
 
 if __name__ == "__main__":
-
-    main()
-
+    scrape()
