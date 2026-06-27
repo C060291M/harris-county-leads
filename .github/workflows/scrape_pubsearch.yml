@@ -163,6 +163,7 @@ jobs:
       - run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "14"
           COUNTIES: "Montgomery"
       - run: python scraper/push_to_db.py
         env:
@@ -1114,6 +1115,7 @@ jobs:
       - run: python scraper/multi_county_pubsearch.py
         env:
           LOOKBACK_DAYS: "3"
+          LOOKBACK_DAYS: "14"
           COUNTIES: "Montgomery"
       - run: python scraper/push_to_db.py
         env:
@@ -1139,3 +1141,4 @@ jobs:
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
