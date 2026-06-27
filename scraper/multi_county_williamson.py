@@ -1,426 +1,155 @@
-﻿"""
-
-StackIQ â€” Rockwall County Scraper (Tyler iDS)
-
-Portal: rockwalltx-web.tylerhost.net
-
-Optimized: single date-range search, client-side doc type filtering
-
-"""
-
-import json, logging, re, os, asyncio
-
+﻿import os, re, json, logging, asyncio
 from datetime import datetime, timedelta
-
+from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
-
-
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S")
-
-log = logging.getLogger("ector")
-
-
+log = logging.getLogger("williamson")
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "3"))
+MAX_PAGES     = int(os.getenv("MAX_PAGES", "10"))
+COUNTY        = "williamson"
+BASE          = "https://williamsoncountytx-web.tylerhost.net/williamsonweb"
 
-MAX_PAGES     = int(os.getenv("MAX_PAGES", "3"))
+PROXY_USER = os.getenv("DECODO_USER", "")
+PROXY_PASS = os.getenv("DECODO_PASS", "")
 
-BASE_URL      = "https://williamsoncountytx-web.tylerhost.net/web"
+KEEP_TYPES = {"LIS PENDENS","ABSTRACT OF JUDGMENT","FEDERAL TAX LIEN",
+              "MECHANICS LIEN","STATE TAX LIEN","JUDGMENT","PROBATE",
+              "DEED IN LIEU OF FORECLOSURE","STATE OF TEXAS ABSTRACT OF JUDGMENT"}
 
-
-
-KEEP_DOC_TYPES = {
-
-    "LIS PENDENS","TAX DEED","ABSTRACT OF JUDGMENT","MECHANIC LIEN",
-
-    "FEDERAL TAX LIEN","STATE TAX LIEN","HOA LIEN","NOTICE OF FORECLOSURE",
-
-    "IRS TAX LIEN","PROBATE","DIVORCE","FORECLOSURE","JUDGMENT","LIEN"
-
-}
-
-
+def cat_from_type(dt):
+    d = dt.upper()
+    if "LIS PEN" in d:    return ("LP",      "Lis Pendens")
+    if "FEDERAL" in d:    return ("LNFED",   "Federal Tax Lien")
+    if "STATE TAX" in d:  return ("LNSTATE", "State Tax Lien")
+    if "MECHANIC" in d:   return ("LNMECH",  "Mechanic Lien")
+    if "PROBATE" in d:    return ("PRO",     "Probate")
+    if "DEED IN LIEU" in d: return ("NOFC",  "Deed in Lieu")
+    if "JUDGMENT" in d or "ABSTRACT" in d: return ("JUD", "Abstract of Judgment")
+    return ("LN", dt)
 
 def norm_date(raw):
-
     if not raw: return ""
-
-    for fmt in ("%m/%d/%Y","%Y-%m-%d","%m-%d-%Y"):
-
-        try: return datetime.strptime(str(raw).strip()[:10], fmt).strftime("%Y-%m-%d")
-
+    m = re.search(r"(\d{1,2})/(\d{1,2})/(\d{4})", str(raw))
+    if m:
+        try: return datetime(int(m.group(3)),int(m.group(1)),int(m.group(2))).strftime("%Y-%m-%d")
         except: pass
-
     return str(raw).strip()[:10]
 
+def parse_item(item):
+    text = item.get_text(" ", strip=True)
+    # Instrument number
+    doc_num_m = re.search(r'\b(\d{10})\b', text)
+    doc_num = doc_num_m.group(1) if doc_num_m else item.get("data-documentid","")
+    # Date
+    date_m = re.search(r'(\d{2}/\d{2}/\d{4})', text)
+    filed = norm_date(date_m.group(1)) if date_m else ""
+    # Doc type - look for known types
+    doc_type = ""
+    for t in sorted(KEEP_TYPES, key=len, reverse=True):
+        if t in text.upper():
+            doc_type = t
+            break
+    if not doc_type:
+        # Try to get from heading element
+        h = item.find(["h1","h2","h3","strong","b"])
+        if h: doc_type = h.get_text(strip=True).upper()
+    # Names
+    grantor_m = re.search(r'Grantor\s+([A-Z][^\n•]+?)(?:\s{2,}|Grantee|Book)', text)
+    grantee_m = re.search(r'Grantee(?:\s*\(\d+\))?\s+([A-Z][^\n•]+?)(?:\s{2,}|Legal|Book)', text)
+    grantor = re.sub(r'\s+',' ', grantor_m.group(1)).strip() if grantor_m else ""
+    grantee = re.sub(r'\s+',' ', grantee_m.group(1)).strip() if grantee_m else ""
+    owner = grantee if grantee else grantor
+    return doc_num, filed, doc_type, owner, grantor, grantee
 
+async def scrape():
+    now    = datetime.now()
+    cutoff = now - timedelta(days=LOOKBACK_DAYS)
+    start  = f"{cutoff.month}/{cutoff.day}/{cutoff.year}"
+    end    = f"{now.month}/{now.day}/{now.year}"
+    log.info("[Williamson] Scraping %s to %s", start, end)
 
-def cat_from_doc_type(doc_type):
+    launch_args = {"headless": True, "args": ["--no-sandbox","--disable-dev-shm-usage"]}
+    if PROXY_USER:
+        launch_args["proxy"] = {"server":"http://state.decodo.com:14001","username":PROXY_USER,"password":PROXY_PASS}
+    WAIT = 3000 if PROXY_USER else 2000
 
-    dt = doc_type.upper()
-
-    if "LIS PENDENS" in dt:          return ("LP",      "Lis Pendens")
-
-    if "TAX DEED" in dt:             return ("TAXDEED", "Tax Deed")
-
-    if "ABSTRACT" in dt or "JUDGMENT" in dt: return ("JUD","Abstract of Judgment")
-
-    if "MECHANIC" in dt:             return ("LNMECH",  "Mechanic Lien")
-
-    if "FEDERAL" in dt:              return ("LNFED",   "Federal Tax Lien")
-
-    if "STATE TAX" in dt:            return ("LNSTATE", "State Tax Lien")
-
-    if "HOA" in dt:                  return ("LNHOA",   "HOA Lien")
-
-    if "FORECLOSURE" in dt:          return ("NOFC",    "Notice of Foreclosure")
-
-    if "IRS" in dt:                  return ("LNIRS",   "IRS Lien")
-
-    if "PROBATE" in dt:              return ("PRO",     "Probate")
-
-    if "DIVORCE" in dt:              return ("DIV",     "Divorce")
-
-    if "LIEN" in dt:                 return ("LN",      "Lien")
-
-    return ("LN", doc_type)
-
-
-
-def should_keep(doc_type):
-
-    dt = doc_type.upper()
-
-    return any(k in dt for k in KEEP_DOC_TYPES)
-
-
-
-def compute_score(r):
-
-    s, flags = 0, []
-
-    cat = r.get("cat","")
-
-    if cat == "TAXDEED":              flags.append("Tax Deed"); s += 50
-
-    elif cat in ("LNIRS","LNFED"):   flags.append("IRS/Fed Lien"); s += 45
-
-    elif cat == "JUD":               flags.append("Judgment Lien"); s += 35
-
-    elif cat in ("LNHOA","LNMECH"):  flags.append("HOA/Mech Lien"); s += 30
-
-    elif cat == "PRO":               flags.append("Probate"); s += 25
-
-    elif cat in ("LP","NOFC"):       flags.append("Lis Pendens"); s += 20
-
-    elif cat in ("LN","LNSTATE"):    flags.append("Lien"); s += 20
-
-    elif cat == "DIV":               flags.append("Divorce"); s += 15
-
-    else:                            flags.append("Distress signal"); s += 10
-
-    filed_str = r.get("filed","")
-
-    if filed_str:
-
-        try:
-
-            days_ago = (datetime.now() - datetime.strptime(filed_str[:10], "%Y-%m-%d")).days
-
-            if days_ago <= 7:    flags.append("New this week"); s += 10
-
-            elif days_ago <= 30: flags.append("Filed this month"); s += 5
-
-        except: pass
-
-    owner = (r.get("owner") or "").upper()
-
-    if any(k in owner for k in ["LLC","INC","CORP","TRUST","BANK","HOLDINGS"]):
-
-        flags.append("LLC/Corp owner"); s += 10
-
-    return min(s, 100), flags
-
-
-
-async def scrape_ector(start_dt, end_dt):
-
-    records = []
-
-    start_str = start_dt.strftime("%m/%d/%Y")
-
-    end_str   = end_dt.strftime("%m/%d/%Y")
-
-
-
+    all_records = []
     async with async_playwright() as p:
+        browser = await p.chromium.launch(**launch_args)
+        page = await browser.new_page(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126.0.0.0 Safari/537.36")
 
-        browser = await p.chromium.launch(headless=True, args=["--no-sandbox","--disable-dev-shm-usage"])
+        # Disclaimer
+        await page.goto(f"{BASE}/user/disclaimer", timeout=60000)
+        await page.wait_for_timeout(WAIT)
+        await page.evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent.includes('Accept')).click()")
+        await page.wait_for_timeout(WAIT)
 
-        context = await browser.new_context(
+        # Home -> Official Public Records
+        await page.evaluate("Array.from(document.querySelectorAll('a')).find(l=>l.textContent.includes('Official Public Record')).click()")
+        await page.wait_for_load_state("networkidle")
+        await page.wait_for_timeout(WAIT)
+        log.info("[Williamson] Search page: %s", page.url)
 
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/122.0.0.0 Safari/537.36",
-
-            viewport={"width": 1280, "height": 900}
-
-        )
-
-        page = await context.new_page()
-
-
-
-        # Accept disclaimer once
-
-        try:
-
-            await page.goto(BASE_URL + "/user/disclaimer", wait_until="domcontentloaded", timeout=60000)
-
-            await page.wait_for_timeout(2000)
-
-            await page.evaluate("(() => { const b = document.querySelector('button'); if(b){ b.removeAttribute('disabled'); b.click(); } })()")
-
-            await page.wait_for_timeout(2000)
-        except Exception as e:
-            log.warning("Williamson: disclaimer error: %s", e)
-
-
-
-        # Single search by date range only - no doc type filter
+        # Fill dates and search (no doc type filter - filter client side)
+        await page.fill("input[name='field_RecDateID_DOT_StartDate']", start)
+        await page.fill("input[name='field_RecDateID_DOT_EndDate']", end)
+        await page.wait_for_timeout(500)
+        await page.evaluate("Array.from(document.querySelectorAll('button,a')).find(b=>b.textContent.trim()==='Search').click()")
+        await page.wait_for_load_state("networkidle")
+        await page.wait_for_timeout(WAIT)
 
         for page_num in range(1, MAX_PAGES + 1):
-
-            log.info("Williamson: page %d of %d (%s to %s)", page_num, MAX_PAGES, start_str, end_str)
-
-            try:
-
-                await page.goto(f"{BASE_URL}/search/DOCSEARCH144S1", wait_until="domcontentloaded", timeout=60000)
-
-                await page.wait_for_timeout(2000)
-
-
-
-                # Wait for form to load then fill date range
-                await page.wait_for_selector("input[name='field_RecordingDateID_DOT_StartDate']", timeout=60000)
-                await page.wait_for_timeout(2000)
-                # Fill date range
-
-                await page.fill("input[name='field_RecordingDateID_DOT_StartDate']", start_str)
-
-                await page.fill("input[name='field_RecordingDateID_DOT_EndDate']", end_str)
-
-                await page.wait_for_timeout(500)
-
-
-
-                # Click search
-
-                search_link = await page.query_selector("a[href*='searchResults']")
-
-                if search_link:
-
-                    await search_link.evaluate("el => el.click()")
-
-                    await page.wait_for_timeout(3000)
-
-
-
-                # Parse results - Tyler iDS countytx card layout
-
-                from bs4 import BeautifulSoup as _BS
-
-                import re as _re
-
-                soup = _BS(await page.content(), "lxml")
-
-                items = soup.find_all("li", attrs={"data-documentid": True})
-
-                log.info("Williamson: %d raw items", len(items))
-
-                KEEP_TYPES = ["LIS PENDENS","ABSTRACT OF JUDGMENT","FEDERAL TAX LIEN",
-
-                    "MECHANIC","STATE TAX LIEN","JUDGMENT","LIEN",
-
-                    "NOTICE OF TRUSTEE SALE","PROBATE","DIVORCE","HOSPITAL LIEN","FORECLOSURE"]
-
-                page_records = 0
-
-                for item in items:
-
-                    h1 = item.find("h1")
-
-                    if not h1: continue
-
-                    h1_text = h1.get_text(" ", strip=True)
-
-                    h1_clean = " ".join(h1_text.split())
-
-                    if not any(k in h1_clean.upper() for k in KEEP_TYPES): continue
-
-                    parts = re.split(r"[\u2022\xa0\s]{2,}", h1_clean)
-
-                    parts = [p.strip() for p in parts if p.strip()]
-
-                    doc_num = parts[0] if parts else ""
-
-                    doc_type = parts[-1] if len(parts) > 1 else h1_clean
-
-                    full_text = item.get_text(" ", strip=True)
-
-                    date_m = _re.search(r"(\d{2}/\d{2}/\d{4})", full_text)
-
-                    filed = norm_date(date_m.group(1)) if date_m else ""
-
-                    grantor_m = _re.search(r"Grantor\s+([A-Z][^\n]+?)(?:\s{2,}|Grantee|Recording)", full_text)
-
-                    owner = grantor_m.group(1).strip() if grantor_m else ""
-
-                    cat, cat_label = cat_from_doc_type(doc_type)
-
-                    records.append({
-
-                        "doc_num": doc_num, "doc_type": doc_type,
-
-                        "cat": cat, "cat_label": cat_label,
-
-                        "filed": filed, "owner": owner, "grantee": "",
-
-                        "amount": None, "legal": "",
-
-                        "clerk_url": f"{BASE_URL}/search/DOCSEARCH144S1",
-
-                        "county": "Williamson",
-
-                        "prop_address":"","prop_city":"","prop_state":"TX","prop_zip":"",
-
-                        "mail_address":"","mail_city":"","mail_state":"TX","mail_zip":"",
-
-                        "score": 0, "flags": [],
-
-                    })
-
-                    page_records += 1
-
-
-
-                log.info("Williamson: page %d found %d distress records", page_num, page_records)
-
-                if page_records == 0: break
-
-
-
-                # Try next page
-
-                next_btn = await page.query_selector("a:has-text('Next'), button:has-text('Next'), .next-page")
-
-                if not next_btn: break
-
-                await next_btn.evaluate("el => el.click()")
-
-                await page.wait_for_timeout(2000)
-
-
-
-            except Exception as e:
-
-                log.warning("Williamson: page %d error: %s", page_num, e)
-
-                break
-
-
+            content = await page.content()
+            soup = BeautifulSoup(content, "lxml")
+            items = soup.find_all("li", attrs={"data-documentid": True})
+            log.info("[Williamson] Page %d: %d items (url=%s)", page_num, len(items), page.url)
+
+            for item in items:
+                doc_num, filed, doc_type, owner, grantor, grantee = parse_item(item)
+                if not doc_type or doc_type.upper() not in KEEP_TYPES: continue
+                if not owner or len(owner) < 3: continue
+                cat, cat_label = cat_from_type(doc_type)
+                all_records.append({
+                    "doc_num": doc_num, "doc_type": doc_type,
+                    "cat": cat, "cat_label": cat_label,
+                    "filed": filed, "owner": owner,
+                    "grantee": grantee, "amount": None, "legal": "",
+                    "county": COUNTY, "clerk_url": f"{BASE}/search/DOCSEARCH149S1",
+                    "prop_address": "", "prop_city": "", "prop_state": "TX", "prop_zip": "",
+                    "score": 0, "flags": [],
+                })
+
+            if not items: break
+            # Next page
+            next_btn = await page.query_selector("a:has-text('Next'), button:has-text('Next')")
+            if not next_btn: break
+            await next_btn.evaluate("el => el.click()")
+            await page.wait_for_load_state("networkidle")
+            await page.wait_for_timeout(WAIT)
 
         await browser.close()
 
-    return records
-
-
-
-async def main_async():
-
-    now    = datetime.now()
-
-    cutoff = now - timedelta(days=LOOKBACK_DAYS)
-
-    log.info("=== Williamson County Scraper (Tyler iDS) (optimized) ===")
-
-    log.info("Date range: %s to %s", cutoff.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d"))
-
-
-
-    all_records = await scrape_ector(cutoff, now)
-
-
-
+    # Deduplicate
     seen, deduped = set(), []
-
     for r in all_records:
+        k = r.get("doc_num","")
+        if k and k not in seen:
+            seen.add(k); deduped.append(r)
 
-        key = f"{r['doc_num']}|{r['filed']}"
-
-        if key not in seen:
-
-            seen.add(key)
-
-            r["score"], r["flags"] = compute_score(r)
-
-            deduped.append(r)
-
-
-
-    deduped.sort(key=lambda x: x.get("score",0), reverse=True)
-
-    log.info("Total unique: %d", len(deduped))
-
-
-
-    payload = {
-
-        "fetched_at": now.isoformat(),
-
-        "source": "Ector County Clerk (Tyler iDS)",
-
-        "date_range": {"start": cutoff.strftime("%Y-%m-%d"), "end": now.strftime("%Y-%m-%d")},
-
-        "total": len(deduped),
-
-        "counties": ["Ector"],
-
-        "records": deduped,
-
-    }
-
-
-
-    os.makedirs("dashboard", exist_ok=True)
-
-    os.makedirs("data", exist_ok=True)
-
-    with open("dashboard/williamson_records.json","w") as f: json.dump(payload,f,indent=2,default=str)
-
-    with open("data/williamson_records.json","w") as f: json.dump(payload,f,indent=2,default=str)
-
-    log.info("Saved -> dashboard/williamson_records.json")
-
-
-
-    hot  = sum(1 for r in deduped if r.get("score",0) >= 70)
-
-    warm = sum(1 for r in deduped if 40 <= r.get("score",0) < 70)
-
-    log.info("=== Summary: Total=%d Hot=%d Warm=%d ===", len(deduped), hot, warm)
-
-
-
-def main():
-
-    asyncio.run(main_async())
-
-
+    log.info("[Williamson] %d unique distress records", len(deduped))
+    out_dir = os.path.join(os.path.dirname(__file__), "..", "dashboard")
+    os.makedirs(out_dir, exist_ok=True)
+    with open(os.path.join(out_dir, "williamson_records.json"), "w") as f:
+        json.dump({
+            "fetched_at": datetime.now().isoformat(),
+            "source": "Williamson County Clerk",
+            "date_range": {"start": cutoff.strftime("%Y-%m-%d"), "end": now.strftime("%Y-%m-%d")},
+            "total": len(deduped), "counties": [COUNTY], "records": deduped
+        }, f, indent=2, default=str)
+    log.info("[Williamson] Done")
+    return deduped
 
 if __name__ == "__main__":
-
-    main()
-
-
-
-
+    asyncio.run(scrape())
