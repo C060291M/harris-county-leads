@@ -132,7 +132,7 @@ ON CONFLICT (doc_num) DO UPDATE SET
     cat=COALESCE(EXCLUDED.cat,lead_records.cat),
     cat_label=COALESCE(EXCLUDED.cat_label,lead_records.cat_label),
     scraped_at=EXCLUDED.scraped_at
-WHERE lead_records.scraped_at < NOW() - INTERVAL '2 hours' OR lead_records.scraped_at IS NULL
+
 """.format(cols=",".join(COLS))
 
 def process_file(path, conn):
@@ -182,4 +182,5 @@ def main():
 
 if __name__=="__main__":
     main()
+
 
