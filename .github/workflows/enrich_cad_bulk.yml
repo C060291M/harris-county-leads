@@ -1,0 +1,27 @@
+﻿name: Enrich CAD Bulk
+on:
+  workflow_dispatch:
+    inputs:
+      counties:
+        description: 'Comma-separated counties (blank = all)'
+        required: false
+        default: ''
+  schedule:
+    - cron: '0 */8 * * *'
+jobs:
+  enrich:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install asyncpg
+      - name: Run CAD enrichment
+        run: python scraper/enrich_cad_bulk.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          COUNTIES: ${{ github.event.inputs.counties }}
