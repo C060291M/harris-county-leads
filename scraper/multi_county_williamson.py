@@ -174,7 +174,7 @@ async def scrape_ector(start_dt, end_dt):
 
         try:
 
-            await page.goto(BASE_URL + "/user/disclaimer", wait_until="domcontentloaded", timeout=30000)
+            await page.goto(BASE_URL + "/user/disclaimer", wait_until="domcontentloaded", timeout=60000)
 
             await page.wait_for_timeout(2000)
 
@@ -194,12 +194,15 @@ async def scrape_ector(start_dt, end_dt):
 
             try:
 
-                await page.goto(f"{BASE_URL}/search/DOCSEARCH144S1", wait_until="domcontentloaded", timeout=30000)
+                await page.goto(f"{BASE_URL}/search/DOCSEARCH144S1", wait_until="domcontentloaded", timeout=60000)
 
                 await page.wait_for_timeout(2000)
 
 
 
+                # Wait for form to load then fill date range
+                await page.wait_for_selector("input[name='field_RecordingDateID_DOT_StartDate']", timeout=60000)
+                await page.wait_for_timeout(2000)
                 # Fill date range
 
                 await page.fill("input[name='field_RecordingDateID_DOT_StartDate']", start_str)
@@ -417,6 +420,7 @@ def main():
 if __name__ == "__main__":
 
     main()
+
 
 
 
