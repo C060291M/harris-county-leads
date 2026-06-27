@@ -263,10 +263,14 @@ async def scrape_county(page, county, base_url, dept, start_dt, end_dt):
                     _m = re.match(r"^([0-9]{1,2})/([0-9]{1,2})/([0-9]{4})$", _t.strip())
                     if _m and 1<=int(_m.group(1))<=12 and 1<=int(_m.group(2))<=31 and int(_m.group(3))>=2000:
                         filed = norm_date(_t.strip()); break
-                _names = [t for t in non_empty if not re.match(r"^[0-9]{10,12}$",t) and not re.match(r"^[0-9]{2}/[0-9]{2}/[0-9]{4}$",t) and len(t)>2 and not re.match(r"^[A-Z]{2,4}/",t) and not re.match(r"^[0-9]+$",t)]
-                grantor = _names[0] if len(_names)>0 else ""
-                grantee = _names[1] if len(_names)>1 else ""
-                doc_t   = _names[2] if len(_names)>2 else doc_type
+                KNOWN_DOC_TYPES = ["LIS PENDENS","ABSTRACT OF JUDGMENT","FEDERAL TAX LIEN","MECHANIC LIEN","TAX DEED","PROBATE","DEED OF TRUST","WARRANTY DEED","JUDGMENT","STATE TAX LIEN","DIVORCE","DEED"]
+                _names = [t for t in non_empty if not re.match(r"^[0-9]{10,12}$",t) and not re.match(r"^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$",t) and len(t)>2 and not re.match(r"^[A-Z]{2,4}/",t) and not re.match(r"^[0-9]+$",t)]
+                # Separate doc type cells from name cells
+                _doc_cells = [t for t in _names if t.upper() in KNOWN_DOC_TYPES or any(k in t.upper() for k in ["PENDENS","JUDGMENT","LIEN","DEED","PROBATE","DIVORCE"])]
+                _name_cells = [t for t in _names if t not in _doc_cells]
+                grantor = _name_cells[0] if len(_name_cells)>0 else ""
+                grantee = _name_cells[1] if len(_name_cells)>1 else ""
+                doc_t   = _doc_cells[0] if _doc_cells else doc_type
                 legal   = non_empty[6] if len(non_empty)>6 else ""
 
                 
