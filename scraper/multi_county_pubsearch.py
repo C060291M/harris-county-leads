@@ -248,7 +248,6 @@ async def scrape_county(page, county, base_url, dept, start_dt, end_dt):
                 # Table format: [empty,empty,empty, GRANTOR, GRANTEE, DOC TYPE, DATE, INST#, BOOK, LEGAL]
 
                 non_empty = [t for t in texts if t.strip()]
-                if county == "Montgomery" and len(non_empty) >= 3: import logging; logging.getLogger("pubsearch").info("Montgomery raw row: %s", non_empty)
 
                 if len(non_empty) < 4: continue
 
@@ -256,23 +255,16 @@ async def scrape_county(page, county, base_url, dept, start_dt, end_dt):
 
                 
 
-                # Find instrument number (YYYYNNNNNN format)
-                doc_num = next((t for t in non_empty if re.match(r"^[0-9]{10,12}$", t.strip())), "")
-                # Find filed date (MM/DD/YYYY only)
-                filed = ""
-                for _t in non_empty:
-                    _m = re.match(r"^([0-9]{1,2})/([0-9]{1,2})/([0-9]{4})$", _t.strip())
-                    if _m and 1<=int(_m.group(1))<=12 and 1<=int(_m.group(2))<=31 and int(_m.group(3))>=2000:
-                        filed = norm_date(_t.strip()); break
-                KNOWN_DOC_TYPES = ["LIS PENDENS","ABSTRACT OF JUDGMENT","FEDERAL TAX LIEN","MECHANIC LIEN","TAX DEED","PROBATE","DEED OF TRUST","WARRANTY DEED","JUDGMENT","STATE TAX LIEN","DIVORCE","DEED"]
-                _names = [t for t in non_empty if not re.match(r"^[0-9]{10,12}$",t) and not re.match(r"^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$",t) and len(t)>2 and not re.match(r"^[A-Z]{2,4}/",t) and not re.match(r"^[0-9]+$",t)]
-                # Separate doc type cells from name cells
-                _doc_cells = [t for t in _names if t.upper() in KNOWN_DOC_TYPES or any(k in t.upper() for k in ["PENDENS","JUDGMENT","LIEN","DEED","PROBATE","DIVORCE"])]
-                _name_cells = [t for t in _names if t not in _doc_cells]
-                grantor = _name_cells[0] if len(_name_cells)>0 else ""
-                grantee = _name_cells[1] if len(_name_cells)>1 else ""
-                doc_t   = _doc_cells[0] if _doc_cells else doc_type
-                legal   = non_empty[6] if len(non_empty)>6 else ""
+                # Montgomery/PublicSearch column order: [doc_num, dept, doc_type, legal_num, grantor, grantee, N/A, date, ...]
+                doc_num  = texts[0].strip() if len(texts) > 0 else ""
+                dept_col = texts[1].strip() if len(texts) > 1 else ""
+                doc_t    = texts[2].strip() if len(texts) > 2 else doc_type
+                legal    = texts[3].strip() if len(texts) > 3 else ""
+                grantor  = texts[4].strip() if len(texts) > 4 else ""
+                grantee  = texts[5].strip() if len(texts) > 5 else ""
+                filed    = norm_date(texts[7].strip()) if len(texts) > 7 else ""
+                # Skip if no instrument number or looks like header
+                if not re.match(r"^[0-9]{8,12}$", doc_num): continue
 
                 
 
