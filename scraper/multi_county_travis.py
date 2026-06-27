@@ -134,6 +134,8 @@ def scrape():
             cb_map[parent] = name
 
         log.info("[Travis] Found %d checkboxes", len(cb_map))
+        for lbl, nm in list(cb_map.items())[:20]:
+            log.info("[Travis] CB: %r -> %s", lbl[:50], nm)
 
         # Step 5 — search each doc type
         for doc_type in DOC_TYPES:
@@ -164,6 +166,8 @@ def scrape():
                 soup = BeautifulSoup(r.text, "lxml")
                 recs = parse_results(soup)
                 log.info("[Travis] %s page %d: %d records", doc_type, page_num, len(recs))
+            if page_num == 1 and not recs:
+                log.info("[Travis] Sample HTML: %s", str(soup)[:500])
                 all_records.extend(recs)
                 if not recs: break
                 next_btn = soup.find("a", string=re.compile(r"Next", re.I))
@@ -199,3 +203,5 @@ def scrape():
 
 if __name__ == "__main__":
     scrape()
+
+
