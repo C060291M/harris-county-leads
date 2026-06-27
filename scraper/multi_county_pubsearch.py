@@ -260,10 +260,10 @@ async def scrape_county(page, county, base_url, dept, start_dt, end_dt):
                 # Find filed date (MM/DD/YYYY only)
                 filed = ""
                 for _t in non_empty:
-                    _m = re.match(r"^([0-9]{2})/([0-9]{2})/([0-9]{4})$", _t.strip())
+                    _m = re.match(r"^([0-9]{1,2})/([0-9]{1,2})/([0-9]{4})$", _t.strip())
                     if _m and 1<=int(_m.group(1))<=12 and 1<=int(_m.group(2))<=31 and int(_m.group(3))>=2000:
                         filed = norm_date(_t.strip()); break
-                _names = [t for t in non_empty if not re.match(r"^[0-9]{10,12}$",t) and not re.match(r"^[0-9]{2}/[0-9]{2}/[0-9]{4}$",t) and len(t)>2]
+                _names = [t for t in non_empty if not re.match(r"^[0-9]{10,12}$",t) and not re.match(r"^[0-9]{2}/[0-9]{2}/[0-9]{4}$",t) and len(t)>2 and not re.match(r"^[A-Z]{2,4}/",t) and not re.match(r"^[0-9]+$",t)]
                 grantor = _names[0] if len(_names)>0 else ""
                 grantee = _names[1] if len(_names)>1 else ""
                 doc_t   = _names[2] if len(_names)>2 else doc_type
