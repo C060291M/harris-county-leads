@@ -106,8 +106,7 @@ def scrape():
     log.info("[Travis] Scraping %s to %s", start_str, end_str)
     all_records = []
 
-    proxies = {"http://": PROXY_URL, "https://": PROXY_URL} if PROXY_URL else {}
-    with httpx.Client(headers=HEADERS, follow_redirects=True, timeout=30, proxies=proxies) as client:
+    with httpx.Client(headers=HEADERS, follow_redirects=True, timeout=30, proxy=PROXY_URL) as client:
         # Step 1 — hit homepage to get session cookie
         r = client.get(BASE)
         log.info("[Travis] Homepage: %s", r.status_code)
@@ -213,5 +212,6 @@ def scrape():
 
 if __name__ == "__main__":
     scrape()
+
 
 
