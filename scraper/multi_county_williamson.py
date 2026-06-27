@@ -1,6 +1,6 @@
-"""
+﻿"""
 
-StackIQ — Rockwall County Scraper (Tyler iDS)
+StackIQ â€” Rockwall County Scraper (Tyler iDS)
 
 Portal: rockwalltx-web.tylerhost.net
 
@@ -417,4 +417,5 @@ def main():
 if __name__ == "__main__":
 
     main()
+
 
