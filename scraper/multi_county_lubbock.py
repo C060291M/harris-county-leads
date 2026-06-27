@@ -41,7 +41,6 @@ SEARCH_URL = f"{BASE_URL}/eagleweb/docSearch.jsp"
 # Use full text names as shown in the dropdown
 
 DISTRESS_DOC_TYPES = [
-    "LIS PENDENS",
     "ABSTRACT OF JUDGMENT",
 
     "FEDERAL TAX LIEN",
