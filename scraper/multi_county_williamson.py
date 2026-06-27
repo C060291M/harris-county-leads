@@ -8,8 +8,8 @@ log = logging.getLogger("williamson")
 
 LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "3"))
 MAX_PAGES     = int(os.getenv("MAX_PAGES", "10"))
-COUNTY        = "williamson"
-BASE          = "https://williamsoncountytx-web.tylerhost.net/williamsonweb"
+COUNTY        = os.getenv("COUNTY", "williamson").lower()
+BASE          = os.getenv("BASE_URL", "https://williamsoncountytx-web.tylerhost.net/williamsonweb")
 
 PROXY_USER = os.getenv("DECODO_USER", "")
 PROXY_PASS = os.getenv("DECODO_PASS", "")

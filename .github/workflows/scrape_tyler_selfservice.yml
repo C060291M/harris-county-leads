@@ -1,0 +1,78 @@
+﻿name: StackIQ Tyler SelfService Scrapers
+on:
+  schedule:
+    - cron: "0 11 * * *"
+  workflow_dispatch: {}
+jobs:
+  waller:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - run: python scraper/multi_county_williamson.py
+        env:
+          COUNTY: "Waller"
+          BASE_URL: "https://wallercountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+          MAX_PAGES: "10"
+          DECODO_USER: ${{ secrets.DECODO_USER }}
+          DECODO_PASS: ${{ secrets.DECODO_PASS }}
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  brazoria:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - run: python scraper/multi_county_williamson.py
+        env:
+          COUNTY: "Brazoria"
+          BASE_URL: "https://brazoriacountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+          MAX_PAGES: "10"
+          DECODO_USER: ${{ secrets.DECODO_USER }}
+          DECODO_PASS: ${{ secrets.DECODO_PASS }}
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  kimble:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+      - run: pip install -r scraper/requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - run: python scraper/multi_county_williamson.py
+        env:
+          COUNTY: "Kimble"
+          BASE_URL: "https://kimblecountytx-web.tylerhost.net/web"
+          LOOKBACK_DAYS: "3"
+          MAX_PAGES: "10"
+          DECODO_USER: ${{ secrets.DECODO_USER }}
+          DECODO_PASS: ${{ secrets.DECODO_PASS }}
+      - run: python scraper/push_to_db.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
