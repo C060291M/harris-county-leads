@@ -261,6 +261,7 @@ async def scrape_county(page, county, base_url, dept, start_dt, end_dt):
                 grantor  = non_empty[4].strip() if len(non_empty) > 4 else ""
                 grantee  = non_empty[5].strip() if len(non_empty) > 5 else ""
                 filed    = norm_date(non_empty[7].strip()) if len(non_empty) > 7 else ""
+                legal    = non_empty[13].strip() if len(non_empty) > 13 else ""
                 if not doc_num or len(doc_num) < 5: continue
 
                 
