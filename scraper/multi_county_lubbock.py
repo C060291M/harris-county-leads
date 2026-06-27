@@ -234,7 +234,13 @@ async def scrape_lubbock(start_dt, end_dt):
 
                     if select:
 
-                        await select.select_option(label=doc_type)
+                        opts = await select.evaluate("el => Array.from(el.options).map(o => o.text.trim())")
+                        import logging; logging.getLogger("lubbock").info("Lubbock options: %s", opts[:15])
+                        matched = next((o for o in opts if o.upper().replace(" ","") == doc_type.upper().replace(" ","")), None)
+                        if not matched:
+                            logging.getLogger("lubbock").warning("No match for %s in %s", doc_type, opts)
+                            continue
+                        await select.select_option(label=matched)
 
                         await page.wait_for_timeout(300)
 
