@@ -255,17 +255,19 @@ async def scrape_county(page, county, base_url, dept, start_dt, end_dt):
 
                 
 
-                grantor  = non_empty[0]
-
-                grantee  = non_empty[1] if len(non_empty) > 1 else ""
-
-                doc_t    = non_empty[2] if len(non_empty) > 2 else doc_type
-
-                filed    = norm_date(non_empty[3]) if len(non_empty) > 3 else ""
-
-                doc_num  = non_empty[4] if len(non_empty) > 4 else ""
-
-                legal    = non_empty[6] if len(non_empty) > 6 else ""
+                # Find instrument number (YYYYNNNNNN format)
+                doc_num = next((t for t in non_empty if re.match(r"^[0-9]{10,12}$", t.strip())), "")
+                # Find filed date (MM/DD/YYYY only)
+                filed = ""
+                for _t in non_empty:
+                    _m = re.match(r"^([0-9]{2})/([0-9]{2})/([0-9]{4})$", _t.strip())
+                    if _m and 1<=int(_m.group(1))<=12 and 1<=int(_m.group(2))<=31 and int(_m.group(3))>=2000:
+                        filed = norm_date(_t.strip()); break
+                _names = [t for t in non_empty if not re.match(r"^[0-9]{10,12}$",t) and not re.match(r"^[0-9]{2}/[0-9]{2}/[0-9]{4}$",t) and len(t)>2]
+                grantor = _names[0] if len(_names)>0 else ""
+                grantee = _names[1] if len(_names)>1 else ""
+                doc_t   = _names[2] if len(_names)>2 else doc_type
+                legal   = non_empty[6] if len(non_empty)>6 else ""
 
                 
 
@@ -425,21 +427,23 @@ async def main():
 
     os.makedirs("data", exist_ok=True)
 
-    with open("dashboard/pubsearch_records.json", "w") as f:
-
+    county_slug = "_".join(sorted(set(r["county"].lower().replace(" ","") for r in deduped))) if deduped else "pubsearch"
+    fname = f"pubsearch_{county_slug}_records.json"
+    with open(f"dashboard/{fname}", "w") as f:
         json.dump(payload, f, indent=2, default=str)
-
-    with open("data/pubsearch_records.json", "w") as f:
-
-        json.dump(payload, f, indent=2, default=str)
-
-    log.info("Saved -> dashboard/pubsearch_records.json")
+    try:
+        os.makedirs("data", exist_ok=True)
+        with open(f"data/{fname}", "w") as f:
+            json.dump(payload, f, indent=2, default=str)
+    except: pass
+    log.info(f"Saved -> dashboard/{fname}")
 
 
 
 if __name__ == "__main__":
 
     asyncio.run(main())
+
 
 
 
