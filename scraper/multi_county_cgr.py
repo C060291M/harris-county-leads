@@ -143,6 +143,10 @@ def main():
                 }
                 r = client.post(SEARCH_POST_URL, data=form_data)
                 log.info("%s %s response: %d bytes, url=%s", COUNTY, doc_type, len(r.text), r.url)
+                if doc_type == "Lis Pendens Notice":
+                    from bs4 import BeautifulSoup as _BS
+                    _txt = _BS(r.text,"lxml").get_text(" ",strip=True)
+                    log.info("Content sample: %s", _txt[500:900].replace("\n"," "))
                 if len(r.text) < 2000:
                     log.info("Short response: %s", r.text[:300].replace("\n"," "))
                 page_num = 1
