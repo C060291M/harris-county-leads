@@ -142,6 +142,11 @@ def main():
                     "docTypeTotal":str(len(avail_vals)),"__search_select":search_val,
                 }
                 r = client.post(SEARCH_POST_URL, data=form_data)
+                # Debug first response
+                if doc_type == "Lis Pendens Notice":
+                    import re as _re2
+                    text_sample = BeautifulSoup(r.text,"lxml").get_text()[:500]
+                    log.info("Response sample: %s", text_sample.replace("\n"," "))
                 page_num = 1
                 while page_num <= 10:
                     recs = parse_results(r.text, COUNTY, doc_type)
