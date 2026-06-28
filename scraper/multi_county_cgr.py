@@ -136,10 +136,15 @@ async def scrape_county(page, county, start_dt, end_dt):
                 await page.wait_for_timeout(500)
 
             # Select doc type
-            opt = await page.query_selector(f"option:has-text('{doc_type}')")
-            if not opt:
+            # Use evaluate to find option (avoids apostrophe CSS issues)
+            selected = await page.evaluate(f"""() => {{
+                const opts = Array.from(document.querySelectorAll('option'));
+                const opt = opts.find(o => o.textContent.trim() === "{doc_type}");
+                if (opt) {{ opt.selected = true; return true; }}
+                return false;
+            }}""")
+            if not selected:
                 continue
-            await opt.evaluate("el => el.selected = true")
 
             # Fill dates
             await page.fill("input[name='RecDateIDStart']", start_str)
