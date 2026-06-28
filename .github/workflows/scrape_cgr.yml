@@ -16,7 +16,6 @@ jobs:
           cache: pip
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
-      - run: python -m playwright install --with-deps chromium
       - run: python scraper/multi_county_cgr.py
         env:
           LOOKBACK_DAYS: "3"
@@ -25,5 +24,6 @@ jobs:
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
 
 
