@@ -89,15 +89,17 @@ async def login(page):
     log.info("Login: %s", page.url)
     # Navigate to county list to establish session
     await page.goto(LIST_URL, timeout=30000)
-    await page.wait_for_timeout(2000)
+    await page.wait_for_timeout(3000)
     links = await page.query_selector_all("a")
     log.info("County list links: %d", len(links))
+    return page
 
 async def select_county(page, county):
-    # Navigate to county list, re-login if needed
-    await page.goto(LIST_URL, timeout=30000)
-    await page.wait_for_timeout(2000)
-    # If redirected to login page, re-authenticate
+    # Ensure we are on county list page
+    if LIST_URL not in page.url:
+        await page.goto(LIST_URL, timeout=30000)
+        await page.wait_for_timeout(3000)
+    # Re-login if needed
     if "login" in page.url.lower():
         log.info("Re-logging in for %s", county)
         await page.fill("input[name='userId']", CGR_USER)
@@ -105,7 +107,7 @@ async def select_county(page, county):
         await page.click("input[type='submit']")
         await page.wait_for_timeout(3000)
         await page.goto(LIST_URL, timeout=30000)
-        await page.wait_for_timeout(2000)
+        await page.wait_for_timeout(3000)
     # Get all links on page and find match
     all_links = await page.query_selector_all("a")
     link = None
