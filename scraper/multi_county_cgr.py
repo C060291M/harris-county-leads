@@ -94,18 +94,15 @@ async def login(page):
     log.info("County list links: %d", len(links))
 
 async def select_county(page, county):
-    # Re-navigate to list (refreshes session)
+    # Always re-login before each county to avoid session expiry
+    await page.goto(f"{BASE}/texas/web/login.jsp", timeout=30000)
+    await page.wait_for_timeout(1000)
+    await page.fill("input[name='userId']", CGR_USER)
+    await page.fill("input[name='password']", CGR_PASS)
+    await page.click("input[type='submit']")
+    await page.wait_for_timeout(2000)
     await page.goto(LIST_URL, timeout=30000)
     await page.wait_for_timeout(2000)
-    # If redirected to login, re-login
-    if "login" in page.url.lower():
-        log.info("Session expired, re-logging in")
-        await page.fill("input[name='userId']", CGR_USER)
-        await page.fill("input[name='password']", CGR_PASS)
-        await page.click("input[type='submit']")
-        await page.wait_for_timeout(2000)
-        await page.goto(LIST_URL, timeout=30000)
-        await page.wait_for_timeout(2000)
     # Get all links on page and find match
     all_links = await page.query_selector_all("a")
     link = None
@@ -196,7 +193,7 @@ async def scrape_county(page, county, start_dt, end_dt):
                         "cat": cat, "cat_label": lbl,
                         "filed": filed, "owner": grantor, "grantee": grantee,
                         "amount": None, "legal": "",
-                        "county": county.lower().replace(" ","_"),
+                        "county": county.lower(),
                         "clerk_url": SEARCH_URL,
                         "prop_address": "", "prop_city": "", "prop_state": "TX", "prop_zip": "",
                         "score": 0, "flags": [],
