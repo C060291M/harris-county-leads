@@ -94,15 +94,18 @@ async def login(page):
     log.info("County list links: %d", len(links))
 
 async def select_county(page, county):
-    # Always re-login before each county to avoid session expiry
-    await page.goto(f"{BASE}/texas/web/login.jsp", timeout=30000)
-    await page.wait_for_timeout(1000)
-    await page.fill("input[name='userId']", CGR_USER)
-    await page.fill("input[name='password']", CGR_PASS)
-    await page.click("input[type='submit']")
-    await page.wait_for_timeout(2000)
+    # Navigate to county list, re-login if needed
     await page.goto(LIST_URL, timeout=30000)
     await page.wait_for_timeout(2000)
+    # If redirected to login page, re-authenticate
+    if "login" in page.url.lower():
+        log.info("Re-logging in for %s", county)
+        await page.fill("input[name='userId']", CGR_USER)
+        await page.fill("input[name='password']", CGR_PASS)
+        await page.click("input[type='submit']")
+        await page.wait_for_timeout(3000)
+        await page.goto(LIST_URL, timeout=30000)
+        await page.wait_for_timeout(2000)
     # Get all links on page and find match
     all_links = await page.query_selector_all("a")
     link = None
