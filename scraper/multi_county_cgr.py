@@ -94,8 +94,33 @@ def main():
                          data={"userId":CGR_USER,"password":CGR_PASS,"submit":"Login"})
         log.info("Login: %s %s", r1.status_code, r1.url)
         if "Maximum Allowed" in r1.text:
-            log.error("Too many sessions - login blocked")
-            return
+            log.warning("Too many sessions - attempting to end all sessions")
+            from bs4 import BeautifulSoup as _BS2
+            _soup = _BS2(r1.text, "lxml")
+            # Find session end links/forms
+            _ended = False
+            for _a in _soup.find_all("a", href=True):
+                if "end" in _a.get("href","").lower() or "logout" in _a.get("href","").lower():
+                    _href = _a["href"]
+                    if not _href.startswith("http"): _href = f"{BASE}/texas/web/{_href}"
+                    client.get(_href)
+                    _ended = True
+            # Try direct session end URL
+            _end_r = client.get(f"{BASE}/texas/web/endAllSessions.jsp")
+            log.info("End sessions: %s", _end_r.status_code)
+            # Retry login
+            import time; time.sleep(3)
+            r0b = client.get(f"{BASE}/texas/web/login.jsp")
+            _soup0b = _BS2(r0b.text,"lxml")
+            _form0b = _soup0b.find("form")
+            _action0b = _form0b.get("action","") if _form0b else ""
+            _jsid0b = _action0b.split("jsessionid=")[-1] if "jsessionid=" in _action0b else ""
+            r1 = client.post(f"{BASE}/texas/web/loginPOST.jsp;jsessionid={_jsid0b}",
+                             data={"userId":CGR_USER,"password":CGR_PASS,"submit":"Login"})
+            log.info("Retry login: %s %s", r1.status_code, r1.url)
+            if "Maximum Allowed" in r1.text:
+                log.error("Still too many sessions - giving up")
+                return
 
         # Select county
         r2 = client.get(f"{BASE}/texas/landrecords/counties.jsp;jsessionid={jsid}")
