@@ -1,4 +1,4 @@
-﻿"""
+"""
 StackIQ - Bulk CAD Enrichment via GitHub Actions
 Runs directly against Railway PostgreSQL - no Railway API calls
 """
