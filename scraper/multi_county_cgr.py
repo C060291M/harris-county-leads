@@ -85,8 +85,13 @@ async def login(page):
     await page.fill("input[name='userId']", CGR_USER)
     await page.fill("input[name='password']", CGR_PASS)
     await page.click("input[type='submit']")
-    await page.wait_for_timeout(2000)
+    await page.wait_for_timeout(3000)
     log.info("Login: %s", page.url)
+    # Navigate to county list to establish session
+    await page.goto(LIST_URL, timeout=30000)
+    await page.wait_for_timeout(2000)
+    links = await page.query_selector_all("a")
+    log.info("County list links: %d", len(links))
 
 async def select_county(page, county):
     await page.goto(LIST_URL, timeout=30000)
