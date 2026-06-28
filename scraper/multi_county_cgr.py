@@ -91,9 +91,10 @@ async def login(page):
 async def select_county(page, county):
     await page.goto(LIST_URL, timeout=30000)
     await page.wait_for_timeout(1000)
-    link = await page.query_selector(f"a:has-text('{county} County')")
-    if not link:
-        link = await page.query_selector(f"a:has-text('{county}')")
+    # Try various formats: "Waller County, TX", "Waller County", "Waller"
+    for pattern in [f"{county} County, TX", f"{county} County", county]:
+        link = await page.query_selector(f"a:has-text('{pattern}')")
+        if link: break
     if link:
         await link.click()
         await page.wait_for_timeout(2000)
