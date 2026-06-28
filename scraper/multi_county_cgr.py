@@ -91,10 +91,18 @@ async def login(page):
 async def select_county(page, county):
     await page.goto(LIST_URL, timeout=30000)
     await page.wait_for_timeout(1000)
-    # Try various formats: "Waller County, TX", "Waller County", "Waller"
-    for pattern in [f"{county} County, TX", f"{county} County", county]:
-        link = await page.query_selector(f"a:has-text('{pattern}')")
-        if link: break
+    # Get all links on page and find match
+    all_links = await page.query_selector_all("a")
+    link = None
+    for a in all_links:
+        txt = (await a.inner_text()).strip()
+        if county.lower() in txt.lower():
+            log.info("Found county link: %s", txt)
+            link = a
+            break
+    if not link:
+        all_texts = [(await a.inner_text()).strip() for a in all_links]
+        log.warning("Available links: %s", all_texts[:20])
     if link:
         await link.click()
         await page.wait_for_timeout(2000)
