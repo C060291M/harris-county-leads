@@ -95,10 +95,9 @@ async def login(page):
     return page
 
 async def select_county(page, county):
-    # Ensure we are on county list page
-    if LIST_URL not in page.url:
-        await page.goto(LIST_URL, timeout=30000)
-        await page.wait_for_timeout(3000)
+    # Always navigate to county list
+    await page.goto(LIST_URL, timeout=30000)
+    await page.wait_for_timeout(3000)
     # Re-login if needed
     if "login" in page.url.lower():
         log.info("Re-logging in for %s", county)
@@ -107,6 +106,11 @@ async def select_county(page, county):
         await page.click("input[type='submit']")
         await page.wait_for_timeout(3000)
         await page.goto(LIST_URL, timeout=30000)
+        await page.wait_for_timeout(5000)
+    # Wait for county links to actually appear
+    try:
+        await page.wait_for_selector("a[href*='county']", timeout=10000)
+    except:
         await page.wait_for_timeout(3000)
     # Get all links on page and find match
     all_links = await page.query_selector_all("a")
