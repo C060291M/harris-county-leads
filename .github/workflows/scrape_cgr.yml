@@ -16,7 +16,7 @@ jobs:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: scraper/requirements.txt
-      - run: pip install httpx beautifulsoup4 lxml
+      - run: pip install httpx beautifulsoup4 lxml psycopg2-binary
       - run: python scraper/multi_county_cgr.py
         env:
           COUNTY: "Waller"
@@ -39,7 +39,7 @@ jobs:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: scraper/requirements.txt
-      - run: pip install httpx beautifulsoup4 lxml
+      - run: pip install httpx beautifulsoup4 lxml psycopg2-binary
       - run: python scraper/multi_county_cgr.py
         env:
           COUNTY: "Carson"
@@ -62,7 +62,7 @@ jobs:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: scraper/requirements.txt
-      - run: pip install httpx beautifulsoup4 lxml
+      - run: pip install httpx beautifulsoup4 lxml psycopg2-binary
       - run: python scraper/multi_county_cgr.py
         env:
           COUNTY: "Jasper"
@@ -85,7 +85,7 @@ jobs:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: scraper/requirements.txt
-      - run: pip install httpx beautifulsoup4 lxml
+      - run: pip install httpx beautifulsoup4 lxml psycopg2-binary
       - run: python scraper/multi_county_cgr.py
         env:
           COUNTY: "Karnes"
@@ -108,7 +108,7 @@ jobs:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: scraper/requirements.txt
-      - run: pip install httpx beautifulsoup4 lxml
+      - run: pip install httpx beautifulsoup4 lxml psycopg2-binary
       - run: python scraper/multi_county_cgr.py
         env:
           COUNTY: "Pecos"
@@ -131,7 +131,7 @@ jobs:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: scraper/requirements.txt
-      - run: pip install httpx beautifulsoup4 lxml
+      - run: pip install httpx beautifulsoup4 lxml psycopg2-binary
       - run: python scraper/multi_county_cgr.py
         env:
           COUNTY: "Van Zandt"
@@ -154,7 +154,7 @@ jobs:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: scraper/requirements.txt
-      - run: pip install httpx beautifulsoup4 lxml
+      - run: pip install httpx beautifulsoup4 lxml psycopg2-binary
       - run: python scraper/multi_county_cgr.py
         env:
           COUNTY: "Caldwell"
@@ -177,7 +177,7 @@ jobs:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: scraper/requirements.txt
-      - run: pip install httpx beautifulsoup4 lxml
+      - run: pip install httpx beautifulsoup4 lxml psycopg2-binary
       - run: python scraper/multi_county_cgr.py
         env:
           COUNTY: "Calhoun"
@@ -200,7 +200,7 @@ jobs:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: scraper/requirements.txt
-      - run: pip install httpx beautifulsoup4 lxml
+      - run: pip install httpx beautifulsoup4 lxml psycopg2-binary
       - run: python scraper/multi_county_cgr.py
         env:
           COUNTY: "Hale"
@@ -223,7 +223,7 @@ jobs:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: scraper/requirements.txt
-      - run: pip install httpx beautifulsoup4 lxml
+      - run: pip install httpx beautifulsoup4 lxml psycopg2-binary
       - run: python scraper/multi_county_cgr.py
         env:
           COUNTY: "Morris"
@@ -246,7 +246,7 @@ jobs:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: scraper/requirements.txt
-      - run: pip install httpx beautifulsoup4 lxml
+      - run: pip install httpx beautifulsoup4 lxml psycopg2-binary
       - run: python scraper/multi_county_cgr.py
         env:
           COUNTY: "Ochiltree"
@@ -269,7 +269,7 @@ jobs:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: scraper/requirements.txt
-      - run: pip install httpx beautifulsoup4 lxml
+      - run: pip install httpx beautifulsoup4 lxml psycopg2-binary
       - run: python scraper/multi_county_cgr.py
         env:
           COUNTY: "Stephens"
@@ -292,7 +292,7 @@ jobs:
           python-version: "3.11"
           cache: pip
           cache-dependency-path: scraper/requirements.txt
-      - run: pip install httpx beautifulsoup4 lxml
+      - run: pip install httpx beautifulsoup4 lxml psycopg2-binary
       - run: python scraper/multi_county_cgr.py
         env:
           COUNTY: "Titus"
@@ -302,3 +302,4 @@ jobs:
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
