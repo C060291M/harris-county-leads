@@ -11,7 +11,7 @@ from playwright.async_api import async_playwright
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger("cgr")
 
-LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "3"))
+LOOKBACK_DAYS = int(os.getenv("LOOKBACK_DAYS", "30"))
 MAX_PAGES     = int(os.getenv("MAX_PAGES", "10"))
 CGR_USER      = os.getenv("CGR_USER", "")
 CGR_PASS      = os.getenv("CGR_PASS", "")
@@ -94,8 +94,18 @@ async def login(page):
     log.info("County list links: %d", len(links))
 
 async def select_county(page, county):
+    # Re-navigate to list (refreshes session)
     await page.goto(LIST_URL, timeout=30000)
-    await page.wait_for_timeout(1000)
+    await page.wait_for_timeout(2000)
+    # If redirected to login, re-login
+    if "login" in page.url.lower():
+        log.info("Session expired, re-logging in")
+        await page.fill("input[name='userId']", CGR_USER)
+        await page.fill("input[name='password']", CGR_PASS)
+        await page.click("input[type='submit']")
+        await page.wait_for_timeout(2000)
+        await page.goto(LIST_URL, timeout=30000)
+        await page.wait_for_timeout(2000)
     # Get all links on page and find match
     all_links = await page.query_selector_all("a")
     link = None
