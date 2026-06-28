@@ -134,11 +134,24 @@ def main():
     all_records = []
     
     with httpx.Client(headers=headers, follow_redirects=True, timeout=30) as client:
-        # Login
-        r = client.post(LOGIN_URL, data={"userId": CGR_USER, "password": CGR_PASS, "submit": "Login"})
+        # Get login page to capture jsessionid
+        r0 = client.get(f"{BASE}/texas/web/login.jsp")
+        soup0 = BeautifulSoup(r0.text, "lxml")
+        form = soup0.find("form")
+        action = form.get("action", "../web/loginPOST.jsp") if form else "../web/loginPOST.jsp"
+        # Build full login URL with jsessionid
+        if action.startswith(".."):
+            login_url = f"{BASE}/texas/web/loginPOST.jsp"
+            if "jsessionid=" in action:
+                jsid = action.split("jsessionid=")[-1]
+                login_url = f"{BASE}/texas/web/loginPOST.jsp;jsessionid={jsid}"
+        else:
+            login_url = BASE + action if not action.startswith("http") else action
+        log.info("Login URL: %s", login_url)
+        r = client.post(login_url, data={"userId": CGR_USER, "password": CGR_PASS, "submit": "Login"})
         log.info("Login: %s %s", r.status_code, r.url)
-        if "login" in str(r.url).lower() and "counties" not in str(r.url).lower():
-            log.error("Login failed")
+        if "login" in str(r.url).lower() and "POST" not in str(r.url):
+            log.error("Login failed - redirected back to login")
             return []
         
         # Get county list to find county links
