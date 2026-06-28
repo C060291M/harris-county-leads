@@ -165,6 +165,11 @@ def main():
         k = f"{rec['doc_num']}|{rec['county']}"
         if k not in seen: seen.add(k); deduped.append(rec)
     log.info("Total unique: %d", len(deduped))
+    # Logout to free session slot
+    try:
+        client.get(f"{BASE}/texas/web/logout.jsp", timeout=5)
+        log.info("Logged out")
+    except: pass
     slug = COUNTY.lower().replace(" ","_")
     os.makedirs("dashboard",exist_ok=True)
     with open(f"dashboard/cgr_{slug}_records.json","w") as f:
