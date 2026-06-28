@@ -7,6 +7,151 @@ import asyncpg, asyncio, os, logging, re
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("enrich_cad")
 
+import httpx
+from bs4 import BeautifulSoup
+
+BIS_COUNTIES = {
+    "bell":        "https://esearch.bellcad.org",
+    "anderson":    "https://esearch.andersoncad.org",
+    "walker":      "https://esearch.walkercad.org",
+    "grimes":      "https://esearch.grimescad.org",
+    "freestone":   "https://esearch.freestonecad.org",
+    "blanco":      "https://esearch.blancocad.com",
+    "burleson":    "https://esearch.burlesoncad.org",
+    "kendall":     "https://esearch.kendallcad.org",
+    "wood":        "https://esearch.woodcad.net",
+    "andrews":     "https://esearch.andrewscad.org",
+    "galveston":   "https://esearch.galvestoncad.org",
+    "kaufman":     "https://esearch.kaufman-cad.org",
+    "howard":      "https://esearch.howardcad.org",
+    "taylor":      "https://esearch.taylorcad.org",
+    "medina":      "https://esearch.medinacad.org",
+    "goliad":      "https://esearch.goliadcad.org",
+    "donley":      "https://esearch.donleycad.org",
+}
+
+CAD_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+}
+
+async def scrape_bis(base_url, owner_name):
+    import json as _json, urllib.parse as _up
+    async with httpx.AsyncClient(headers=CAD_HEADERS, timeout=20.0, follow_redirects=True, verify=False) as client:
+        try:
+            parts = owner_name.strip().upper().split()
+            last = next((w for w in parts if len(w) >= 4 and w.isalpha()), parts[0] if parts else owner_name)
+            # BIS v2
+            r = await client.get(f"{base_url}/search/requestSessionToken")
+            if r.status_code == 200:
+                try: session_token = r.json().get("searchSessionToken","")
+                except: session_token = ""
+                if session_token:
+                    keywords = f'OwnerName:"{last}"'
+                    r_home = await client.get(f"{base_url}/")
+                    soup = BeautifulSoup(r_home.text, "html.parser")
+                    meta = soup.find("meta", {"name":"search-token"})
+                    search_token = meta["content"] if meta else ""
+                    post = {"page":1,"pageSize":5,"isArb":False,"recaptchaToken":None,"searchToken":search_token}
+                    r2 = await client.post(
+                        f"{base_url}/search/SearchResults?keywords={_up.quote(keywords)}",
+                        content=_json.dumps(post),
+                        headers={"Content-Type":"application/json","X-Requested-With":"XMLHttpRequest"}
+                    )
+                    if r2.status_code == 200:
+                        results = r2.json().get("resultsList",[])
+                        if results:
+                            owner_words = set(w for w in owner_name.upper().split() if len(w)>=3)
+                            best, best_sim = None, 0.0
+                            for prop in results:
+                                cad_w = set(w for w in (prop.get("ownerName","") or "").upper().split() if len(w)>=3)
+                                sim = len(owner_words & cad_w) / len(owner_words | cad_w) if (owner_words | cad_w) else 0
+                                if sim > best_sim: best_sim, best = sim, prop
+                            if best and best_sim >= 0.1:
+                                addr = best.get("address","")
+                                result = {"address": addr} if addr else {}
+                                pid = best.get("propertyId")
+                                if pid:
+                                    r3 = await client.get(f"{base_url}/Property/View/{pid}?year=2026")
+                                    if r3.status_code == 200:
+                                        result.update(parse_bis_html(r3.text))
+                                if result.get("address"): return result
+            # BIS v1
+            r1 = await client.get(f"{base_url}/Search/Owner")
+            if r1.status_code != 200: return None
+            soup1 = BeautifulSoup(r1.text, "html.parser")
+            ti = soup1.find("input", {"name":"__RequestVerificationToken"})
+            if not ti: return None
+            token = ti["value"]
+            r2 = await client.post(f"{base_url}/Search/Owner",
+                data={"__RequestVerificationToken":token,"OwnerName":last,"SearchType":"Name"},
+                headers={"Referer":f"{base_url}/Search/Owner","Content-Type":"application/x-www-form-urlencoded"})
+            soup2 = BeautifulSoup(r2.text, "html.parser")
+            row = soup2.find("table")
+            if not row: return None
+            link = row.find("a", href=re.compile(r"/Property/"))
+            if not link: return None
+            r3 = await client.get(base_url + link["href"])
+            return parse_bis_html(r3.text)
+        except: return None
+
+def parse_bis_html(html):
+    soup = BeautifulSoup(html, "html.parser")
+    data = {}
+    def fv(labels):
+        for label in labels:
+            for cell in soup.find_all(["td","th","dt"]):
+                if label.lower() in cell.get_text(strip=True).lower():
+                    nxt = cell.find_next_sibling(["td","th","dd"])
+                    if nxt:
+                        val = nxt.get_text(strip=True)
+                        if val: return val
+        return None
+    addr = fv(["Property Address","Situs Address","Address"])
+    if addr: data["address"] = addr
+    sqft = fv(["Living Area","Heated Area","Building Area","Sq Ft"])
+    if sqft:
+        c = re.sub(r"[^\d]","",sqft.split()[0])
+        if c: data["sqft"] = int(c)
+    yr = fv(["Year Built","Yr Built"])
+    if yr:
+        m = re.search(r"(19|20)\d{2}", yr)
+        if m: data["year_built"] = m.group()
+    val = fv(["Appraised Value","Total Appraised","Market Value"])
+    if val:
+        c = re.sub(r"[^\d]","",val.split()[0])
+        if c: data["appraised_value"] = int(c)
+    return data
+
+async def enrich_bis_county(conn, county, base_url):
+    leads = await conn.fetch(f"""
+        SELECT id, owner FROM lead_records
+        WHERE county='{county}'
+        AND (prop_address IS NULL OR prop_address='')
+        AND owner IS NOT NULL AND owner != ''
+        LIMIT 500
+    """)
+    log.info(f"[{county}] BIS: {len(leads)} leads to enrich")
+    updated = 0
+    for lead in leads:
+        if not lead['owner']: continue
+        result = await scrape_bis(base_url, lead['owner'])
+        if not result: continue
+        await conn.execute("""
+            UPDATE lead_records SET
+                prop_address = COALESCE(NULLIF(prop_address,''), $1),
+                sqft = COALESCE(sqft, $2),
+                yr_built = COALESCE(yr_built, $3),
+                appraised_value = COALESCE(appraised_value, $4),
+                cad_enriched_at = NOW()
+            WHERE id = $5
+        """, result.get("address"), result.get("sqft"), result.get("year_built"), result.get("appraised_value"), lead['id'])
+        updated += 1
+        await asyncio.sleep(0.3)
+    log.info(f"[{county}] BIS updated {updated}/{len(leads)}")
+    return updated
+
+
 DB = os.environ["DATABASE_URL"]
 
 COUNTY_TABLES = {
@@ -105,6 +250,12 @@ async def main():
         n = await enrich_county(conn, county, *args)
         total += n
     await conn.close()
+    # BIS enrichment
+    bis_filter = [c.strip().lower() for c in county_filter] if county_filter != list(COUNTY_TABLES.keys()) else list(BIS_COUNTIES.keys())
+    for county, url in BIS_COUNTIES.items():
+        if county_filter and county not in [c.lower() for c in county_filter]: continue
+        n = await enrich_bis_county(conn, county, url)
+        total += n
     log.info(f"Total updated: {total}")
 
 asyncio.run(main())
