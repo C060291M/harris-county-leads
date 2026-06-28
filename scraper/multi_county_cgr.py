@@ -87,16 +87,33 @@ async def login(page):
     await page.click("input[type='submit']")
     await page.wait_for_timeout(3000)
     log.info("Login: %s", page.url)
-    # Navigate to county list to establish session
-    await page.goto(LIST_URL, timeout=30000)
-    await page.wait_for_timeout(3000)
+    # Extract jsessionid from URL if present
+    session_url = page.url
+    jsessionid = ""
+    if "jsessionid=" in session_url:
+        jsessionid = session_url.split("jsessionid=")[-1].split(";")[0].split("?")[0]
+        log.info("Session ID: %s", jsessionid[:8])
+    # Navigate to county list with jsessionid
+    list_url = LIST_URL + (f";jsessionid={jsessionid}" if jsessionid else "")
+    await page.goto(list_url, timeout=30000)
+    await page.wait_for_timeout(5000)
+    # Wait for table to render
+    try:
+        await page.wait_for_selector("table", timeout=8000)
+    except:
+        pass
     links = await page.query_selector_all("a")
-    log.info("County list links: %d", len(links))
+    log.info("County list links: %d at %s", len(links), page.url)
     return page
 
 async def select_county(page, county):
-    # Always navigate to county list
-    await page.goto(LIST_URL, timeout=30000)
+    # Navigate to county list - reuse jsessionid from current URL if available
+    cur_url = page.url
+    jsessionid = ""
+    if "jsessionid=" in cur_url:
+        jsessionid = cur_url.split("jsessionid=")[-1].split(";")[0].split("?")[0]
+    list_url = LIST_URL + (f";jsessionid={jsessionid}" if jsessionid else "")
+    await page.goto(list_url, timeout=30000)
     await page.wait_for_timeout(3000)
     # Re-login if needed
     if "login" in page.url.lower():
@@ -105,14 +122,16 @@ async def select_county(page, county):
         await page.fill("input[name='password']", CGR_PASS)
         await page.click("input[type='submit']")
         await page.wait_for_timeout(3000)
-        await page.goto(LIST_URL, timeout=30000)
+        jsessionid2 = ""
+        if "jsessionid=" in page.url:
+            jsessionid2 = page.url.split("jsessionid=")[-1].split(";")[0]
+        await page.goto(LIST_URL + (f";jsessionid={jsessionid2}" if jsessionid2 else ""), timeout=30000)
         await page.wait_for_timeout(5000)
-    # Wait for county table to render
+    # Wait for table
     try:
-        await page.wait_for_selector("table tr", timeout=10000)
-        await page.wait_for_timeout(1000)
+        await page.wait_for_selector("table", timeout=8000)
     except:
-        await page.wait_for_timeout(5000)
+        await page.wait_for_timeout(3000)
     n_links = len(await page.query_selector_all("a"))
     log.info("County list: %d links at %s", n_links, page.url)
     # Get all links on page and find match
