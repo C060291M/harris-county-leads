@@ -107,11 +107,14 @@ async def select_county(page, county):
         await page.wait_for_timeout(3000)
         await page.goto(LIST_URL, timeout=30000)
         await page.wait_for_timeout(5000)
-    # Wait for county links to actually appear
+    # Wait for county table to render
     try:
-        await page.wait_for_selector("a[href*='county']", timeout=10000)
+        await page.wait_for_selector("table tr", timeout=10000)
+        await page.wait_for_timeout(1000)
     except:
-        await page.wait_for_timeout(3000)
+        await page.wait_for_timeout(5000)
+    n_links = len(await page.query_selector_all("a"))
+    log.info("County list: %d links at %s", n_links, page.url)
     # Get all links on page and find match
     all_links = await page.query_selector_all("a")
     link = None
