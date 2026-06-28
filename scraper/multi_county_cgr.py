@@ -122,109 +122,123 @@ def parse_results_page(html, county, doc_type):
         records.append(rec)
     return records
 
-def main():
+import asyncio as _asyncio
+
+async def main_async():
     now = datetime.now()
     cutoff = now - timedelta(days=LOOKBACK_DAYS)
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Content-Type": "application/x-www-form-urlencoded",
-    }
-    
     all_records = []
-    
-    with httpx.Client(headers=headers, follow_redirects=True, timeout=30) as client:
-        # Get login page to capture jsessionid
+
+    # Step 1: Login with httpx to get session cookie
+    login_headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126.0.0.0 Safari/537.36"}
+    with httpx.Client(headers=login_headers, follow_redirects=True, timeout=30) as client:
         r0 = client.get(f"{BASE}/texas/web/login.jsp")
         soup0 = BeautifulSoup(r0.text, "lxml")
         form = soup0.find("form")
-        action = form.get("action", "../web/loginPOST.jsp") if form else "../web/loginPOST.jsp"
-        # Build full login URL with jsessionid
-        if action.startswith(".."):
-            login_url = f"{BASE}/texas/web/loginPOST.jsp"
-            if "jsessionid=" in action:
-                jsid = action.split("jsessionid=")[-1]
-                login_url = f"{BASE}/texas/web/loginPOST.jsp;jsessionid={jsid}"
-        else:
-            login_url = BASE + action if not action.startswith("http") else action
-        log.info("Login URL: %s", login_url)
-        r = client.post(login_url, data={"userId": CGR_USER, "password": CGR_PASS, "submit": "Login"})
-        log.info("Login: %s %s", r.status_code, r.url)
-        if "login" in str(r.url).lower() and "POST" not in str(r.url):
-            log.error("Login failed - redirected back to login")
+        action = form.get("action", "") if form else ""
+        jsid = action.split("jsessionid=")[-1] if "jsessionid=" in action else ""
+        login_url = f"{BASE}/texas/web/loginPOST.jsp" + (f";jsessionid={jsid}" if jsid else "")
+        r1 = client.post(login_url, data={"userId": CGR_USER, "password": CGR_PASS, "submit": "Login"})
+        log.info("Login: %s %s", r1.status_code, r1.url)
+        cookies = dict(client.cookies)
+        if jsid:
+            cookies["JSESSIONID"] = jsid
+        log.info("Cookies: %s", list(cookies.keys()))
+
+    # Step 2: Use Playwright with injected cookies
+    from playwright.async_api import async_playwright
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True, args=["--no-sandbox","--disable-dev-shm-usage"])
+        context = await browser.new_context(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126.0.0.0 Safari/537.36")
+        # Inject session cookies
+        pw_cookies = [{"name": k, "value": v, "domain": "tx.countygovernmentrecords.com", "path": "/"} for k,v in cookies.items()]
+        await context.add_cookies(pw_cookies)
+        page = await context.new_page()
+
+        # Verify session works
+        await page.goto(LIST_URL, timeout=30000)
+        await page.wait_for_timeout(3000)
+        try:
+            await page.wait_for_selector("table", timeout=8000)
+        except:
+            pass
+        links = await page.query_selector_all("a")
+        log.info("County list: %d links at %s", len(links), page.url)
+
+        if len(links) == 0:
+            log.error("Session not working - no links found")
+            await browser.close()
             return []
-        
-        # Get county list to find county links
-        r = client.get(LIST_URL)
-        soup = BeautifulSoup(r.text, "lxml")
-        county_links = {}
-        for a in soup.find_all("a", href=True):
-            txt = a.get_text(strip=True)
-            for county in COUNTIES:
-                if county.lower() in txt.lower():
-                    county_links[county] = BASE + a["href"] if not a["href"].startswith("http") else a["href"]
-        log.info("Found county links: %s", list(county_links.keys()))
-        
+
         for county in COUNTIES:
-            if county not in county_links:
+            # Find county link
+            all_links = await page.query_selector_all("a")
+            link = None
+            for a in all_links:
+                txt = (await a.inner_text()).strip()
+                if county.lower() in txt.lower():
+                    link = a
+                    break
+            if not link:
                 log.warning("County not found: %s", county)
                 continue
-            
-            # Select county by clicking link
-            r = client.get(county_links[county])
-            log.info("Selected %s: %s", county, r.url)
-            
+
+            await link.click()
+            await page.wait_for_timeout(2000)
+            log.info("Selected %s -> %s", county, page.url)
+
             for doc_type in DISTRESS_DOC_TYPES:
                 try:
-                    # Get search page
-                    r = client.get(SEARCH_URL)
-                    soup = BeautifulSoup(r.text, "lxml")
-                    
-                    # Build search form data
-                    form_data = {
-                        "RecDateIDStart": cutoff.strftime("%m/%d/%Y"),
-                        "RecDateIDEnd": now.strftime("%m/%d/%Y"),
-                        "AllDocuments": "false",
-                    }
-                    
-                    # Find doc type select and set value
-                    select = soup.find("select", {"name": re.compile("DocType|docType|document", re.I)})
-                    if select:
-                        for opt in select.find_all("option"):
-                            if opt.get_text(strip=True) == doc_type:
-                                form_data[select.get("name")] = opt.get("value", opt.get_text(strip=True))
-                                break
-                    
-                    # Submit search
-                    r = client.post(SEARCH_URL, data=form_data)
-                    log.info("%s %s: %s", county, doc_type, r.url)
-                    
-                    recs = parse_results_page(r.text, county, doc_type)
-                    log.info("%s %s: %d records", county, doc_type, len(recs))
-                    all_records.extend(recs)
-                    
-                    # Handle pagination
-                    page_num = 2
+                    await page.goto(SEARCH_URL, timeout=30000)
+                    await page.wait_for_timeout(1000)
+                    chk = await page.query_selector("input[type='checkbox']")
+                    if chk and await chk.is_checked():
+                        await chk.click()
+                        await page.wait_for_timeout(300)
+                    selected = await page.evaluate(f"""() => {{
+                        const opts = Array.from(document.querySelectorAll('option'));
+                        const opt = opts.find(o => o.textContent.trim() === "{doc_type}");
+                        if (opt) {{ opt.selected = true; return true; }}
+                        return false;
+                    }}""")
+                    if not selected:
+                        continue
+                    await page.fill("input[name='RecDateIDStart']", cutoff.strftime("%m/%d/%Y"))
+                    await page.fill("input[name='RecDateIDEnd']", now.strftime("%m/%d/%Y"))
+                    await page.click("input[type='submit'][value='Search']")
+                    await page.wait_for_timeout(2000)
+
+                    page_num = 1
                     while page_num <= 10:
-                        soup2 = BeautifulSoup(r.text, "lxml")
-                        next_link = soup2.find("a", string=re.compile("Next", re.I))
-                        if not next_link: break
-                        r = client.get(BASE + next_link["href"] if not next_link["href"].startswith("http") else next_link["href"])
-                        more = parse_results_page(r.text, county, doc_type)
-                        if not more: break
-                        all_records.extend(more)
+                        html = await page.content()
+                        recs = parse_results_page(html, county, doc_type)
+                        log.info("%s %s p%d: %d records", county, doc_type, page_num, len(recs))
+                        all_records.extend(recs)
+                        if not recs: break
+                        nxt = await page.query_selector("a:has-text('Next')")
+                        if not nxt: break
+                        await nxt.click()
+                        await page.wait_for_timeout(1500)
                         page_num += 1
-                        
                 except Exception as e:
                     log.warning("%s %s: %s", county, doc_type, e)
-    
-    # Deduplicate
+
+            # Go back to county list for next county
+            await page.goto(LIST_URL, timeout=30000)
+            await page.wait_for_timeout(2000)
+            try:
+                await page.wait_for_selector("table", timeout=5000)
+            except:
+                pass
+
+        await browser.close()
+
     seen, deduped = set(), []
     for rec in all_records:
         k = f"{rec['doc_num']}|{rec['county']}"
         if k not in seen:
             seen.add(k); deduped.append(rec)
-    
+
     log.info("Total unique: %d", len(deduped))
     os.makedirs("dashboard", exist_ok=True)
     with open("dashboard/cgr_records.json", "w") as f:
@@ -232,6 +246,10 @@ def main():
                    "counties": COUNTIES, "records": deduped}, f, indent=2, default=str)
     log.info("Saved -> dashboard/cgr_records.json")
     return deduped
+
+def main():
+    _asyncio.run(main_async())
+
 
 if __name__ == "__main__":
     main()
