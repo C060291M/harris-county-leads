@@ -37,6 +37,23 @@ BIS_COUNTIES = {
     "medina":      "https://esearch.medinacad.org",
     "goliad":      "https://esearch.goliadcad.org",
     "donley":      "https://esearch.donleycad.org",
+    "smith":       "https://esearch.smithcad.org",
+    "brazos":      "https://esearch.brazoscad.org",
+    "rockwall":    "https://esearch.rockwallcad.com",
+    "brazoria":    "https://esearch.brazoriacad.org",
+    "victoria":    "https://esearch.victoriacad.org",
+    "lubbock":     "https://esearch.lubbockcad.org",
+    "hidalgo":     "https://esearch.hidalgoad.org",
+    "williamson":  "https://esearch.wcad.org",
+    "ector":       "https://esearch.ectorcad.org",
+    "nacogdoches": "https://esearch.nacad.org",
+    "jefferson":   "https://esearch.jeffersoncad.org",
+    "hunt":        "https://esearch.huntcad.org",
+    "wilson":      "https://esearch.wilsoncad.org",
+    "potter":      "https://esearch.pottercad.org",
+    "montgomery":  "https://esearch.mcad-tx.org",
+    "bexar":       "https://esearch.bcad.org",
+    "travis":      "https://esearch.traviscad.org",
 }
 
 CAD_HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36"}
