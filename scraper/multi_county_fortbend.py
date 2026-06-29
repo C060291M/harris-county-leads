@@ -66,9 +66,12 @@ def parse_results(html):
             found = True
             filed = ""
             for txt in texts:
-                if re.match(r'\d{2}/\d{2}/\d{4}', txt.strip()):
-                    filed = norm_date(txt.strip())
-                    break
+                m = re.match(r'(\d{2}/\d{2}/\d{4})', txt.strip())
+                if m:
+                    candidate = norm_date(m.group(1))
+                    if candidate >= "2020-01-01":
+                        filed = candidate
+                        break
             doc_type = ""
             for txt in texts:
                 if any(k in txt.upper() for k in ["LIS PEND","JUDGMENT","TAX LIEN","MECHANIC","PROBATE","FORECLOSURE"]):
