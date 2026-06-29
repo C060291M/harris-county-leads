@@ -7,6 +7,7 @@ log = logging.getLogger("enrich_cad")
 DB = os.environ["DATABASE_URL"]
 
 COUNTY_TABLES = {
+    "harris":     ("harris_cad",          "owner_name", "prop_address", "beds", "full_baths", "sqft", "yr_built", None),
     "dallas":     ("dallas_cad",          "owner_name", "prop_address", "beds", "full_baths", "sqft", "yr_built", "appraised_value"),
     "tarrant":    ("tarrant_cad",         "owner_name", "situs_address", "beds", "baths", "sqft", "yr_built", "total_value"),
     "denton":     ("denton_cad",          "owner_name", "situs_address", None, None, "sqft", "yr_built", "appraised_val"),
