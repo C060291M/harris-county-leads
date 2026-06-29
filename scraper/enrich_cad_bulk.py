@@ -18,6 +18,8 @@ COUNTY_TABLES = {
     "nueces":     ("nueces_cad",          "owner_name", "situs_address", None, None, "living_area", "yr_built", "appraised_val"),
     "johnson":    ("johnson_cad",         "owner_name", "situs_address", None, None, "living_area", "yr_built", "appraised_val"),
     "midland":    ("midland_cad",         "owner_name", "situs_address", None, None, "living_area", "yr_built", "appraised_val"),
+    "brazoria":   ("brazoria_cad",       "owner_name", "situs_address", None, None, "sqft", "yr_built", "appraised_val"),
+    "williamson": ("williamson_cad",     "owner_name", "situs_address", None, None, "sqft", None, "appraised_value"),
 }
 
 BIS_COUNTIES = {
