@@ -79,7 +79,7 @@ async def enrich_county(conn, county, table, owner_col, addr_col, beds_col, bath
         WHERE county=$1
         AND (prop_address IS NULL OR prop_address='')
         AND owner IS NOT NULL AND owner != ''
-        LIMIT 2000
+        LIMIT 10000
     """, county)
     log.info(f"[{county}] {len(leads)} leads to enrich")
     if not leads:
@@ -139,7 +139,7 @@ async def enrich_by_address(conn, county, table, addr_col, sqft_col, yr_col, val
         WHERE county=$1
         AND prop_address IS NOT NULL AND prop_address != ''
         AND (sqft IS NULL OR sqft = 0)
-        LIMIT 2000
+        LIMIT 10000
     """, county)
     log.info(f"[{county}] addr-enrich: {len(leads)} leads")
     updated = 0
