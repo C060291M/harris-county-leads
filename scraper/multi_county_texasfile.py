@@ -20,8 +20,10 @@ BASE = "https://www.texasfile.com"
 DISTRESS_TYPES = {
     "LIS PENDENS", "ABSTRACT OF JUDGEMENT", "ABSTRACT OF JUDGMENT",
     "FEDERAL TAX LIEN", "MECHANICS LIEN", "MECHANICS LIEN AFFIDAVIT",
-    "STATE TAX LIEN", "HOSPITAL LIEN", "JUDGMENT", "NOTICE OF TRUSTEE SALE",
-    "TRUSTEE SALE", "FORECLOSURE",
+    "STATE TAX LIEN", "HOSPITAL LIEN", "JUDGMENT", "JUDGEMENT",
+    "NOTICE OF TRUSTEE SALE", "TRUSTEE SALE", "FORECLOSURE",
+    "TAX LIEN STATE", "TAX LIEN FEDERAL", "TAX LIEN",
+    "ABSTRACT OF JUDGMENT LIEN", "MECHANIC LIEN",
 }
 
 def norm_date(raw):
@@ -140,49 +142,45 @@ async def main():
             await page.wait_for_timeout(500)
             
             await page.click("button.new-search-btn")
-            await page.wait_for_load_state("networkidle")
-            await page.wait_for_timeout(2000)
+            try:
+                await page.wait_for_load_state("networkidle", timeout=15000)
+            except:
+                pass
+            await page.wait_for_timeout(3000)
+            # If URL still has # or is same page, try waiting more
+            if page.url.endswith("#") or "county-clerk-records/" == page.url.split("texasfile.com")[-1]:
+                await page.wait_for_timeout(3000)
             
             log.info("Results URL: %s", page.url)
-            html = await page.content()
+            try:
+                html = await page.content()
+            except Exception as e:
+                log.warning("Could not get content: %s", e)
+                continue
             recs = parse_table(html, county_slug)
             log.info("%s %d-%02d: %d distress records", COUNTY, year, month, len(recs))
             all_records.extend(recs)
             
-            # Handle pagination - check for next page
+            # Handle pagination using Playwright
             pg = 2
-            while pg <= 20:
-                soup = BeautifulSoup(html,"lxml")
-                next_link = soup.find("a", string=re.compile(r"Next|»|>",re.I))
-                if not next_link: break
-                href = next_link.get("href","")
-                if not href: break
-                next_url = href if href.startswith("http") else f"{BASE}{href}"
-                await page.goto(next_url)
-                await page.wait_for_load_state("networkidle")
-                await page.wait_for_timeout(1000)
-                html = await page.content()
-                recs = parse_table(html, county_slug)
-                log.info("  Page %d: %d records", pg, len(recs))
-                if not recs: break
-                all_records.extend(recs)
-                pg += 1
-        
-        await browser.close()
-    
-    # Deduplicate
-    seen, deduped = set(), []
-    for rec in all_records:
-        k = f"{rec['doc_num']}|{rec['county']}"
-        if k not in seen: seen.add(k); deduped.append(rec)
-    
-    log.info("Total unique: %d", len(deduped))
-    os.makedirs("dashboard", exist_ok=True)
-    slug = county_slug.replace("-","_")
-    with open(f"dashboard/texasfile_{slug}_records.json","w") as f:
-        json.dump({"fetched_at":now.isoformat(),"source":"TexasFile",
-                   "county":COUNTY,"total":len(deduped),"records":deduped},
-                  f,indent=2,default=str)
+            while pg <= 30:
+                try:
+                    nxt = await page.query_selector("a:has-text('Next'), .next-page a, li.next a")
+                    if not nxt:
+                        break
+                    await nxt.click()
+                    try: await page.wait_for_load_state("networkidle", timeout=10000)
+                    except: pass
+                    await page.wait_for_timeout(1500)
+                    html = await page.content()
+                    recs = parse_table(html, county_slug)
+                    log.info("  Page %d: %d records", pg, len(recs))
+                    if not recs: break
+                    all_records.extend(recs)
+                    pg += 1
+                except Exception as e:
+                    log.warning("Pagination p%d: %s", pg, e)
+                    break
     log.info("Saved -> dashboard/texasfile_%s_records.json", slug)
 
 if __name__ == "__main__":
