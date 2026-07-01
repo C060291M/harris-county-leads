@@ -1,4 +1,4 @@
-﻿"""
+"""
 
 StackIQ - Universal PublicSearch.us Scraper
 
@@ -93,7 +93,9 @@ COUNTIES = {
 
 DOC_TYPES = [
     "Lis Pendens", "Tax Deed", "Abstract of Judgment",
-    "Federal Tax Lien", "Mechanic Lien", "Probate",
+    "Federal Tax Lien", "State Tax Lien", "Mechanic Lien", "Mechanics Lien",
+    "Probate", "Judgment", "Lien", "Child Support Lien", "Federal Lien",
+    "Affidavit of Heirship", "Divorce", "Mechanic Lien Affidavit",
 ]
 
 
@@ -270,7 +272,7 @@ async def scrape_county(page, county, base_url, dept, start_dt, end_dt):
 
                 
 
-                cat, cat_label = cat_from_doc_type(doc_t or doc_type)
+                cat, cat_label = DOC_TYPE_CODES.get(doc_code, ("LN", doc_t or doc_type))
 
                 rec = {
 
