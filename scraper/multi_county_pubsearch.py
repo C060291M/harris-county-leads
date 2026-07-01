@@ -61,6 +61,7 @@ COUNTIES = {
     "Medina":      ("https://medina.tx.publicsearch.us",      "RP"),
     "Grayson":     ("https://grayson.tx.publicsearch.us",     "RP"),
     "Bell":        ("https://bell.tx.publicsearch.us",        "RP"),
+    "Galveston":   ("https://galveston.tx.publicsearch.us",  "RP"),
     "Rusk":        ("https://rusk.tx.publicsearch.us",        "RP"),
     "Panola":      ("https://panola.tx.publicsearch.us",      "RP"),
     "Brewster":    ("https://brewster.tx.publicsearch.us",    "RP"),
