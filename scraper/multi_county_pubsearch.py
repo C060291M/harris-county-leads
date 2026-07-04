@@ -259,12 +259,12 @@ async def scrape_county(page, county, base_url, dept, start_dt, end_dt):
                 
 
                 # PublicSearch column order: [doc_num, dept, doc_type, legal_num, grantor, grantee, N/A, date, ...]
-                doc_num  = non_empty[0].strip() if len(non_empty) > 0 else ""
+                grantor  = non_empty[0].strip() if len(non_empty) > 0 else ""
+                grantee  = non_empty[1].strip() if len(non_empty) > 1 else ""
                 doc_t    = non_empty[2].strip() if len(non_empty) > 2 else doc_type
-                grantor  = non_empty[4].strip() if len(non_empty) > 4 else ""
-                grantee  = non_empty[5].strip() if len(non_empty) > 5 else ""
-                filed    = norm_date(non_empty[7].strip()) if len(non_empty) > 7 else ""
-                legal    = non_empty[13].strip() if len(non_empty) > 13 else ""
+                filed    = norm_date(non_empty[3].strip()) if len(non_empty) > 3 else ""
+                doc_num  = non_empty[4].strip() if len(non_empty) > 4 else ""
+                legal    = non_empty[7].strip() if len(non_empty) > 7 else ""
                 if not doc_num or len(doc_num) < 5: continue
 
                 
@@ -273,7 +273,7 @@ async def scrape_county(page, county, base_url, dept, start_dt, end_dt):
 
                 
 
-                cat, cat_label = DOC_TYPE_CODES.get(doc_code, ("LN", doc_t or doc_type))
+                cat, cat_label = cat_from_doc_type(doc_t or doc_type)
 
                 rec = {
 
