@@ -181,7 +181,18 @@ async def main():
                 except Exception as e:
                     log.warning("Pagination p%d: %s", pg, e)
                     break
-    log.info("Saved -> dashboard/texasfile_%s_records.json", slug)
+    out_dir = os.path.join(os.path.dirname(__file__), "..", "dashboard")
+    os.makedirs(out_dir, exist_ok=True)
+    out_file = os.path.join(out_dir, f"texasfile_{county_slug}_records.json")
+    with open(out_file, "w", encoding="utf-8") as f:
+        json.dump({
+            "fetched_at": now.isoformat(),
+            "source": "TexasFile Monthly Filings",
+            "county": county_slug,
+            "total": len(all_records),
+            "records": all_records,
+        }, f, indent=2, default=str)
+    log.info("[%s] Saved %d records -> %s", COUNTY, len(all_records), out_file)
 
 if __name__ == "__main__":
     asyncio.run(main())
