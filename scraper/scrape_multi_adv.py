@@ -32,6 +32,50 @@ CONFIGS = {
             "DIV":("DIV","Divorce"),
         }
     },
+    "nueces": {
+        "base": "https://nueces.tx.publicsearch.us",
+        "dept": "RP", "date_fmt": "%Y-%m-%d",
+        "codes": {
+            "BLP":("LP","Lis Pendens"),"ABJ":("JUD","Abstract of Judgment"),
+            "BFTL":("LNFED","Federal Tax Lien"),"BML":("LNMECH","Mechanic Lien"),
+            "P3":("PRO","Probate"),"CSL":("LN","Child Support Lien"),
+            "LN":("LN","Lien Notice"),"ST":("NOFC","Successor Trustee"),
+            "HL":("LN","Hospital Lien"),"D":("DIV","Divorce"),
+        }
+    },
+    "cameron": {
+        "base": "https://cameron.tx.publicsearch.us",
+        "dept": "RP", "date_fmt": "%Y-%m-%d",
+        "codes": {
+            "LP":("LP","Lis Pendens"),"CCAJT":("JUD","Assignment of Judgment"),
+            "FTL":("LNFED","Federal Tax Lien"),"AMLN":("LNMECH","Mechanic Lien"),
+            "APE1":("PRO","Probate"),"CCATE":("NOFC","Appt Trustee"),
+            "FAT":("NOFC","Foreclosure Affidavit"),"CCAHP":("PRO","Heirship"),
+            "CDE":("DIV","Divorce"),"CAJT1":("JUD","Abstract of Judgment"),
+        }
+    },
+    "nueces": {
+        "base": "https://nueces.tx.publicsearch.us",
+        "dept": "RP", "date_fmt": "%Y-%m-%d",
+        "codes": {
+            "BLP":("LP","Lis Pendens"),"ABJ":("JUD","Abstract of Judgment"),
+            "BFTL":("LNFED","Federal Tax Lien"),"BML":("LNMECH","Mechanic Lien"),
+            "P3":("PRO","Probate"),"CSL":("LN","Child Support Lien"),
+            "LN":("LN","Lien Notice"),"ST":("NOFC","Successor Trustee"),
+            "HL":("LN","Hospital Lien"),"D":("DIV","Divorce"),
+        }
+    },
+    "cameron": {
+        "base": "https://cameron.tx.publicsearch.us",
+        "dept": "RP", "date_fmt": "%Y-%m-%d",
+        "codes": {
+            "LP":("LP","Lis Pendens"),"CCAJT":("JUD","Assignment of Judgment"),
+            "FTL":("LNFED","Federal Tax Lien"),"AMLN":("LNMECH","Mechanic Lien"),
+            "APE1":("PRO","Probate"),"CCATE":("NOFC","Appt Trustee"),
+            "FAT":("NOFC","Foreclosure Affidavit"),"CCAHP":("PRO","Heirship"),
+            "CDE":("DIV","Divorce"),"CAJT1":("JUD","Abstract of Judgment"),
+        }
+    },
     "bell": {
         "base": "https://bell.tx.publicsearch.us",
         "dept": "RP", "date_fmt": "%Y-%m-%d",
