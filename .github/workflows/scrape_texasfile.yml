@@ -1,14 +1,32 @@
-﻿name: StackIQ TexasFile Scraper
+name: StackIQ TexasFile Scraper
 on:
   schedule:
     - cron: "0 11 * * *"
   workflow_dispatch: {}
 
 jobs:
-  texasfile_a:
+  texasfile:
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     continue-on-error: true
+    strategy:
+      max-parallel: 4
+      fail-fast: false
+      matrix:
+        batch:
+          - "anderson andrews angelina aransas archer armstrong atascosa austin bailey bandera bastrop baylor bee bell bexar blanco borden bosque bowie brazoria"
+          - "brazos brewster briscoe brooks brown burleson burnet caldwell calhoun callahan cameron camp carson cass castro chambers cherokee childress clay cochran"
+          - "coke coleman collin collingsworth colorado comal comanche concho cooke coryell cottle crane crockett crosby culberson dallam dallas dawson deaf-smith delta"
+          - "denton dewitt dickens dimmit donley duval eastland ector edwards ellis el-paso erath falls fannin fayette fisher floyd foard fort-bend franklin"
+          - "freestone frio gaines galveston garza gillespie glasscock goliad gonzales gray grayson gregg grimes guadalupe hale hall hamilton hansford hardeman hardin"
+          - "harris harrison hartley haskell hays hemphill henderson hidalgo hill hockley hood hopkins houston howard hudspeth hunt hutchinson irion jack jackson"
+          - "jasper jeff-davis jefferson jim-hogg jim-wells johnson jones karnes kaufman kendall kenedy kent kerr kimble king kinney kleberg knox lamar lamb"
+          - "lampasas la-salle lavaca lee leon liberty limestone lipscomb live-oak llano loving lubbock lynn madison marion martin mason matagorda maverick mcculloch"
+          - "mclennan mcmullen medina menard midland milam mills mitchell montague montgomery moore morris motley nacogdoches navarro newton nolan nueces ochiltree oldham"
+          - "orange palo-pinto panola parker parmer pecos polk potter presidio rains randall reagan real red-river reeves refugio roberts robertson rockwall runnels"
+          - "rusk sabine san-augustine san-jacinto san-patricio san-saba schleicher scurry shackelford shelby sherman smith somervell starr stephens sterling stonewall sutton swisher tarrant"
+          - "taylor terrell terry throckmorton titus tom-green travis trinity tyler upshur upton uvalde val-verde van-zandt victoria walker waller ward washington webb"
+          - "wharton wheeler wichita wilbarger willacy williamson wilson winkler wise wood yoakum young zapata zavala"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -18,9 +36,9 @@ jobs:
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
       - run: python -m playwright install --with-deps chromium
-      - name: Scrape Counties A-D
+      - name: Scrape batch
         run: |
-          for county in anderson andrews angelina aransas archer armstrong atascosa austin bailey bandera bastrop baylor bee bell bexar blanco borden bosque bowie brazoria brazos brewster briscoe brooks brown burleson burnet caldwell calhoun callahan cameron camp carson cass castro chambers cherokee childress clay cochran coke coleman collin collingsworth colorado comal comanche concho cooke coryell cottle crane crockett crosby culberson dallam dallas dawson; do
+          for county in ${{ matrix.batch }}; do
             echo "=== Scraping $county ==="
             COUNTY="$county" LOOKBACK_DAYS=30 TF_USER="${{ secrets.TF_USER }}" TF_PASS="${{ secrets.TF_PASS }}" python scraper/multi_county_texasfile_v2.py || true
             sleep 5
@@ -28,101 +46,3 @@ jobs:
       - run: python scraper/push_to_db.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-  texasfile_b:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 90
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: scraper/requirements.txt
-      - run: pip install -r scraper/requirements.txt
-      - run: python -m playwright install --with-deps chromium
-      - name: Scrape Counties D-G
-        run: |
-          for county in deaf-smith delta denton dewitt dickens dimmit donley duval eastland ector edwards ellis el-paso erath falls fannin fayette fisher floyd foard fort-bend franklin freestone frio gaines galveston garza gillespie glasscock goliad gonzales gray grayson gregg grimes guadalupe; do
-            echo "=== Scraping $county ==="
-            COUNTY="$county" LOOKBACK_DAYS=30 TF_USER="${{ secrets.TF_USER }}" TF_PASS="${{ secrets.TF_PASS }}" python scraper/multi_county_texasfile_v2.py || true
-            sleep 5
-          done
-      - run: python scraper/push_to_db.py
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-  texasfile_c:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 90
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: scraper/requirements.txt
-      - run: pip install -r scraper/requirements.txt
-      - run: python -m playwright install --with-deps chromium
-      - name: Scrape Counties H-L
-        run: |
-          for county in hale hall hamilton hansford hardeman hardin harris harrison hartley haskell hays hemphill henderson hidalgo hill hockley hood hopkins houston howard hudspeth hunt hutchinson irion jack jackson jasper jeff-davis jefferson jim-hogg jim-wells johnson jones karnes kaufman kendall kenedy kent kerr kimble king kinney kleberg knox lamar lamb lampasas la-salle lavaca lee leon liberty limestone lipscomb live-oak llano loving lubbock lynn; do
-            echo "=== Scraping $county ==="
-            COUNTY="$county" LOOKBACK_DAYS=30 TF_USER="${{ secrets.TF_USER }}" TF_PASS="${{ secrets.TF_PASS }}" python scraper/multi_county_texasfile_v2.py || true
-            sleep 5
-          done
-      - run: python scraper/push_to_db.py
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-  texasfile_d:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 90
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: scraper/requirements.txt
-      - run: pip install -r scraper/requirements.txt
-      - run: python -m playwright install --with-deps chromium
-      - name: Scrape Counties M-R
-        run: |
-          for county in madison marion martin mason matagorda maverick mcculloch mclennan mcmullen medina menard midland milam mills mitchell montague montgomery moore morris motley nacogdoches navarro newton nolan nueces ochiltree oldham orange palo-pinto panola parker parmer pecos polk potter presidio rains randall reagan real red-river reeves refugio roberts robertson rockwall runnels rusk; do
-            echo "=== Scraping $county ==="
-            COUNTY="$county" LOOKBACK_DAYS=30 TF_USER="${{ secrets.TF_USER }}" TF_PASS="${{ secrets.TF_PASS }}" python scraper/multi_county_texasfile_v2.py || true
-            sleep 5
-          done
-      - run: python scraper/push_to_db.py
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-  texasfile_e:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 90
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: pip
-          cache-dependency-path: scraper/requirements.txt
-      - run: pip install -r scraper/requirements.txt
-      - run: python -m playwright install --with-deps chromium
-      - name: Scrape Counties S-Z
-        run: |
-          for county in sabine san-augustine san-jacinto san-patricio san-saba schleicher scurry shackelford shelby sherman smith somervell starr stephens sterling stonewall sutton swisher tarrant taylor terrell terry throckmorton titus tom-green travis trinity tyler upshur upton uvalde val-verde van-zandt victoria walker waller ward washington webb wharton wheeler wichita wilbarger willacy williamson wilson winkler wise wood yoakum young zapata zavala; do
-            echo "=== Scraping $county ==="
-            COUNTY="$county" LOOKBACK_DAYS=30 TF_USER="${{ secrets.TF_USER }}" TF_PASS="${{ secrets.TF_PASS }}" python scraper/multi_county_texasfile_v2.py || true
-            sleep 5
-          done
-      - run: python scraper/push_to_db.py
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
-
