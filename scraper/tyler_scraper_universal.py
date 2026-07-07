@@ -78,11 +78,20 @@ COUNTY_REGISTRY = {
     "Yoakum":      ("https://yoakumcountytx-selfservice.tylerhost.net/web",    "DOCSEARCH144S1"),
 }
 
-KEEP_DOC_TYPES = {
-    "LIS PENDENS","TAX DEED","ABSTRACT OF JUDGMENT","MECHANIC LIEN",
-    "FEDERAL TAX LIEN","STATE TAX LIEN","HOA LIEN","NOTICE OF FORECLOSURE",
-    "IRS TAX LIEN","PROBATE","DIVORCE","FORECLOSURE","JUDGMENT","LIEN",
-    "NOTICE OF TRUSTEE SALE","HOSPITAL LIEN","MECHANIC",
+DISTRESS_DOC_TYPES = {
+    "LIS PENDENS", "TAX DEED", "TAX FORECLOSURE", "ABSTRACT OF JUDGMENT",
+    "MECHANIC LIEN", "MECHANIC'S LIEN", "MECHANICS LIEN",
+    "FEDERAL TAX LIEN", "STATE TAX LIEN", "HOA LIEN", "HOSPITAL LIEN",
+    "NOTICE OF FORECLOSURE", "NOTICE OF TRUSTEE SALE", "TRUSTEE SALE",
+    "SUBSTITUTE TRUSTEE", "APPOINTMENT OF SUBSTITUTE TRUSTEE",
+    "NOTICE OF DEFAULT", "IRS TAX LIEN", "PROBATE", "AFFIDAVIT OF HEIRSHIP",
+    "DIVORCE", "GUARDIANSHIP", "RECEIVERSHIP", "BANKRUPTCY",
+    "SHERIFF SALE", "CONSTABLE SALE", "EXECUTION SALE", "VENDOR'S LIEN",
+    "VENDORS LIEN", "DEED IN LIEU", "JUDGMENT", "CHILD SUPPORT LIEN",
+    "MEDICAID LIEN", "MEDICARE LIEN", "CONSTRUCTION LIEN",
+}
+EXCLUDE_ALWAYS = {
+    "RELEASE", "SATISFACTION", "DISCHARGE", "CANCELLATION", "WITHDRAWAL",
 }
 
 DATE_FIELD_VARIANTS = [
@@ -124,7 +133,9 @@ def parse_items(soup, county_name, base_url, docsearch):
         if not h1: continue
         h1_text  = h1.get_text(" ", strip=True)
         h1_clean = " ".join(h1_text.split())
-        if not any(k in h1_clean.upper() for k in KEEP_DOC_TYPES): continue
+        upper = h1_clean.upper()
+        if any(k in upper for k in EXCLUDE_ALWAYS): continue
+        if not any(k in upper for k in DISTRESS_DOC_TYPES): continue
         parts   = re.split(r"[\u2022\xa0\s]{2,}", h1_clean)
         parts   = [p.strip() for p in parts if p.strip()]
         doc_num = parts[0] if parts else ""
