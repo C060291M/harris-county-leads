@@ -66,7 +66,7 @@ COUNTY_REGISTRY = {
     # "Scurry": broken/DNS fail - needs URL fix
     "Somervell":   ("https://somervellcountytx-web.tylerhost.net/web",         "DOCSEARCH144S1"),
     "Taylor":      ("https://taylorcountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
-    # "Upshur": broken/DNS fail - needs URL fix
+    "Upshur":      ("https://upshurcountytx-web.tylerhost.net/web",           "DOCSEARCH144S1"),
     "VanZandt":    ("https://vanzandtcountytx-web.tylerhost.net/web",          "DOCSEARCH144S1"),
     "Waller":      ("https://wallercountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
     "Washington":  ("https://washingtoncountytx-web.tylerhost.net/web",        "DOCSEARCH144S1"),
@@ -176,6 +176,20 @@ async def navigate_to_search(page, base_url, docsearch):
     # Go home first
     await page.goto(base_url + "/", wait_until="domcontentloaded", timeout=30000)
     await page.wait_for_timeout(1500 * WAIT_MULT)
+
+    # Prefer a DIRECT Official Public Record link on the home page, if one exists,
+    # over drilling into an ActionGroup submenu (which may only lead to Vital Records etc.)
+    direct_links = await page.query_selector_all("a[href*='DOCSEARCH']")
+    for link in direct_links:
+        text = (await link.inner_text()).strip().lower()
+        if "official" in text and ("record" in text or "public" in text):
+            href = await link.get_attribute("href") or ""
+            actual_id = href.split("/")[-1]
+            await link.evaluate("el => el.click()")
+            await page.wait_for_timeout(2000 * WAIT_MULT)
+            log.info("Found direct Official Records link on home page: %s", actual_id)
+            return actual_id
+
     # Find and click action group link
     links = await page.query_selector_all("a[href*='ACTIONGROUP']")
     for link in links:
