@@ -18,12 +18,9 @@ jobs:
           cache: pip
           cache-dependency-path: scraper/requirements.txt
       - run: pip install -r scraper/requirements.txt
-      - run: python scraper/multi_county_travis.py
+      - run: python scraper/scrape_travis_adv.py
         env:
           LOOKBACK_DAYS: "3"
-          MAX_PAGES: "10"
-          DECODO_USER: ${{ secrets.DECODO_USER }}
-          DECODO_PASS: ${{ secrets.DECODO_PASS }}
       - run: python scraper/push_to_db.py
         continue-on-error: true
         env:
