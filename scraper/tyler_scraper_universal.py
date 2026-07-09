@@ -141,7 +141,20 @@ def parse_items(soup, county_name, base_url, docsearch):
         doc_num = parts[0] if parts else ""
         doc_num = re.split(r"[\u2022\xa0]", doc_num)[0].strip()
         doc_num = re.sub(r"\s+", " ", doc_num).strip()
-        doc_type = parts[-1] if len(parts) > 1 else h1_clean
+
+        # Some counties (e.g. Upshur) end the part list with the date rather than
+        # the doc type - detect a date-shaped part and treat the remaining
+        # non-empty, non-numeric part as the doc type instead of assuming position.
+        date_idx = None
+        for i, p in enumerate(parts):
+            if re.match(r"^\d{1,2}/\d{1,2}/\d{4}", p):
+                date_idx = i
+                break
+        if date_idx is not None:
+            candidates = [p for i, p in enumerate(parts) if i not in (0, date_idx) and p.strip() and not re.match(r"^\d", p.strip())]
+            doc_type = candidates[0] if candidates else (parts[-1] if len(parts) > 1 else h1_clean)
+        else:
+            doc_type = parts[-1] if len(parts) > 1 else h1_clean
         if re.match(r"^\d{4}-\d+", doc_type): doc_type = h1_clean
         full_text = item.get_text(" ", strip=True)
         date_m    = re.search(r"(\d{2}/\d{2}/\d{4})", full_text)
@@ -163,6 +176,102 @@ def parse_items(soup, county_name, base_url, docsearch):
             "score":0,"flags":[],
         })
     return records
+
+async def get_available_doc_types(page):
+    """Trigger the county's live doc-type catalog fetch by clicking the field, capture the JSON response."""
+    catalog = []
+
+    async def on_response(response):
+        if "documentTypes" in response.url and "searchText=&" in response.url:
+            try:
+                catalog.extend(await response.json())
+            except Exception:
+                pass
+
+    page.on("response", on_response)
+    field = await page.query_selector("#field_selfservice_documentTypes")
+    if field:
+        await field.click()
+        await page.wait_for_timeout(1500)
+    page.remove_listener("response", on_response)
+    return catalog
+
+
+async def search_chip_based_county(page, county_name, start_str, end_str):
+    """For counties whose search form requires a Document Type to be selected
+    before returning any results (chip/autocomplete UI, e.g. Upshur).
+    Fetches the real doc-type catalog, filters to distress-relevant types,
+    and runs one search per matching type."""
+    catalog = await get_available_doc_types(page)
+    if not catalog:
+        log.warning("[%s] Could not fetch doc type catalog for chip-based search", county_name)
+        return []
+
+    matches = []
+    for t in catalog:
+        label = t.get("value", "").upper()
+        if any(k in label for k in EXCLUDE_ALWAYS):
+            continue
+        if any(k in label for k in DISTRESS_DOC_TYPES):
+            matches.append(t["value"])
+
+    log.info("[%s] %d/%d doc types match distress list", county_name, len(matches), len(catalog))
+
+    from bs4 import BeautifulSoup
+    all_records = []
+    for doc_type_label in matches:
+        field = await page.query_selector("#field_selfservice_documentTypes")
+        await field.click()
+        await field.fill("")
+        await field.type(doc_type_label, delay=60)
+        await page.wait_for_timeout(1000)
+        suggestion = await page.query_selector("#field_selfservice_documentTypes-aclist li")
+        if not suggestion:
+            continue
+        await suggestion.click()
+        await page.wait_for_timeout(500)
+
+        start_field = await page.query_selector("#field_RecDateID_DOT_StartDate")
+        end_field = await page.query_selector("#field_RecDateID_DOT_EndDate")
+        if start_field and end_field:
+            await start_field.fill(start_str)
+            await end_field.fill(end_str)
+
+        buttons = await page.query_selector_all("button, a")
+        clicked = False
+        for b in buttons:
+            try:
+                txt = (await b.inner_text()).strip().lower()
+            except Exception:
+                continue
+            if txt == "search":
+                await b.click()
+                clicked = True
+                break
+        if not clicked:
+            continue
+        await page.wait_for_timeout(2500)
+
+        soup = BeautifulSoup(await page.content(), "lxml")
+        recs = parse_items(soup, county_name, "", "")
+        log.info("[%s] %s: %d records", county_name, doc_type_label, len(recs))
+        all_records.extend(recs)
+
+        # Clear the selected chip before the next search
+        remove_btn = await page.query_selector("#field_selfservice_documentTypes-holder li.cblist-input-list a, #field_selfservice_documentTypes-holder li.cblist-input-list .ui-icon-delete")
+        if remove_btn:
+            await remove_btn.click()
+            await page.wait_for_timeout(500)
+
+    seen = set()
+    deduped = []
+    for r in all_records:
+        if r["doc_num"] not in seen:
+            seen.add(r["doc_num"])
+            deduped.append(r)
+    log.info("[%s] chip-search total: %d raw -> %d unique", county_name, len(all_records), len(deduped))
+    return deduped
+
 
 async def navigate_to_search(page, base_url, docsearch):
     """Navigate to search page, handling ACTIONGROUP redirects."""
@@ -349,6 +458,14 @@ async def scrape_county(county_name, base_url, docsearch, start_dt, end_dt):
             except Exception as e:
                 log.warning("[%s] Page %d error: %s", county_name, page_num, e)
                 break
+
+        if not records:
+            log.info("[%s] Normal search returned 0 records - trying chip-based document type search", county_name)
+            try:
+                chip_records = await search_chip_based_county(page, county_name, start_str, end_str)
+                records.extend(chip_records)
+            except Exception as e:
+                log.warning("[%s] Chip-based fallback failed: %s", county_name, e)
 
         await browser.close()
 
