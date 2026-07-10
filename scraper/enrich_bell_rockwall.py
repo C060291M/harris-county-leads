@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
 logger = logging.getLogger(__name__)
 
 DB = os.environ["DATABASE_URL"]
-LIMIT = 300
+LIMIT = 100
 
 COUNTIES = {
     "bell":     "https://esearch.bellcad.org",
@@ -22,8 +22,27 @@ COUNTIES = {
 def get_conn():
     return psycopg2.connect(DB, connect_timeout=30)
 
-async def enrich_county(browser, cur, county, base, leads):
+async def search_owner(page, base, last_name, year=2025):
+    """Proven flow: real mouse movement -> native value setter + input/change
+    events -> call the page's Search() JS function -> wait for navigation to
+    the results page with a valid searchSessionToken."""
+    query = f"OwnerName:{last_name} Year:{year} "
+    await page.evaluate("""(query) => {
+        const el = document.querySelector('#keywords');
+        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        setter.call(el, query);
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+    }""", query)
+
+    async with page.expect_navigation(timeout=15000):
+        await page.evaluate("Search()")
+    await page.wait_for_timeout(2500)
+
+async def enrich_county(browser, cur, conn, county, base, leads):
     updated = 0
+    page = await browser.new_page()
+
     for lead_id, owner in leads:
         try:
             parts = owner.strip().upper().split()
@@ -37,66 +56,54 @@ async def enrich_county(browser, cur, county, base, leads):
             if len(last) < 3:
                 continue
 
-            page = await browser.new_page()
             await page.goto(f"{base}/search", timeout=30000)
-            await page.wait_for_timeout(1000)
-            await page.click("a[href='#tab-search-adv']")
+            await page.wait_for_timeout(1200)
+
+            has_field = await page.evaluate("() => document.querySelector('#keywords') !== null")
+            if not has_field:
+                logger.warning(f"{county}: #keywords field not found on this platform - skipping county entirely")
+                break
+
+            await page.mouse.move(100, 100)
+            await page.mouse.move(300, 400)
             await page.wait_for_timeout(300)
-            owner_input = page.locator("#tab-search-adv input[name='query[owner][name]']")
-            await owner_input.fill(last)
-            submit = page.locator("#tab-search-adv button[type=submit]")
-            await submit.evaluate("el => el.click()")
-            await page.wait_for_timeout(1000)
 
-            rows = await page.query_selector_all("table tr")
-            if len(rows) >= 2:
-                first_row = rows[1]
-                text = await first_row.inner_text()
-                parts_row = [p.strip() for p in text.split("\t") if p.strip()]
-                addr = None
-                for part in parts_row:
-                    if re.search(r"\d+.*TX", part, re.IGNORECASE | re.DOTALL):
-                        addr = re.sub(r"\s+", " ", part.replace("\n", " ")).strip()
-                        addr = addr.split("  ")[0].strip() or addr
-                        break
-                if not addr:
-                    full_text = " ".join(parts_row)
-                    m = re.search(r"(\d+\s+[A-Z0-9 ]+(?:DR|ST|AVE|RD|LN|BLVD|CT|PL|WAY|CIR|TRL)[^\n]*(?:TX)[^\n]*)", full_text, re.IGNORECASE)
-                    if m:
-                        addr = re.sub(r"\s+", " ", m.group(1)).strip()
+            await search_owner(page, base, last)
 
-                if addr:
-                    detail_links = await first_row.query_selector_all("a[href*='/parcels/']")
-                    sqft = None; yr = None
-                    if detail_links:
-                        href = await detail_links[0].get_attribute("href")
-                        detail_url = base + href if href.startswith("/") else href
-                        dp = await browser.new_page()
-                        await dp.goto(detail_url, timeout=20000)
-                        await dp.wait_for_timeout(1000)
-                        content = await dp.content()
-                        sqft_m = re.search(r"Living Area[^\d]*(\d+)", content)
-                        yr_m = re.search(r"Year Built[^\d]*(\d{4})", content)
-                        if sqft_m: sqft = int(sqft_m.group(1))
-                        if yr_m: yr = yr_m.group(1)
-                        await dp.close()
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(await page.content(), "lxml")
+            table = soup.find("table")
+            addr = None
+            if table:
+                rows = table.find_all("tr")
+                if len(rows) >= 2:
+                    headers = [h.get_text(strip=True) for h in rows[0].find_all(["th", "td"])]
+                    cells = rows[1].find_all(["td", "th"])
+                    try:
+                        addr_idx = headers.index("Situs Address")
+                        addr_raw = cells[addr_idx].get_text(" ", strip=True)
+                        if addr_raw:
+                            addr = re.sub(r"\s+", " ", addr_raw).strip()
+                    except (ValueError, IndexError):
+                        pass
 
-                    cur.execute("""
-                        UPDATE lead_records SET
-                            prop_address=COALESCE(NULLIF(%s,''),prop_address),
-                            sqft=COALESCE(%s,sqft),
-                            yr_built=COALESCE(%s,yr_built),
-                            cad_enriched_at=NOW()
-                        WHERE id=%s
-                    """, (addr, sqft, yr, lead_id))
-                    updated += 1
-                    if updated % 10 == 0:
-                        logger.info(f"{county}: {updated} enriched so far")
+            if addr:
+                cur.execute("""
+                    UPDATE lead_records SET
+                        prop_address=COALESCE(NULLIF(%s,''),prop_address),
+                        cad_enriched_at=NOW()
+                    WHERE id=%s
+                """, (addr, lead_id))
+                updated += 1
+                if updated % 10 == 0:
+                    conn.commit()
+                    logger.info(f"{county}: {updated} enriched so far (committed)")
 
-            await page.close()
         except Exception as e:
             logger.warning(f"{county} lead {lead_id}: {e}")
             continue
+
+    await page.close()
     return updated
 
 async def main():
@@ -115,7 +122,7 @@ async def main():
             """, (county, LIMIT))
             leads = cur.fetchall()
             logger.info(f"{county}: {len(leads)} leads to enrich")
-            updated = await enrich_county(browser, cur, county, base, leads)
+            updated = await enrich_county(browser, cur, conn, county, base, leads)
             conn.commit()
             logger.info(f"{county}: done - {updated}/{len(leads)} enriched")
         await browser.close()
