@@ -16,9 +16,14 @@ DB = os.environ["DATABASE_URL"]
 LIMIT = 100
 
 COUNTIES = {
-    "bell":     "https://esearch.bellcad.org",
-    "rockwall": "https://www.rockwallcad.com",
+    "bell":      "https://esearch.bellcad.org",
+    "rockwall":  "https://www.rockwallcad.com",
+    "fort bend": "https://esearch.fbcad.org",
 }
+
+# Counties sharing the same underlying vendor platform as Bell (structured
+# OwnerName:X Year:Y query, #keywords field, Search() JS function)
+BELL_PLATFORM_COUNTIES = {"bell", "fort bend"}
 
 def get_conn():
     return psycopg2.connect(DB, connect_timeout=30)
@@ -51,6 +56,14 @@ async def search_owner_bell(page, base, last_name, year=2025):
         await page.evaluate("Search()")
     await page.wait_for_timeout(2500)
 
+def is_real_address(addr):
+    """Reject non-address account-type codes (e.g. 'LSE EQUIP' for leased
+    equipment / business personal property accounts) that sometimes show up
+    in the Situs Address column instead of a real street address."""
+    if not addr or len(addr) < 6:
+        return False
+    return bool(re.search(r"\d", addr))
+
 def parse_address_bell(html):
     soup = BeautifulSoup(html, "lxml")
     table = soup.find("table")
@@ -64,7 +77,8 @@ def parse_address_bell(html):
     try:
         addr_idx = headers.index("Situs Address")
         addr_raw = cells[addr_idx].get_text(" ", strip=True)
-        return re.sub(r"\s+", " ", addr_raw).strip() if addr_raw else None
+        addr = re.sub(r"\s+", " ", addr_raw).strip() if addr_raw else None
+        return addr if is_real_address(addr) else None
     except (ValueError, IndexError):
         return None
 
@@ -115,7 +129,7 @@ async def enrich_county(browser, cur, conn, county, base, leads):
 
             addr = None
 
-            if county == "bell":
+            if county in BELL_PLATFORM_COUNTIES:
                 await page.goto(f"{base}/search", timeout=30000)
                 await page.wait_for_timeout(1200)
                 has_field = await page.evaluate("() => document.querySelector('#keywords') !== null")
