@@ -52,7 +52,7 @@ COUNTY_REGISTRY = {
     "Lavaca":      ("https://lavacacountytx-web.tylerhost.net/web",            "DOCSEARCH144S1"),
     "Liberty":     ("https://libertycountytx-web.tylerhost.net/web",           "DOCSEARCH144S1"),
     "McLennan":    ("https://mclennancountytx-web.tylerhost.net/web",          "DOCSEARCH402S1"),
-    "Mills":       ("https://millscountytx-web.tylerhost.net/web",             "DOCSEARCH419S1"),
+    "Mills":       ("https://millscountytx-web.tylerhost.net/web",             "DOCSEARCH144S1"),
     # "Montgomery": moved to pubsearch (montgomery.tx.publicsearch.us)
     "Navarro":     ("https://navarrocountytx-web.tylerhost.net/web",    "DOCSEARCH144S1"),
     "Orange":      ("https://orangecountytx-web.tylerhost.net/web",     "DOCSEARCH144S1"),
