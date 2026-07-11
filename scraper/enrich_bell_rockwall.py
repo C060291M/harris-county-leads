@@ -20,7 +20,13 @@ COUNTIES = {
     "rockwall":  "https://www.rockwallcad.com",
     "fort bend": "https://esearch.fbcad.org",
     "hunt":      "https://esearch.hctax.info",
+    "potter":    "https://www.prad.org",
+    "randall":   "https://www.prad.org",
 }
+
+# Counties sharing the same underlying vendor platform as Rockwall
+# (React + ag-Grid, single #searchInput field, wide viewport needed)
+ROCKWALL_PLATFORM_COUNTIES = {"rockwall", "potter", "randall"}
 
 # Counties sharing the same underlying vendor platform as Bell (structured
 # OwnerName:X Year:Y query, #keywords field, Search() JS function)
@@ -118,7 +124,7 @@ async def parse_address_rockwall(page):
 
 async def enrich_county(browser, cur, conn, county, base, leads):
     updated = 0
-    viewport = {"width": 3000, "height": 1000} if county == "rockwall" else {"width": 1280, "height": 900}
+    viewport = {"width": 3000, "height": 1000} if county in ROCKWALL_PLATFORM_COUNTIES else {"width": 1280, "height": 900}
     context = await browser.new_context(viewport=viewport)
     page = await context.new_page()
 
@@ -140,7 +146,7 @@ async def enrich_county(browser, cur, conn, county, base, leads):
                 await search_owner_bell(page, base, last)
                 addr = parse_address_bell(await page.content())
 
-            elif county == "rockwall":
+            elif county in ROCKWALL_PLATFORM_COUNTIES:
                 await page.goto(f"{base}/property-search", timeout=30000)
                 await page.wait_for_timeout(2500)
                 has_field = await page.evaluate("() => document.querySelector('#searchInput') !== null")
