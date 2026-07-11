@@ -19,11 +19,12 @@ COUNTIES = {
     "bell":      "https://esearch.bellcad.org",
     "rockwall":  "https://www.rockwallcad.com",
     "fort bend": "https://esearch.fbcad.org",
+    "hunt":      "https://esearch.hctax.info",
 }
 
 # Counties sharing the same underlying vendor platform as Bell (structured
 # OwnerName:X Year:Y query, #keywords field, Search() JS function)
-BELL_PLATFORM_COUNTIES = {"bell", "fort bend"}
+BELL_PLATFORM_COUNTIES = {"bell", "fort bend", "hunt"}
 
 def get_conn():
     return psycopg2.connect(DB, connect_timeout=30)
