@@ -54,6 +54,7 @@ def normalize(raw, source_county=None):
         "full_baths":["full_baths","bathrooms","baths"],
         "sqft":      ["sqft","square_feet","living_area"],
         "yr_built":  ["yr_built","year_built","yearbuilt"],
+        "grantee":   ["grantee","grantee_name","party2name"],
     }
 
     for canonical, aliases in FIELD_MAP.items():
@@ -110,7 +111,7 @@ def normalize(raw, source_county=None):
     out["scraped_at"] = datetime.now(timezone.utc).isoformat()
     return out
 
-COLS = ["doc_num","owner","prop_address","filed","doc_type","amount",
+COLS = ["doc_num","owner","grantee","prop_address","filed","doc_type","amount",
         "county","clerk_url","beds","full_baths","sqft","yr_built",
         "cat","cat_label","scraped_at"]
 
@@ -119,6 +120,7 @@ INSERT INTO lead_records ({cols})
 VALUES %s
 ON CONFLICT (doc_num) DO UPDATE SET
     owner=COALESCE(EXCLUDED.owner,lead_records.owner),
+    grantee=COALESCE(EXCLUDED.grantee,lead_records.grantee),
     prop_address=COALESCE(EXCLUDED.prop_address,lead_records.prop_address),
     filed=COALESCE(EXCLUDED.filed,lead_records.filed),
     doc_type=COALESCE(EXCLUDED.doc_type,lead_records.doc_type),

@@ -121,6 +121,8 @@ async def main():
                 AND owner NOT ILIKE '%%LLC%%' AND owner NOT ILIKE '%%TRUST%%'
                 AND owner NOT ILIKE '%%CORP%%' AND owner NOT ILIKE '%%BANK%%'
                 AND owner NOT ILIKE '%%FEDERAL%%' AND owner NOT ILIKE '%%MORTGAGE%%'
+                AND owner NOT ILIKE '%%CREDIT UNION%%'
+                AND owner NOT ILIKE '%%U S OF AMERICA%%' AND owner NOT ILIKE '%%UNITED STATES%%'
                 AND owner NOT ILIKE '%%HOSPITAL%%' AND owner NOT ILIKE '%%MEDICAL CENTER%%'
                 AND owner NOT ILIKE '%%SCHOOL DISTRICT%%' AND owner NOT ILIKE '%%CHURCH%%'
                 AND owner NOT ILIKE '%%UNIVERSITY%%' AND owner NOT ILIKE '%%COLLEGE%%'
