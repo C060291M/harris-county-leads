@@ -132,6 +132,8 @@ async def main():
                 AND owner NOT ILIKE '%%INTERNAL REVENUE%%' AND owner NOT ILIKE '%%JUDGMENT ENFORCEMENT%%'
                 AND owner !~ '^[0-9]{4}-[0-9]+$'
                 AND owner NOT ILIKE '%%CONSTRUCTION%%' AND owner NOT ILIKE '%%REPLAT%%'
+                AND owner NOT ILIKE '%%ATTORNEY GENERAL%%'
+                AND owner !~ '^[0-9]{6,}$'
                 AND owner NOT ILIKE '%%INTERNAL REVENUE%%'
                 ORDER BY score DESC LIMIT %s
             """, (county, LIMIT))
