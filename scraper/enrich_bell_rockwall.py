@@ -21,6 +21,7 @@ COUNTIES = {
     "fort bend": "https://esearch.fbcad.org",
     "hunt":      "https://esearch.hctax.info",
     "kendall":   "https://esearch.kendallad.org",
+    "walker":    "https://esearch.walkercad.org",
     "potter":    "https://www.prad.org",
     "randall":   "https://www.prad.org",
     "travis":    "https://travis.prodigycad.com",
@@ -32,7 +33,7 @@ ROCKWALL_PLATFORM_COUNTIES = {"rockwall", "potter", "randall", "travis"}
 
 # Counties sharing the same underlying vendor platform as Bell (structured
 # OwnerName:X Year:Y query, #keywords field, Search() JS function)
-BELL_PLATFORM_COUNTIES = {"bell", "fort bend", "hunt", "kendall"}
+BELL_PLATFORM_COUNTIES = {"bell", "fort bend", "hunt", "kendall", "walker"}
 
 def get_conn():
     return psycopg2.connect(DB, connect_timeout=30)
@@ -198,6 +199,10 @@ async def main():
                 AND owner NOT ILIKE '%%UNIVERSITY%%' AND owner NOT ILIKE '%%COLLEGE%%'
                 AND owner NOT ILIKE '%%CITY OF%%' AND owner NOT ILIKE '%%COUNTY OF%%'
                 AND owner NOT ILIKE '%%STATE OF%%' AND owner NOT ILIKE '%% ISD%%'
+                AND owner NOT ILIKE '%% INC%%' AND owner NOT ILIKE '%% LP%%'
+                AND owner NOT ILIKE '%%INTERNAL REVENUE%%' AND owner NOT ILIKE '%%JUDGMENT ENFORCEMENT%%'
+                AND owner !~ '^[0-9]{4}-[0-9]+$'
+                AND owner NOT ILIKE '%%CONSTRUCTION%%' AND owner NOT ILIKE '%%REPLAT%%'
                 ORDER BY score DESC LIMIT %s
             """, (county, LIMIT))
             leads = cur.fetchall()

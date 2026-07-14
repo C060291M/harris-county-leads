@@ -80,6 +80,10 @@ async def main():
         AND owner NOT ILIKE '%%UNIVERSITY%%' AND owner NOT ILIKE '%%COLLEGE%%'
         AND owner NOT ILIKE '%%CITY OF%%' AND owner NOT ILIKE '%%COUNTY OF%%'
         AND owner NOT ILIKE '%%STATE OF%%' AND owner NOT ILIKE '%% ISD%%'
+        AND owner NOT ILIKE '%% INC%%' AND owner NOT ILIKE '%% LP%%'
+        AND owner NOT ILIKE '%%INTERNAL REVENUE%%' AND owner NOT ILIKE '%%JUDGMENT ENFORCEMENT%%'
+        AND owner !~ '^[0-9]{4}-[0-9]+$'
+        AND owner NOT ILIKE '%%CONSTRUCTION%%' AND owner NOT ILIKE '%%REPLAT%%'
         AND owner NOT ILIKE '%%INTERNAL REVENUE%%'
         ORDER BY score DESC LIMIT %s
     """, (COUNTY, LIMIT))
