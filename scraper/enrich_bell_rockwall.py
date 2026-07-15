@@ -23,6 +23,7 @@ COUNTIES = {
     "kendall":   "https://esearch.kendallad.org",
     "walker":    "https://esearch.walkercad.org",
     "medina":    "https://esearch.medinacad.org",
+    "starr":     "https://esearch.starrcad.org",
     "potter":    "https://www.prad.org",
     "randall":   "https://www.prad.org",
     "travis":    "https://travis.prodigycad.com",
@@ -34,7 +35,7 @@ ROCKWALL_PLATFORM_COUNTIES = {"rockwall", "potter", "randall", "travis"}
 
 # Counties sharing the same underlying vendor platform as Bell (structured
 # OwnerName:X Year:Y query, #keywords field, Search() JS function)
-BELL_PLATFORM_COUNTIES = {"bell", "fort bend", "hunt", "kendall", "walker", "medina"}
+BELL_PLATFORM_COUNTIES = {"bell", "fort bend", "hunt", "kendall", "walker", "medina", "starr"}
 
 def get_conn():
     return psycopg2.connect(DB, connect_timeout=30)
@@ -149,6 +150,18 @@ async def enrich_county(browser, cur, conn, county, base, leads):
                     break
                 await search_owner_bell(page, base, last)
                 addr = parse_address_bell(await page.content())
+
+                if not addr:
+                    parts = owner.strip().upper().split()
+                    if len(parts) >= 2:
+                        alt_term = parts[-1]
+                        if alt_term.isalpha() and len(alt_term) >= 3 and alt_term != last:
+                            await page.goto(f"{base}/search", timeout=30000)
+                            await page.wait_for_timeout(1200)
+                            await search_owner_bell(page, base, alt_term)
+                            addr = parse_address_bell(await page.content())
+                            if addr:
+                                logger.info(f"{county}: matched via last-word fallback ('{alt_term}' instead of '{last}')")
 
             elif county in ROCKWALL_PLATFORM_COUNTIES:
                 await page.goto(f"{base}/property-search", timeout=30000)
