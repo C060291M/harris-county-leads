@@ -12,6 +12,9 @@ on:
         description: 'Max pages per doc type'
         default: '5'
 
+permissions:
+  contents: write
+
 jobs:
 
   harris:
