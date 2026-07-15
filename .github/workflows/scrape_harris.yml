@@ -42,8 +42,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git fetch origin main
-          git checkout main
           git add dashboard/ data/ || true
-          git diff --cached --quiet || git commit -m "chore: update Harris dashboard"
-          git push origin main || true
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: update Harris dashboard"
+          for i in 1 2 3 4 5; do
+            git fetch origin main
+            git rebase origin/main && git push origin main && break
+            echo "Push attempt $i failed (likely a race with another workflow), retrying..."
+            git rebase --abort || true
+            sleep $((RANDOM % 15 + 5))
+          done
