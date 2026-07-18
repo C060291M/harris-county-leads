@@ -199,35 +199,48 @@ async def main():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         for county, base in COUNTIES.items():
-            cur.execute("""
-                SELECT id, owner FROM lead_records
-                WHERE county=%s AND (prop_address IS NULL OR prop_address='')
-                AND owner IS NOT NULL AND length(owner) > 5
-                AND owner NOT ILIKE '%%LLC%%' AND owner NOT ILIKE '%%TRUST%%'
-                AND owner NOT ILIKE '%%CORP%%' AND owner NOT ILIKE '%%BANK%%'
-                AND owner NOT ILIKE '%%FEDERAL%%' AND owner NOT ILIKE '%%MORTGAGE%%'
-                AND owner NOT ILIKE '%%CREDIT UNION%%'
-                AND owner NOT ILIKE '%%U S OF AMERICA%%' AND owner NOT ILIKE '%%UNITED STATES%%'
-                AND owner NOT ILIKE '%%HOSPITAL%%' AND owner NOT ILIKE '%%MEDICAL CENTER%%'
-                AND owner NOT ILIKE '%%SCHOOL DISTRICT%%' AND owner NOT ILIKE '%%CHURCH%%'
-                AND owner NOT ILIKE '%%UNIVERSITY%%' AND owner NOT ILIKE '%%COLLEGE%%'
-                AND owner NOT ILIKE '%%CITY OF%%' AND owner NOT ILIKE '%%COUNTY OF%%'
-                AND owner NOT ILIKE '%%STATE OF%%' AND owner NOT ILIKE '%% ISD%%'
-                AND owner NOT ILIKE '%% INC%%' AND owner NOT ILIKE '%% LP%%'
-                AND owner NOT ILIKE '%%INTERNAL REVENUE%%' AND owner NOT ILIKE '%%JUDGMENT ENFORCEMENT%%'
-                AND owner !~ '^[0-9]{4}-[0-9]+$'
-                AND owner NOT ILIKE '%%CONSTRUCTION%%' AND owner NOT ILIKE '%%REPLAT%%'
-                AND owner NOT ILIKE '%%ATTORNEY GENERAL%%'
-                AND owner !~ '^[0-9]{6,}$'
-                ORDER BY score DESC LIMIT %s
-            """, (county, LIMIT))
-            leads = cur.fetchall()
-            logger.info(f"{county}: {len(leads)} leads to enrich")
-            updated = await enrich_county(browser, cur, conn, county, base, leads)
-            conn.commit()
-            logger.info(f"{county}: done - {updated}/{len(leads)} enriched")
+            try:
+                cur.execute("""
+                    SELECT id, owner FROM lead_records
+                    WHERE county=%s AND (prop_address IS NULL OR prop_address='')
+                    AND owner IS NOT NULL AND length(owner) > 5
+                    AND owner NOT ILIKE '%%LLC%%' AND owner NOT ILIKE '%%TRUST%%'
+                    AND owner NOT ILIKE '%%CORP%%' AND owner NOT ILIKE '%%BANK%%'
+                    AND owner NOT ILIKE '%%FEDERAL%%' AND owner NOT ILIKE '%%MORTGAGE%%'
+                    AND owner NOT ILIKE '%%CREDIT UNION%%'
+                    AND owner NOT ILIKE '%%U S OF AMERICA%%' AND owner NOT ILIKE '%%UNITED STATES%%'
+                    AND owner NOT ILIKE '%%HOSPITAL%%' AND owner NOT ILIKE '%%MEDICAL CENTER%%'
+                    AND owner NOT ILIKE '%%SCHOOL DISTRICT%%' AND owner NOT ILIKE '%%CHURCH%%'
+                    AND owner NOT ILIKE '%%UNIVERSITY%%' AND owner NOT ILIKE '%%COLLEGE%%'
+                    AND owner NOT ILIKE '%%CITY OF%%' AND owner NOT ILIKE '%%COUNTY OF%%'
+                    AND owner NOT ILIKE '%%STATE OF%%' AND owner NOT ILIKE '%% ISD%%'
+                    AND owner NOT ILIKE '%% INC%%' AND owner NOT ILIKE '%% LP%%'
+                    AND owner NOT ILIKE '%%INTERNAL REVENUE%%' AND owner NOT ILIKE '%%JUDGMENT ENFORCEMENT%%'
+                    AND owner !~ '^[0-9]{4}-[0-9]+$'
+                    AND owner NOT ILIKE '%%CONSTRUCTION%%' AND owner NOT ILIKE '%%REPLAT%%'
+                    AND owner NOT ILIKE '%%ATTORNEY GENERAL%%'
+                    AND owner !~ '^[0-9]{6,}$'
+                    ORDER BY score DESC LIMIT %s
+                """, (county, LIMIT))
+                leads = cur.fetchall()
+                logger.info(f"{county}: {len(leads)} leads to enrich")
+                updated = await enrich_county(browser, cur, conn, county, base, leads)
+                conn.commit()
+                logger.info(f"{county}: done - {updated}/{len(leads)} enriched")
+            except psycopg2.OperationalError as e:
+                logger.warning(f"{county}: DB connection dropped ({e}) - reconnecting and continuing to next county")
+                try:
+                    conn.close()
+                except Exception:
+                    pass
+                conn = get_conn()
+                cur = conn.cursor()
+                continue
         await browser.close()
-    cur.close(); conn.close()
+    try:
+        cur.close(); conn.close()
+    except Exception:
+        pass
 
 if __name__ == "__main__":
     asyncio.run(main())
