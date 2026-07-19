@@ -113,6 +113,8 @@ async def main():
                 AND owner !~ '^[0-9]{4}-[0-9]+$'
                 AND owner NOT ILIKE '%%CONSTRUCTION%%' AND owner NOT ILIKE '%%REPLAT%%'
                 AND owner NOT ILIKE '%%ATTORNEY GENERAL%%'
+                AND owner NOT ILIKE '%%ASSOCIATION%%' AND owner NOT ILIKE '%%DISTRICT%%'
+                AND owner NOT ILIKE '%% ROA%%' AND owner NOT ILIKE '%% HOA%%'
                 AND owner !~ '^[0-9]{6,}$'
                 ORDER BY score DESC LIMIT %s
             """, (county, LIMIT))
