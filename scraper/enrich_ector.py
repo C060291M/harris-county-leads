@@ -113,8 +113,25 @@ async def main():
                     if updated % 10 == 0:
                         conn.commit()
                         logger.info(f"{COUNTY}: {updated} enriched so far (committed)")
+            except psycopg2.OperationalError as e:
+                logger.warning(f"{COUNTY}: DB connection dropped ({e}) - reconnecting")
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+                try:
+                    conn.close()
+                except Exception:
+                    pass
+                conn = get_conn()
+                cur = conn.cursor()
+                continue
             except Exception as e:
                 logger.warning(f"{COUNTY} lead {lead_id}: {e}")
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
                 continue
         await browser.close()
 
