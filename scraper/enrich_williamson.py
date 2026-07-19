@@ -93,6 +93,7 @@ async def main():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         for county, base in COUNTIES.items():
+          try:
             cur.execute("""
                 SELECT id, owner FROM lead_records
                 WHERE county=%s AND (prop_address IS NULL OR prop_address='')
@@ -123,8 +124,20 @@ async def main():
             updated = await enrich_county(browser, cur, conn, county, base, leads)
             conn.commit()
             logger.info(f"{county}: done - {updated}/{len(leads)} enriched")
+          except psycopg2.OperationalError as e:
+            logger.warning(f"{county}: DB connection dropped ({e}) - reconnecting and continuing to next county")
+            try:
+                conn.close()
+            except Exception:
+                pass
+            conn = get_conn()
+            cur = conn.cursor()
+            continue
         await browser.close()
-    cur.close(); conn.close()
+    try:
+        cur.close(); conn.close()
+    except Exception:
+        pass
 
 if __name__ == "__main__":
     asyncio.run(main())
