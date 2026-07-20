@@ -27,6 +27,7 @@ COUNTIES = {
     "bee":       "https://esearch.beecad.org",
     "gillespie": "https://esearch.gillespiecad.org",
     "hockley":   "https://esearch.hockleycad.org",
+    "hidalgo":   "https://hidalgo.prodigycad.com",
     "potter":    "https://www.prad.org",
     "randall":   "https://www.prad.org",
     "travis":    "https://travis.prodigycad.com",
@@ -34,7 +35,7 @@ COUNTIES = {
 
 # Counties sharing the same underlying vendor platform as Rockwall
 # (React + ag-Grid, single #searchInput field, wide viewport needed)
-ROCKWALL_PLATFORM_COUNTIES = {"rockwall", "potter", "randall", "travis"}
+ROCKWALL_PLATFORM_COUNTIES = {"rockwall", "potter", "randall", "travis", "hidalgo"}
 
 # Counties sharing the same underlying vendor platform as Bell (structured
 # OwnerName:X Year:Y query, #keywords field, Search() JS function)
