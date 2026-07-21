@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
 logger = logging.getLogger(__name__)
 
 DB = os.environ["DATABASE_URL"]
-LIMIT = 20
+LIMIT = 150
 BASE = "https://bexar.trueautomation.com/clientdb/propertysearch.aspx?cid=110"
 
 def get_conn():
