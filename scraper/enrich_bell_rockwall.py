@@ -27,6 +27,7 @@ COUNTIES = {
     "bee":       "https://esearch.beecad.org",
     "gillespie": "https://esearch.gillespiecad.org",
     "hockley":   "https://esearch.hockleycad.org",
+    "jefferson": "https://esearch.jcad.org",
     "hidalgo":   "https://hidalgo.prodigycad.com",
     "potter":    "https://www.prad.org",
     "randall":   "https://www.prad.org",
@@ -39,7 +40,7 @@ ROCKWALL_PLATFORM_COUNTIES = {"rockwall", "potter", "randall", "travis", "hidalg
 
 # Counties sharing the same underlying vendor platform as Bell (structured
 # OwnerName:X Year:Y query, #keywords field, Search() JS function)
-BELL_PLATFORM_COUNTIES = {"bell", "fort bend", "hunt", "kendall", "walker", "medina", "starr", "bee", "gillespie", "hockley"}
+BELL_PLATFORM_COUNTIES = {"bell", "fort bend", "hunt", "kendall", "walker", "medina", "starr", "bee", "gillespie", "hockley", "jefferson"}
 
 def get_conn():
     return psycopg2.connect(DB, connect_timeout=30)
@@ -131,7 +132,7 @@ async def parse_address_rockwall(page):
             return f"{street}, {city}" if city else street
     return None
 
-async def enrich_county(browser, cur, conn, county, base, leads):
+async def enrich_county(browser, cur, conn, county, base, leads, get_conn_fn):
     updated = 0
     viewport = {"width": 3000, "height": 1000} if county in ROCKWALL_PLATFORM_COUNTIES else {"width": 1280, "height": 900}
     context = await browser.new_context(viewport=viewport)
@@ -190,13 +191,26 @@ async def enrich_county(browser, cur, conn, county, base, leads):
                     conn.commit()
                     logger.info(f"{county}: {updated} enriched so far (committed)")
 
+        except psycopg2.OperationalError as e:
+            logger.warning(f"{county} lead {lead_id}: DB connection dropped ({e}) - reconnecting")
+            try:
+                conn.close()
+            except Exception:
+                pass
+            conn = get_conn_fn()
+            cur = conn.cursor()
+            continue
         except Exception as e:
             logger.warning(f"{county} lead {lead_id}: {e}")
+            try:
+                conn.rollback()
+            except Exception:
+                pass
             continue
 
     await page.close()
     await context.close()
-    return updated
+    return updated, conn, cur
 
 async def main():
     conn = get_conn(); cur = conn.cursor()
@@ -230,7 +244,7 @@ async def main():
                 """, (county, LIMIT))
                 leads = cur.fetchall()
                 logger.info(f"{county}: {len(leads)} leads to enrich")
-                updated = await enrich_county(browser, cur, conn, county, base, leads)
+                updated, conn, cur = await enrich_county(browser, cur, conn, county, base, leads, get_conn)
                 conn.commit()
                 logger.info(f"{county}: done - {updated}/{len(leads)} enriched")
             except psycopg2.OperationalError as e:
