@@ -310,7 +310,16 @@ def parse_results(page_text):
             
             # Filter to distress types
             dt_upper = doc_type.upper()
-            if any(k in dt_upper for k in KEEP_DOC_TYPES):
+            # Guard against the parser misfiring and reusing a doc-type
+            # label as the party name (e.g. owner ending up as "A OF J"
+            # or "NOTICE") - reject anything that matches a known
+            # doc-type token instead of saving it as a real name.
+            _bad_owner_tokens = KEEP_DOC_TYPES | {"NOTICE/PUR", "FORECLOSURE NOTICE RECORDING", "UNOFFICIAL"}
+            if party1 and party1.upper().strip() in _bad_owner_tokens:
+                party1 = ""
+            if party2 and party2.upper().strip() in _bad_owner_tokens:
+                party2 = ""
+            if any(k in dt_upper for k in KEEP_DOC_TYPES) and party1:
                 cat, cat_label = cat_from_doc_type(doc_type)
                 records.append({
                     "doc_num": doc_num,
