@@ -29,6 +29,8 @@ COUNTIES = {
     "hockley":   "https://esearch.hockleycad.org",
     "jefferson": "https://esearch.jcad.org",
     "wilson":    "https://esearch.wilson-cad.org",
+    "galveston": "https://esearch.galvestoncad.org",
+    "nacogdoches": "https://esearch.nacocad.org",
     "hidalgo":   "https://hidalgo.prodigycad.com",
     "potter":    "https://www.prad.org",
     "randall":   "https://www.prad.org",
@@ -41,7 +43,7 @@ ROCKWALL_PLATFORM_COUNTIES = {"rockwall", "potter", "randall", "travis", "hidalg
 
 # Counties sharing the same underlying vendor platform as Bell (structured
 # OwnerName:X Year:Y query, #keywords field, Search() JS function)
-BELL_PLATFORM_COUNTIES = {"bell", "fort bend", "hunt", "kendall", "walker", "medina", "starr", "bee", "gillespie", "hockley", "jefferson", "wilson"}
+BELL_PLATFORM_COUNTIES = {"bell", "fort bend", "hunt", "kendall", "walker", "medina", "starr", "bee", "gillespie", "hockley", "jefferson", "wilson", "galveston", "nacogdoches"}
 
 def get_conn():
     return psycopg2.connect(DB, connect_timeout=30)
