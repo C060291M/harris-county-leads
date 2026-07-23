@@ -50,10 +50,22 @@ BELL_PLATFORM_COUNTIES = {"bell", "fort bend", "hunt", "kendall", "walker", "med
 def get_conn():
     return psycopg2.connect(DB, connect_timeout=30)
 
+SUFFIX_WORDS = {"OF", "ESTATE", "DECEASED", "ETAL", "ET", "AL", "TRUSTEE", "DTD", "AKA", "FKA", "NKA", "AND"}
+
+def strip_owner_suffixes(owner):
+    """Strip trailing filler words like 'ESTATE OF', 'DECEASED', 'ET AL' that
+    are not part of a real name, so name-extraction heuristics don't pick
+    them up as if they were a surname."""
+    words = owner.strip().upper().split()
+    while words and words[-1] in SUFFIX_WORDS:
+        words.pop()
+    return " ".join(words) if words else owner.strip().upper()
+
 def last_name_from_owner(owner):
+    owner = strip_owner_suffixes(owner)
     parts = owner.strip().upper().split()
     for word in parts:
-        if len(word) >= 4 and word.isalpha():
+        if len(word) >= 4 and word.isalpha() and word not in SUFFIX_WORDS:
             return word
     return parts[0] if parts else owner
 
@@ -162,10 +174,10 @@ async def enrich_county(browser, cur, conn, county, base, leads, get_conn_fn):
                 addr = parse_address_bell(await page.content())
 
                 if not addr:
-                    parts = owner.strip().upper().split()
+                    parts = strip_owner_suffixes(owner).split()
                     if len(parts) >= 2:
                         alt_term = parts[-1]
-                        if alt_term.isalpha() and len(alt_term) >= 3 and alt_term != last:
+                        if alt_term.isalpha() and len(alt_term) >= 3 and alt_term != last and alt_term not in SUFFIX_WORDS:
                             await page.goto(f"{base}/search", timeout=30000)
                             await page.wait_for_timeout(1200)
                             await search_owner_bell(page, base, alt_term)
