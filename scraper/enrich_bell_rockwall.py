@@ -248,6 +248,7 @@ async def main():
                     AND owner NOT ILIKE '%%SCHOOL DISTRICT%%' AND owner NOT ILIKE '%%CHURCH%%'
                     AND owner NOT ILIKE '%%UNIVERSITY%%' AND owner NOT ILIKE '%%COLLEGE%%'
                     AND owner NOT ILIKE '%%CITY OF%%' AND owner NOT ILIKE '%%COUNTY OF%%'
+                AND owner NOT ILIKE '%% COUNTY'
                     AND owner NOT ILIKE '%%STATE OF%%' AND owner NOT ILIKE '%% ISD%%'
                     AND owner NOT ILIKE '%% INC%%' AND owner NOT ILIKE '%% LP%%'
                     AND owner NOT ILIKE '%%INTERNAL REVENUE%%' AND owner NOT ILIKE '%%JUDGMENT ENFORCEMENT%%'
