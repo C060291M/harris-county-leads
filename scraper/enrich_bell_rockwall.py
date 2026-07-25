@@ -185,6 +185,22 @@ async def enrich_county(browser, cur, conn, county, base, leads, get_conn_fn):
                             if addr:
                                 logger.info(f"{county}: matched via last-word fallback ('{alt_term}' instead of '{last}')")
 
+                    # Compound-surname fallback: names like "LA TOUR" or "DE LEON"
+                    # get split into separate words, breaking extraction. If the
+                    # first word is a short common prefix, try concatenating it
+                    # with the next word as a single surname.
+                    if not addr and len(parts) >= 2:
+                        PREFIXES = {"LA", "LE", "DE", "DEL", "VAN", "VON", "MC", "MAC", "ST", "SAN"}
+                        if parts[0] in PREFIXES:
+                            compound = parts[0] + parts[1]
+                            if compound.isalpha() and len(compound) >= 4:
+                                await page.goto(f"{base}/search", timeout=30000)
+                                await page.wait_for_timeout(1200)
+                                await search_owner_bell(page, base, compound)
+                                addr = parse_address_bell(await page.content())
+                                if addr:
+                                    logger.info(f"{county}: matched via compound-surname fallback ('{compound}' instead of '{last}')")
+
             elif county in ROCKWALL_PLATFORM_COUNTIES:
                 await page.goto(f"{base}/property-search", timeout=30000)
                 await page.wait_for_timeout(2500)
