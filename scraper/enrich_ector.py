@@ -20,10 +20,19 @@ BASE = "https://www.ectorcad.org"
 def get_conn():
     return psycopg2.connect(DB, connect_timeout=30)
 
+SUFFIX_WORDS = {"OF", "ESTATE", "DECEASED", "DECD", "ETAL", "ET", "AL", "TRUSTEE", "DTD", "AKA", "FKA", "NKA", "AND", "SR", "JR", "III"}
+
+def strip_owner_suffixes(owner):
+    words = owner.strip().upper().split()
+    while words and words[-1] in SUFFIX_WORDS:
+        words.pop()
+    return " ".join(words) if words else owner.strip().upper()
+
 def last_name_from_owner(owner):
+    owner = strip_owner_suffixes(owner)
     parts = owner.strip().upper().split()
     for word in parts:
-        if len(word) >= 4 and word.isalpha():
+        if len(word) >= 4 and word.isalpha() and word not in SUFFIX_WORDS:
             return word
     return parts[0] if parts else owner
 
