@@ -50,7 +50,7 @@ BELL_PLATFORM_COUNTIES = {"bell", "fort bend", "hunt", "kendall", "walker", "med
 def get_conn():
     return psycopg2.connect(DB, connect_timeout=30)
 
-SUFFIX_WORDS = {"OF", "ESTATE", "DECEASED", "ETAL", "ET", "AL", "TRUSTEE", "DTD", "AKA", "FKA", "NKA", "AND"}
+SUFFIX_WORDS = {"OF", "ESTATE", "DECEASED", "DECD", "ETAL", "ET", "AL", "TRUSTEE", "DTD", "AKA", "FKA", "NKA", "AND", "SR", "JR", "III"}
 
 def strip_owner_suffixes(owner):
     """Strip trailing filler words like 'ESTATE OF', 'DECEASED', 'ET AL' that

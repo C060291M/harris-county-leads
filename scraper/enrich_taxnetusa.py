@@ -64,7 +64,7 @@ def get_conn():
 
 
 
-SUFFIX_WORDS = {"OF", "ESTATE", "DECEASED", "ETAL", "ET", "AL", "TRUSTEE", "DTD", "AKA", "FKA", "NKA", "AND"}
+SUFFIX_WORDS = {"OF", "ESTATE", "DECEASED", "DECD", "ETAL", "ET", "AL", "TRUSTEE", "DTD", "AKA", "FKA", "NKA", "AND", "SR", "JR", "III"}
 
 def strip_owner_suffixes(owner):
     words = owner.strip().upper().split()
