@@ -99,6 +99,15 @@ async def search_owner_bell(page, base, last_name, year=2025):
         el.dispatchEvent(new Event('change', { bubbles: true }));
     }""", query)
 
+    # Some Bell-platform sites (e.g. Bee) load a recaptcha-check script that
+    # references jQuery ($) - if Search() is called before jQuery finishes
+    # loading, it throws "ReferenceError: $ is not defined" and the search
+    # silently fails. Wait for jQuery to actually be available first.
+    try:
+        await page.wait_for_function("() => typeof window.$ !== 'undefined'", timeout=5000)
+    except Exception:
+        pass
+
     async with page.expect_navigation(timeout=15000):
         await page.evaluate("Search()")
     await page.wait_for_timeout(2500)
