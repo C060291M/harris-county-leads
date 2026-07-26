@@ -66,8 +66,18 @@ def last_name_from_owner(owner):
     owner = strip_owner_suffixes(owner)
     parts = owner.strip().upper().split()
     for word in parts:
-        if len(word) >= 4 and word.isalpha() and word not in SUFFIX_WORDS:
+        if word in SUFFIX_WORDS:
+            continue
+        if len(word) >= 4 and word.isalpha():
             return word
+        # Hyphenated surnames (e.g. "MOREY-CLAYTON") fail isalpha() above -
+        # try the segment before the hyphen, checked in the SAME position
+        # order as other words (so a hyphenated surname in the usual
+        # Last-First word order still wins over a later first name).
+        if "-" in word:
+            first_seg = word.split("-")[0]
+            if len(first_seg) >= 3 and first_seg.isalpha() and first_seg not in SUFFIX_WORDS:
+                return first_seg
     return parts[0] if parts else owner
 
 async def search_owner_bell(page, base, last_name, year=2025):
