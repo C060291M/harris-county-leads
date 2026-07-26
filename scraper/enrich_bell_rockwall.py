@@ -34,6 +34,8 @@ COUNTIES = {
     "taylor":     "https://esearch.taylor-cad.org",
     "matagorda":  "https://esearch.matagorda-cad.org",
     "grayson":    "https://esearch.graysonappraisal.org",
+    "gregg":      "https://esearch.gcad.org",
+    "gregg":      "https://esearch.gcad.org",
     "hidalgo":   "https://hidalgo.prodigycad.com",
     "potter":    "https://www.prad.org",
     "randall":   "https://www.prad.org",
@@ -46,7 +48,7 @@ ROCKWALL_PLATFORM_COUNTIES = {"rockwall", "potter", "randall", "travis", "hidalg
 
 # Counties sharing the same underlying vendor platform as Bell (structured
 # OwnerName:X Year:Y query, #keywords field, Search() JS function)
-BELL_PLATFORM_COUNTIES = {"bell", "fort bend", "hunt", "kendall", "walker", "medina", "starr", "bee", "gillespie", "hockley", "jefferson", "wilson", "galveston", "nacogdoches", "taylor", "matagorda", "grayson"}
+BELL_PLATFORM_COUNTIES = {"bell", "fort bend", "hunt", "kendall", "walker", "medina", "starr", "bee", "gillespie", "hockley", "jefferson", "wilson", "galveston", "nacogdoches", "taylor", "matagorda", "grayson", "gregg"}
 
 def get_conn():
     return psycopg2.connect(DB, connect_timeout=30)
@@ -277,7 +279,7 @@ async def main():
                     AND owner NOT ILIKE '%%CITY OF%%' AND owner NOT ILIKE '%%COUNTY OF%%'
                 AND owner NOT ILIKE '%% COUNTY'
                     AND owner NOT ILIKE '%%STATE OF%%' AND owner NOT ILIKE '%% ISD%%'
-                    AND owner NOT ILIKE '%% INC%%' AND owner NOT ILIKE '%% LP%%'
+                    AND owner NOT ILIKE '%% INC%%' AND owner NOT ILIKE '%% LP%%' AND owner NOT ILIKE '%% LTD%%'
                     AND owner NOT ILIKE '%%INTERNAL REVENUE%%' AND owner NOT ILIKE '%%JUDGMENT ENFORCEMENT%%'
                     AND owner !~ '^[0-9]{4}-[0-9]+$'
                     AND owner NOT ILIKE '%%CONSTRUCTION%%' AND owner NOT ILIKE '%%REPLAT%%'

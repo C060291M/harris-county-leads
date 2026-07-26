@@ -267,7 +267,7 @@ async def main():
 
                 AND owner NOT ILIKE '%%STATE OF%%' AND owner NOT ILIKE '%% ISD%%'
 
-                AND owner NOT ILIKE '%% INC%%' AND owner NOT ILIKE '%% LP%%'
+                AND owner NOT ILIKE '%% INC%%' AND owner NOT ILIKE '%% LP%%' AND owner NOT ILIKE '%% LTD%%'
 
                 AND owner NOT ILIKE '%%INTERNAL REVENUE%%' AND owner NOT ILIKE '%%JUDGMENT ENFORCEMENT%%'
 
