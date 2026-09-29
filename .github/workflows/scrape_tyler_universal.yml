@@ -2,7 +2,7 @@ name: StackIQ Tyler Universal Scraper
 
 on:
   schedule:
-    - cron: "0 9 * * *"
+    # PAUSED (non-kept county) - cron: "0 9 * * *"
   workflow_dispatch: {}
 
 jobs:

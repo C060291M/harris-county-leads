@@ -61,6 +61,7 @@ jobs:
         run: python3 scraper/push_to_db.py
 
   central-texas:
+    if: false  # PAUSED (non-kept county)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     continue-on-error: true
@@ -84,6 +85,7 @@ jobs:
         run: python3 scraper/push_to_db.py
 
   multi6:
+    if: false  # PAUSED (non-kept county)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     continue-on-error: true
@@ -107,6 +109,7 @@ jobs:
         run: python3 scraper/push_to_db.py
 
   multi7:
+    if: false  # PAUSED (non-kept county)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     continue-on-error: true
@@ -130,6 +133,7 @@ jobs:
         run: python3 scraper/push_to_db.py
 
   multi8:
+    if: false  # PAUSED (non-kept county)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     continue-on-error: true
@@ -153,6 +157,7 @@ jobs:
         run: python3 scraper/push_to_db.py
 
   multi9:
+    if: false  # PAUSED (non-kept county)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     continue-on-error: true
@@ -176,6 +181,7 @@ jobs:
         run: python3 scraper/push_to_db.py
 
   multi10:
+    if: false  # PAUSED (non-kept county)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     continue-on-error: true
@@ -199,6 +205,7 @@ jobs:
         run: python3 scraper/push_to_db.py
 
   multi11:
+    if: false  # PAUSED (non-kept county)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     continue-on-error: true
@@ -222,6 +229,7 @@ jobs:
         run: python3 scraper/push_to_db.py
 
   multi12:
+    if: false  # PAUSED (non-kept county)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     continue-on-error: true
@@ -245,6 +253,7 @@ jobs:
         run: python3 scraper/push_to_db.py
 
   multi13:
+    if: false  # PAUSED (non-kept county)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     continue-on-error: true
@@ -268,6 +277,7 @@ jobs:
         run: python3 scraper/push_to_db.py
 
   multi14:
+    if: false  # PAUSED (non-kept county)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     continue-on-error: true
@@ -291,6 +301,7 @@ jobs:
         run: python3 scraper/push_to_db.py
 
   multi15:
+    if: false  # PAUSED (non-kept county)
     runs-on: ubuntu-22.04
     timeout-minutes: 90
     continue-on-error: true

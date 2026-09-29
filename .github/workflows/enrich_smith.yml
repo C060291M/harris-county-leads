@@ -3,7 +3,7 @@
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'  # Every hour
+    # PAUSED (non-kept county) - cron: '0 * * * *'  # Every hour
 
 jobs:
   enrich-smith:

@@ -1,7 +1,7 @@
 ﻿name: StackIQ Williamson County Scraper
 on:
   schedule:
-    - cron: "0 10 * * *"
+    # PAUSED (non-kept county) - cron: "0 10 * * *"
   workflow_dispatch: {}
 jobs:
   williamson:

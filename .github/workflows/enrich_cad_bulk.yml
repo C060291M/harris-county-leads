@@ -24,6 +24,6 @@ jobs:
         run: python scraper/enrich_cad_bulk.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          COUNTIES: ${{ github.event.inputs.counties }}
+          COUNTIES: ${{ github.event.inputs.counties || 'tarrant,nueces' }}
 
 

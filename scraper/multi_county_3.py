@@ -34,11 +34,9 @@ COUNTIES = {
 
     "Hidalgo":  "hidalgo.tx.publicsearch.us",
 
-    "El Paso":  "elpaso.tx.publicsearch.us",
 
     "Nueces":   "nueces.tx.publicsearch.us",
 
-    "Jefferson":"jefferson.tx.publicsearch.us",
 
 }
 

@@ -2,7 +2,7 @@
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 */6 * * *'
+    # PAUSED (non-kept county) - cron: '0 */6 * * *'
 jobs:
   enrich-chambers:
     runs-on: ubuntu-22.04

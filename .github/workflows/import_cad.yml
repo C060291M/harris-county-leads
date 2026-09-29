@@ -2,7 +2,7 @@
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 17 * * *"  # noon CDT (5pm UTC) - well after scrapers finish
+    # PAUSED (non-kept county) - cron: "0 17 * * *"  # noon CDT (5pm UTC) - well after scrapers finish
 jobs:
   import-cad:
     runs-on: ubuntu-22.04

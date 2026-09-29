@@ -2,7 +2,7 @@
 
 on:
   schedule:
-    - cron: "30 3 * * *"
+    # PAUSED (non-kept county) - cron: "30 3 * * *"
   workflow_dispatch: {}
 
 jobs:

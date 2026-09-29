@@ -1,7 +1,7 @@
 ﻿name: StackIQ Dallas Scraper
 on:
   schedule:
-    - cron: "30 8 * * *"
+    # PAUSED (non-kept county) - cron: "30 8 * * *"
   workflow_dispatch:
     inputs:
       lookback_days:

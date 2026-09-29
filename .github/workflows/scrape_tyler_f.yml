@@ -2,7 +2,7 @@ name: StackIQ Tyler iDS Group F
 
 on:
   schedule:
-    - cron: "30 8 * * *"
+    # PAUSED (non-kept county) - cron: "30 8 * * *"
   workflow_dispatch: {}
 
 jobs:
