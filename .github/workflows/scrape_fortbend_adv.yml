@@ -1,7 +1,7 @@
 name: StackIQ Fort Bend Advanced Scraper
 on:
   schedule:
-    - cron: "30 6 * * *"
+    # PAUSED (non-kept county) - cron: "30 6 * * *"
   workflow_dispatch:
     inputs:
       lookback_days:

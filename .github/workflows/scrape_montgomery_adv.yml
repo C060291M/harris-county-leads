@@ -1,7 +1,7 @@
 name: StackIQ Montgomery Advanced Scraper
 on:
   schedule:
-    - cron: "0 8 * * *"
+    # PAUSED (non-kept county) - cron: "0 8 * * *"
   workflow_dispatch:
     inputs:
       lookback_days:
