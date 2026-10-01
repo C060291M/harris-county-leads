@@ -1,0 +1,17 @@
+﻿name: Send Hot Lead Alerts
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 10 * * *"
+
+jobs:
+  send-alerts:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - name: Trigger daily hot-lead alert emails
+        run: |
+          curl -s -X POST "https://api.stackiq.org/api/alerts/send" \
+            -H "Content-Type: application/json" --max-time 270 \
+            -w "\nHTTP %{http_code}" || echo "alerts/send failed"
